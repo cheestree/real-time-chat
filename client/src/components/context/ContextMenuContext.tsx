@@ -1,45 +1,62 @@
-import React, {createContext, MouseEvent, ReactNode, useContext, useState} from "react";
-import {Menu, MenuItem} from "@mui/material";
+import { Menu, MenuItem } from '@mui/material'
+import React, { createContext, ReactNode, useContext, useState } from 'react'
 
 interface ContextMenuContextType {
-    openContextMenu: (event: React.MouseEvent<HTMLDivElement>, options: ContextMenuOption[]) => void;
-    closeContextMenu: () => void;
+    openContextMenu: (
+        event: React.MouseEvent<HTMLDivElement>,
+        options: ContextMenuOption[]
+    ) => void
+    closeContextMenu: () => void
 }
 
 export type ContextMenuOption = {
-    label: string;
-    action: (...args: any[]) => void;
-};
+    label: string
+    action: (...args: any[]) => void
+}
 
-const ContextMenuContext = createContext<ContextMenuContextType | undefined>(undefined);
+const ContextMenuContext = createContext<ContextMenuContextType | undefined>(
+    undefined
+)
 
-export function ContextMenuContextProvider({ children }: { children: ReactNode }) {
-    const [contextMenuOpen, setContextMenuOpen] = useState(false);
-    const [contextMenuPosition, setContextMenuPosition] = useState({ x: 0, y: 0 });
-    const [contextMenuOptions, setContextMenuOptions] = useState<ContextMenuOption[]>([]);
+export function ContextMenuContextProvider({
+    children,
+}: {
+    children: ReactNode
+}) {
+    const [contextMenuOpen, setContextMenuOpen] = useState(false)
+    const [contextMenuPosition, setContextMenuPosition] = useState({
+        x: 0,
+        y: 0,
+    })
+    const [contextMenuOptions, setContextMenuOptions] = useState<
+        ContextMenuOption[]
+    >([])
 
-    const openContextMenu = (event: React.MouseEvent<HTMLDivElement>, options: ContextMenuOption[]) => {
-        event.preventDefault();
-        setContextMenuOptions(options);
-        setContextMenuPosition({ x: event.clientX, y: event.clientY });
-        setContextMenuOpen(true);
-    };
+    const openContextMenu = (
+        event: React.MouseEvent<HTMLDivElement>,
+        options: ContextMenuOption[]
+    ) => {
+        event.preventDefault()
+        setContextMenuOptions(options)
+        setContextMenuPosition({ x: event.clientX, y: event.clientY })
+        setContextMenuOpen(true)
+    }
 
     const closeContextMenu = () => {
-        setContextMenuOptions([]);
-        setContextMenuOpen(false);
-    };
+        setContextMenuOptions([])
+        setContextMenuOpen(false)
+    }
 
     const handleOptionClick = (action: () => void) => {
-        action();
-        closeContextMenu();
-    };
+        action()
+        closeContextMenu()
+    }
 
     return (
         <ContextMenuContext.Provider
             value={{
                 openContextMenu,
-                closeContextMenu
+                closeContextMenu,
             }}
         >
             <Menu
@@ -48,25 +65,34 @@ export function ContextMenuContextProvider({ children }: { children: ReactNode }
                 anchorReference="anchorPosition"
                 anchorPosition={
                     contextMenuPosition.y !== 0 && contextMenuPosition.x !== 0
-                        ? { top: contextMenuPosition.y, left: contextMenuPosition.x }
+                        ? {
+                              top: contextMenuPosition.y,
+                              left: contextMenuPosition.x,
+                          }
                         : undefined
                 }
             >
-                {contextMenuOptions && contextMenuOptions.map((option, index) => (
-                    <MenuItem key={index} onClick={() => handleOptionClick(option.action)}>
-                        {option.label}
-                    </MenuItem>
-                ))}
+                {contextMenuOptions &&
+                    contextMenuOptions.map((option, index) => (
+                        <MenuItem
+                            key={index}
+                            onClick={() => handleOptionClick(option.action)}
+                        >
+                            {option.label}
+                        </MenuItem>
+                    ))}
             </Menu>
             {children}
         </ContextMenuContext.Provider>
-    );
+    )
 }
 
 export function useContextMenu() {
-    const context = useContext(ContextMenuContext);
+    const context = useContext(ContextMenuContext)
     if (context === undefined) {
-        throw new Error('useContextMenu must be used within a ContextMenuProvider');
+        throw new Error(
+            'useContextMenu must be used within a ContextMenuProvider'
+        )
     }
-    return context;
+    return context
 }

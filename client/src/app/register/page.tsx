@@ -1,17 +1,17 @@
 'use client'
 
-import React, {FormEvent, useState} from "react";
-import {useRouter} from "next/navigation";
-import {useAuth} from "@/components/context/AuthContext";
-import {Button, FormGroup, TextField} from "@mui/material";
+import { useAuth } from '@/components/context/AuthContext'
+import { Button, FormGroup, TextField } from '@mui/material'
+import { useRouter } from 'next/navigation'
+import { FormEvent, useState } from 'react'
 
 import styles from './register.module.css'
 
 export default function Register() {
-    const {register, isLoggedIn} = useAuth()
-    const [username, setUsername] = useState('');
-    const [email, setEmail] = useState('');
-    const [password, setPassword] = useState('');
+    const { register, isLoggedIn } = useAuth()
+    const [username, setUsername] = useState('')
+    const [email, setEmail] = useState('')
+    const [password, setPassword] = useState('')
     const navigate = useRouter()
 
     const handleSubmit = async (event: FormEvent<HTMLFormElement>) => {
@@ -19,14 +19,14 @@ export default function Register() {
 
         await register(username, email, password)
 
-        if(isLoggedIn){
+        if (isLoggedIn) {
             navigate.push('/login')
         }
 
-        setUsername('');
-        setEmail('');
-        setPassword('');
-    };
+        setUsername('')
+        setEmail('')
+        setPassword('')
+    }
 
     return (
         <div className={styles.container}>
@@ -72,5 +72,5 @@ export default function Register() {
                 </form>
             </div>
         </div>
-    );
+    )
 }

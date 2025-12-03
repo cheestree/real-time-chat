@@ -1,5 +1,5 @@
-import {Message} from "./Message";
-import {UserProfile} from "./UserProfile";
+import { Message } from './Message'
+import { UserProfile } from './UserProfile'
 
 export class CustomChannel {
     id: number = -1

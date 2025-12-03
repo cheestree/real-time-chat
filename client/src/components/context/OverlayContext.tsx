@@ -1,37 +1,39 @@
-import {createContext, ReactElement, ReactNode, useContext, useState} from "react";
-import { Dialog } from "@mui/material";
+import { Dialog } from '@mui/material'
+import {
+    createContext,
+    ReactElement,
+    ReactNode,
+    useContext,
+    useState,
+} from 'react'
 
 import './overlay.css'
 
 interface OverlayContextType {
-    handleClose: () => void;
-    handleShow: (modal: ReactElement) => void;
+    handleClose: () => void
+    handleShow: (modal: ReactElement) => void
 }
 
-const OverlayContext = createContext<OverlayContextType | undefined>(undefined);
+const OverlayContext = createContext<OverlayContextType | undefined>(undefined)
 
 export function OverlayProvider({ children }: { children: ReactNode }) {
-    const [show, setShow] = useState(false);
-    const [modal, setModal] = useState<ReactElement>();
+    const [show, setShow] = useState(false)
+    const [modal, setModal] = useState<ReactElement>()
 
-    const handleClose = () => setShow(false);
+    const handleClose = () => setShow(false)
     const handleShow = (modal: ReactElement) => {
-        setModal(modal);
+        setModal(modal)
         setShow(true)
-    };
+    }
 
     return (
         <OverlayContext.Provider
             value={{
                 handleClose,
-                handleShow
+                handleShow,
             }}
         >
-            <Dialog
-                className="dialog-box"
-                open={show}
-                onClose={handleClose}
-            >
+            <Dialog className="dialog-box" open={show} onClose={handleClose}>
                 {modal}
             </Dialog>
             {children}
@@ -40,9 +42,9 @@ export function OverlayProvider({ children }: { children: ReactNode }) {
 }
 
 export function useOverlay() {
-    const context = useContext(OverlayContext);
+    const context = useContext(OverlayContext)
     if (context === undefined) {
-        throw new Error('useOverlay must be used within a OverlayProvider');
+        throw new Error('useOverlay must be used within a OverlayProvider')
     }
-    return context;
+    return context
 }

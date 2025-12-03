@@ -1,22 +1,21 @@
 'use client'
 
-import Servers from "@/components/servers/Servers";
-import TaskBar from "@/components/taskbar/TaskBar";
+import Servers from '@/components/servers/Servers'
+import TaskBar from '@/components/taskbar/TaskBar'
 
+import ChatArea from '@/components/chat/ChatArea'
+import { OverlayProvider } from '@/components/context/OverlayContext'
+import { SocketProvider } from '@/components/context/SocketContext'
 import styles from './app.module.css'
-import {SocketProvider} from "@/components/context/SocketContext";
-import React from "react";
-import {OverlayProvider} from "@/components/context/OverlayContext";
-import ChatArea from "@/components/chat/ChatArea";
 
 export default function App() {
-    return(
+    return (
         <div className={styles.app}>
             <SocketProvider>
                 <OverlayProvider>
-                    <Servers/>
-                    <TaskBar/>
-                    <ChatArea/>
+                    <Servers />
+                    <TaskBar />
+                    <ChatArea />
                 </OverlayProvider>
             </SocketProvider>
         </div>

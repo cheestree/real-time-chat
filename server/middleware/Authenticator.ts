@@ -1,26 +1,28 @@
-import {RequestHandler} from "express";
-import UserServices from "../services/UserServices";
+import { RequestHandler } from 'express'
+import UserServices from '../services/UserServices'
 
-const authenticatorWithServices = (userService: UserServices): RequestHandler => {
+const authenticatorWithServices = (
+    userService: UserServices
+): RequestHandler => {
     return async (req, res, next) => {
         if (!req.cookies.token) {
-            return res.status(401).send("No token!");
+            return res.status(401).send('No token!')
         }
 
-        const token: string = req.cookies.token;
+        const token: string = req.cookies.token
 
         try {
-            const credential = await userService.checkAuth(token);
+            const credential = await userService.checkAuth(token)
             if (credential) {
-                res.setHeader('user', credential.id);
-                return next();
+                res.setHeader('user', credential.id)
+                return next()
             }
-            return res.send("Token invalid");
+            return res.send('Token invalid')
         } catch (err) {
-            console.log(err);
-            return res.send(err);
+            console.log(err)
+            return res.send(err)
         }
-    };
-};
+    }
+}
 
-export default authenticatorWithServices;
+export default authenticatorWithServices

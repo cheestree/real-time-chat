@@ -1,9 +1,9 @@
-import {UserRepositoryInterface} from "./UserRepositoryInterface";
-import {Pool} from "pg";
-import {User} from "../../domain/user/User";
+import { Pool } from 'pg'
+import { User } from '../../domain/user/User'
+import { UserRepositoryInterface } from './UserRepositoryInterface'
 
 class UserRepository implements UserRepositoryInterface {
-    private pool;
+    private pool
 
     constructor() {
         this.pool = new Pool({
@@ -12,48 +12,53 @@ class UserRepository implements UserRepositoryInterface {
             database: process.env.DB_NAME,
             password: process.env.DB_PASSWORD,
             port: process.env.DB_PORT ? parseInt(process.env.DB_PORT) : 5432,
-        });
+        })
     }
 
     async getUserByUsername(username: string): Promise<User | undefined> {
         try {
             const query = 'select * from undi.account where username = $1'
-            const values = [username];
+            const values = [username]
 
-            const result = await this.pool.query(query, values);
+            const result = await this.pool.query(query, values)
 
-            return result.rows[0] as User;
+            return result.rows[0] as User
         } catch (error) {
-            console.error(error);
-            return undefined;
+            console.error(error)
+            return undefined
         }
     }
     async getUserById(id: number): Promise<User | undefined> {
         try {
             const query = 'select * from undi.account where id = $1'
-            const values = [id];
+            const values = [id]
 
-            const result = await this.pool.query(query, values);
+            const result = await this.pool.query(query, values)
 
-            return result.rows[0] as User;
+            return result.rows[0] as User
         } catch (error) {
-            console.error(error);
-            return undefined;
+            console.error(error)
+            return undefined
         }
     }
-    async createUser(username: string, password: string, email: string): Promise<number | undefined> {
+    async createUser(
+        username: string,
+        password: string,
+        email: string
+    ): Promise<number | undefined> {
         try {
-            const query = 'insert into undi.account(username, email, password) values ($1, $2, $3) returning id'
-            const values = [username, email, password];
+            const query =
+                'insert into undi.account(username, email, password) values ($1, $2, $3) returning id'
+            const values = [username, email, password]
 
-            const result = await this.pool.query(query, values);
+            const result = await this.pool.query(query, values)
 
-            return result.rows[0].id;
+            return result.rows[0].id
         } catch (e) {
             console.log(e)
-            return undefined;
+            return undefined
         }
     }
 }
 
-export default UserRepository;
+export default UserRepository

@@ -1,10 +1,9 @@
-import {Message} from "./Message";
-import {User} from "./user/User";
-import {UserProfile} from "./user/UserProfile";
+import { Message } from './Message'
+import { UserProfile } from './user/UserProfile'
 
 let serialChannel = 0
 
-function setAndIncrementChannelID(){
+function setAndIncrementChannelID() {
     serialChannel += 1
     return serialChannel
 }

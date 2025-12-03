@@ -1,14 +1,23 @@
+import Image from 'next/image'
 import styles from './member.module.css'
 
-export default function Member({name, status, icon}: {name: string; status: boolean, icon: string}) {
+export default function Member({
+    name,
+    status,
+    icon,
+    key,
+}: {
+    name: string
+    status: boolean
+    icon: string
+    key: number
+}) {
     return (
-        <div className={styles.member}>
+        <div className={styles.member} key={key}>
             <div className={styles.memberIcon}>
-                {icon ? <img src={icon} /> : name[0]}
+                {icon ? <Image alt="" src={icon} /> : name[0]}
             </div>
-            <div className={styles.memberName}>
-                {name}
-            </div>
+            <div className={styles.memberName}>{name}</div>
         </div>
     )
 }

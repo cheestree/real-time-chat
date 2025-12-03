@@ -1,29 +1,29 @@
 'use client'
 
-import React, {FormEvent, useEffect, useState} from "react";
-import {redirect} from "next/navigation";
-import {useAuth} from "@/components/context/AuthContext";
-import {Button, Container, FormGroup, TextField} from "@mui/material";
+import { useAuth } from '@/components/context/AuthContext'
+import { Button, FormGroup, TextField } from '@mui/material'
+import { redirect } from 'next/navigation'
+import { FormEvent, useEffect, useState } from 'react'
 
 import styles from './login.module.css'
 
 export default function Login() {
-    const {login, isLoggedIn} = useAuth()
-    const [username, setUsername] = useState('');
-    const [password, setPassword] = useState('');
+    const { login, isLoggedIn } = useAuth()
+    const [username, setUsername] = useState('')
+    const [password, setPassword] = useState('')
 
     const handleSubmit = async (event: FormEvent<HTMLFormElement>) => {
         event.preventDefault()
 
         await login(username, password)
 
-        setUsername('');
-        setPassword('');
-    };
+        setUsername('')
+        setPassword('')
+    }
 
     useEffect(() => {
-        if (isLoggedIn) redirect('/app');
-    }, [isLoggedIn]);
+        if (isLoggedIn) redirect('/app')
+    }, [isLoggedIn])
 
     return (
         <div className={styles.container}>
@@ -51,9 +51,11 @@ export default function Login() {
                         />
                     </FormGroup>
 
-                    <Button variant="contained" color="primary" type="submit">Login</Button>
+                    <Button variant="contained" color="primary" type="submit">
+                        Login
+                    </Button>
                 </form>
             </div>
         </div>
-    );
+    )
 }

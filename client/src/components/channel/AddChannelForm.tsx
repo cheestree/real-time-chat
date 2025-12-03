@@ -1,18 +1,18 @@
-import {useState} from "react";
-import {useOverlay} from "@/components/context/OverlayContext";
-import {useSocket} from "@/components/context/SocketContext";
-import {Button, Container, TextField} from "@mui/material";
+import { useOverlay } from '@/components/context/OverlayContext'
+import { useSocket } from '@/components/context/SocketContext'
+import { Button, Container, TextField } from '@mui/material'
+import { useState } from 'react'
 
 export default function AddChannelForm() {
     const { handleClose } = useOverlay()
-    const {createChannel} = useSocket()
-    const [channelName, setChannelName] = useState("");
-    const [channelDescription, setChannelDescription] = useState("");
+    const { createChannel } = useSocket()
+    const [channelName, setChannelName] = useState('')
+    const [channelDescription, setChannelDescription] = useState('')
 
     const handleCreateChannel = () => {
-        createChannel(channelName, channelDescription);
-        handleClose();
-    };
+        createChannel(channelName, channelDescription)
+        handleClose()
+    }
 
     return (
         <Container maxWidth="sm">
@@ -36,15 +36,21 @@ export default function AddChannelForm() {
                             label="Description"
                             placeholder="Enter description of the channel"
                             value={channelDescription}
-                            onChange={(e) => setChannelDescription(e.target.value)}
+                            onChange={(e) =>
+                                setChannelDescription(e.target.value)
+                            }
                             fullWidth
                         />
-                        <Button variant="contained" color="primary" onClick={handleCreateChannel}>
+                        <Button
+                            variant="contained"
+                            color="primary"
+                            onClick={handleCreateChannel}
+                        >
                             Create
                         </Button>
                     </form>
                 </div>
             </div>
         </Container>
-    );
+    )
 }

@@ -1,37 +1,40 @@
-import {UserRepositoryInterface} from "./UserRepositoryInterface";
-import {User} from "../../domain/user/User";
-import {BadRequestError} from "../../domain/error/Error";
-import {UserProfile} from "../../domain/user/UserProfile";
+import { BadRequestError } from '../../domain/error/Error'
+import { User } from '../../domain/user/User'
+import { UserRepositoryInterface } from './UserRepositoryInterface'
 
 class UserDataMem implements UserRepositoryInterface {
     users: User[] = []
 
-    async createUser(username: string, password: string, email: string): Promise<number> {
-        const id = this.users.length + 1;
-        const user: User = {id, username, email, password};
-        this.users.push(user);
-        return id;
+    async createUser(
+        username: string,
+        password: string,
+        email: string
+    ): Promise<number> {
+        const id = this.users.length + 1
+        const user: User = { id, username, email, password }
+        this.users.push(user)
+        return id
     }
 
     async userExists(id: number): Promise<boolean> {
-        return this.users.some(user => user.id == id);
+        return this.users.some((user) => user.id == id)
     }
 
     async getUserById(id: number): Promise<User> {
-        const user = this.users.find((user) => user.id == id);
+        const user = this.users.find((user) => user.id == id)
         if (user) {
-            return user;
+            return user
         }
-        throw new BadRequestError("UserProfile not found");
+        throw new BadRequestError('UserProfile not found')
     }
 
     async getUserByUsername(username: string): Promise<User> {
-        const user = this.users.find((user) => user.username == username);
+        const user = this.users.find((user) => user.username == username)
         if (user) {
-            return user;
+            return user
         }
-        throw new BadRequestError("UserProfile not found");
+        throw new BadRequestError('UserProfile not found')
     }
 }
 
-export default UserDataMem;
+export default UserDataMem

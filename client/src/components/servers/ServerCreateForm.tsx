@@ -1,35 +1,41 @@
-import {useOverlay} from "@/components/context/OverlayContext";
-import {useSocket} from "@/components/context/SocketContext";
-import {useRef, useState} from "react";
-import ImageCropper from "@/components/image/ImageCropper";
-import {Button, Container, TextField} from "@mui/material";
-import {CropperRef} from "react-advanced-cropper";
+import { useOverlay } from '@/components/context/OverlayContext'
+import { useSocket } from '@/components/context/SocketContext'
+import ImageCropper from '@/components/image/ImageCropper'
+import { Button, Container, TextField } from '@mui/material'
+import { useRef, useState } from 'react'
+import { CropperRef } from 'react-advanced-cropper'
 
 export default function ServerCreateForm() {
     const { handleClose } = useOverlay()
-    const {createServer, joinServer} = useSocket()
-    const [serverId, setServerId] = useState(-1);
-    const [serverName, setServerName] = useState('');
-    const [serverDescription, setServerDescription] = useState('');
-    const cropperRef = useRef<CropperRef>(null);
+    const { createServer, joinServer } = useSocket()
+    const [serverId, setServerId] = useState(-1)
+    const [serverName, setServerName] = useState('')
+    const [serverDescription, setServerDescription] = useState('')
+    const cropperRef = useRef<CropperRef>(null)
 
     const handleCreateServer = () => {
         let iconDataUrl = ''
-        const canvas = cropperRef.current?.getCanvas();
+        const canvas = cropperRef.current?.getCanvas()
         if (canvas) {
-            const resizedCanvas = document.createElement('canvas');
-            const ctx = resizedCanvas.getContext('2d');
+            const resizedCanvas = document.createElement('canvas')
+            const ctx = resizedCanvas.getContext('2d')
             if (ctx) {
-                resizedCanvas.width = 512;
-                resizedCanvas.height = 512;
-                ctx.drawImage(canvas, 0, 0, resizedCanvas.width, resizedCanvas.height);
-                iconDataUrl = resizedCanvas.toDataURL();
+                resizedCanvas.width = 512
+                resizedCanvas.height = 512
+                ctx.drawImage(
+                    canvas,
+                    0,
+                    0,
+                    resizedCanvas.width,
+                    resizedCanvas.height
+                )
+                iconDataUrl = resizedCanvas.toDataURL()
             }
         }
 
-        createServer(serverName, serverDescription, iconDataUrl);
-        handleClose();
-    };
+        createServer(serverName, serverDescription, iconDataUrl)
+        handleClose()
+    }
 
     return (
         <Container maxWidth="sm">
@@ -45,7 +51,9 @@ export default function ServerCreateForm() {
                             label="ID"
                             placeholder="Enter ID to join"
                             value={serverId}
-                            onChange={(e) => setServerId(parseInt(e.target.value))}
+                            onChange={(e) =>
+                                setServerId(parseInt(e.target.value))
+                            }
                             fullWidth
                         />
                         <TextField
@@ -61,19 +69,29 @@ export default function ServerCreateForm() {
                             label="Description"
                             placeholder="Enter description"
                             value={serverDescription}
-                            onChange={(e) => setServerDescription(e.target.value)}
+                            onChange={(e) =>
+                                setServerDescription(e.target.value)
+                            }
                             fullWidth
                         />
                         <ImageCropper cropperRef={cropperRef} />
-                        <Button variant="contained" color="primary" onClick={handleCreateServer}>
+                        <Button
+                            variant="contained"
+                            color="primary"
+                            onClick={handleCreateServer}
+                        >
                             Create
                         </Button>
-                        <Button variant="contained" color="primary" onClick={() => joinServer(serverId)}>
+                        <Button
+                            variant="contained"
+                            color="primary"
+                            onClick={() => joinServer(serverId)}
+                        >
                             Join
                         </Button>
                     </form>
                 </div>
             </div>
         </Container>
-    );
+    )
 }

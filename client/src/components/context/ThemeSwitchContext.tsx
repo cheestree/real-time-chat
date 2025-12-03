@@ -1,5 +1,5 @@
-import { useState, useEffect } from 'react'
 import { useTheme } from 'next-themes'
+import { useEffect, useState } from 'react'
 
 const ThemeSwitch = () => {
     const [mounted, setMounted] = useState(false)
@@ -14,7 +14,7 @@ const ThemeSwitch = () => {
     }
 
     return (
-        <select value={theme} onChange={e => setTheme(e.target.value)}>
+        <select value={theme} onChange={(e) => setTheme(e.target.value)}>
             <option value="system">System</option>
             <option value="dark">Dark</option>
             <option value="light">Light</option>
