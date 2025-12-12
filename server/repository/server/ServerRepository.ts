@@ -2,6 +2,7 @@ import { CustomChannel } from '../../domain/CustomChannel'
 import { CustomServer } from '../../domain/CustomServer'
 import { Message } from '../../domain/Message'
 import { User } from '../../domain/user/User'
+import { UserProfile } from '../../domain/user/UserProfile'
 import { ServerRepositoryInterface } from './ServerRepositoryInterface'
 
 class ServerRepository implements ServerRepositoryInterface {
@@ -48,5 +49,16 @@ class ServerRepository implements ServerRepositoryInterface {
 
     async leaveServer(serverId: number, user: UserProfile): Promise<number> {
         return false
+    }
+
+    async deleteServer(
+        serverId: number,
+        user: UserProfile
+    ): Promise<UserProfile[]> {
+        return Promise.resolve([])
+    }
+
+    async getUserServers(user: UserProfile): Promise<CustomServer[]> {
+        return Promise.resolve([])
     }
 }

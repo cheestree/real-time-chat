@@ -1,9 +1,16 @@
 import { Menu, MenuItem } from '@mui/material'
-import React, { createContext, ReactNode, useContext, useState } from 'react'
+import React, {
+    Component,
+    createContext,
+    MouseEvent,
+    ReactNode,
+    useContext,
+    useState,
+} from 'react'
 
 interface ContextMenuContextType {
     openContextMenu: (
-        event: React.MouseEvent<HTMLDivElement>,
+        event: MouseEvent<HTMLDivElement>,
         options: ContextMenuOption[]
     ) => void
     closeContextMenu: () => void
@@ -11,7 +18,7 @@ interface ContextMenuContextType {
 
 export type ContextMenuOption = {
     label: string
-    action: (...args: any[]) => void
+    action: (...args: Component[]) => void
 }
 
 const ContextMenuContext = createContext<ContextMenuContextType | undefined>(

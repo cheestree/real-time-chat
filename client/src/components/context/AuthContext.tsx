@@ -79,7 +79,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         }
 
         fetchAuth()
-    }, [isLoggedIn])
+    }, [checkAuth, isLoggedIn])
 
     return (
         <AuthContext.Provider
