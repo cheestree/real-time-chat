@@ -2,7 +2,7 @@ export async function get(
     url: string,
     isAuthenticated: boolean
 ): Promise<Response> {
-    return await fetch('http://localhost:3000' + url, {
+    return await fetch(url, {
         method: 'GET',
         headers: { 'Content-type': 'application/json; charset=UTF-8' },
         credentials: isAuthenticated ? 'include' : 'same-origin',
@@ -24,7 +24,7 @@ export async function post(
 
     if (bodyToSend) requestOptions.body = JSON.stringify(bodyToSend)
 
-    return await fetch('http://localhost:3000' + url, requestOptions)
+    return await fetch(url, requestOptions)
 }
 
 export async function del(
@@ -39,5 +39,5 @@ export async function del(
         credentials: isAuthenticated ? 'include' : 'same-origin',
     }
 
-    return await fetch('http://localhost:3000' + url, requestOptions)
+    return await fetch(url, requestOptions)
 }

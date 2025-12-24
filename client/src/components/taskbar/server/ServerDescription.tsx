@@ -1,4 +1,6 @@
-import { CustomServer } from '@/components/domain/CustomServer'
+'use client'
+
+import { CustomServer } from '@/domain/CustomServer'
 
 import styles from './server.module.css'
 

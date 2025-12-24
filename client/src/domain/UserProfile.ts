@@ -1,4 +1,4 @@
-export class UserProfile {
+export type UserProfile = {
     id: number
     username: string
 }

@@ -1,3 +1,5 @@
+'use client'
+
 import { Person2 } from '@mui/icons-material'
 
 import styles from './customtoolbar.module.css'

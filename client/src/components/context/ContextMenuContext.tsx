@@ -1,3 +1,5 @@
+'use client'
+
 import { Menu, MenuItem } from '@mui/material'
 import React, {
     Component,

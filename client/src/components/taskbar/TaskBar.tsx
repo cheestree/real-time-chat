@@ -1,3 +1,5 @@
+'use client'
+
 import { useAuth } from '@/components/context/AuthContext'
 import { useSocket } from '@/components/context/SocketContext'
 import ServerChannels from '@/components/servers/serverchannels/ServerChannels'
@@ -24,7 +26,7 @@ export default function TaskBar() {
                 servers={servers}
             />
             <ThemeSwitch />
-            {loggedUser && <UserBar user={loggedUser} />}
+            {<UserBar user={loggedUser!} />}
         </div>
     )
 }

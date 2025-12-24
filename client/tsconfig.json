@@ -12,6 +12,15 @@
         "isolatedModules": true,
         "jsx": "preserve",
         "incremental": true,
+        "forceConsistentCasingInFileNames": true,
+        "noUnusedLocals": true,
+        "noUnusedParameters": true,
+        "noUncheckedIndexedAccess": true,
+        "noFallthroughCasesInSwitch": true,
+        "allowUnreachableCode": false,
+        "allowUnusedLabels": false,
+        "exactOptionalPropertyTypes": true,
+        "noPropertyAccessFromIndexSignature": false, // Maybe change later
         "plugins": [
             {
                 "name": "next"
@@ -19,7 +28,8 @@
         ],
         "paths": {
             "@/*": ["./src/*"]
-        }
+        },
+        "types": ["@mui/types"]
     },
     "include": ["next-env.d.ts", "**/*.ts", "**/*.tsx", ".next/types/**/*.ts"],
     "exclude": ["node_modules"]

@@ -1,4 +1,6 @@
-import { CustomChannel } from '@/components/domain/CustomChannel'
+'use client'
+
+import { CustomChannel } from '@/domain/CustomChannel'
 import { HorizontalRule } from '@mui/icons-material'
 
 import styles from './channelDescription.module.css'

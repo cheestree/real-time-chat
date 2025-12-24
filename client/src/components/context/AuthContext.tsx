@@ -1,4 +1,6 @@
-import { UserProfile } from '@/components/domain/UserProfile'
+'use client'
+
+import { UserProfile } from '@/domain/UserProfile'
 import UserServices from '@/services/UserServices'
 import {
     createContext,
@@ -8,90 +10,140 @@ import {
     useState,
 } from 'react'
 
+interface AuthActionResult {
+    success: boolean
+    message?: string
+}
+
 interface AuthContextType {
-    login: (username: string, password: string) => Promise<void>
+    login: (username: string, password: string) => Promise<AuthActionResult>
     register: (
         username: string,
         email: string,
         password: string
-    ) => Promise<void>
+    ) => Promise<AuthActionResult>
     logout: () => Promise<void>
     checkAuth: () => Promise<void>
     loggedUser: UserProfile | undefined
     isLoggedIn: boolean
+    isLoading: boolean
+    error: string | null
 }
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined)
 
 export function AuthProvider({ children }: { children: ReactNode }) {
-    const API_URL = '/api'
-
     const [isLoading, setIsLoading] = useState(true)
     const [isLoggedIn, setIsLoggedIn] = useState<boolean>(false)
     const [loggedUser, setLoggedUser] = useState<UserProfile | undefined>(
         undefined
     )
-    const userServices = new UserServices(API_URL)
+    const [error, setError] = useState<string | null>(null)
+    const userServices = new UserServices()
 
-    async function login(username: string, password: string) {
-        await userServices.login(username, password).then(async (r) => {
+    async function login(
+        username: string,
+        password: string
+    ): Promise<AuthActionResult> {
+        setIsLoading(true)
+        setError(null)
+        try {
+            const r = await userServices.login(username, password)
             if (r.ok) {
                 const { token, user } = await r.json()
-                const userProfile: UserProfile = user
-                setLoggedUser(userProfile)
+                setLoggedUser(user)
+                setIsLoggedIn(true)
+                setIsLoading(false)
+                return { success: true }
             } else {
                 const { message } = await r.json()
                 setLoggedUser(undefined)
+                setIsLoggedIn(false)
+                setError(message || 'Login failed')
+                setIsLoading(false)
+                return { success: false, message }
             }
-            setIsLoggedIn(r.ok)
-        })
+        } catch (e: unknown) {
+            const err = e as Error
+            setError(err?.message || 'Login error')
+            setIsLoading(false)
+            return { success: false, message: err?.message }
+        }
     }
 
-    async function register(username: string, email: string, password: string) {
-        await userServices.register(username, email, password).then((r) => {
+    async function register(
+        username: string,
+        email: string,
+        password: string
+    ): Promise<AuthActionResult> {
+        setIsLoading(true)
+        setError(null)
+        try {
+            const r = await userServices.register(username, email, password)
             setIsLoggedIn(r.ok)
-        })
+            setIsLoading(false)
+            if (r.ok) {
+                return { success: true }
+            } else {
+                const { message } = await r.json()
+                setError(message || 'Registration failed')
+                return { success: false, message }
+            }
+        } catch (e: unknown) {
+            const err = e as Error
+            setError(err?.message || 'Registration error')
+            setIsLoading(false)
+            return { success: false, message: err?.message }
+        }
     }
 
     async function logout() {
+        setIsLoading(true)
+        setError(null)
         await userServices.logout()
         setIsLoggedIn(false)
         setLoggedUser(undefined)
+        setIsLoading(false)
     }
 
     async function checkAuth() {
-        await userServices.checkAuth().then(async (r) => {
+        setIsLoading(true)
+        setError(null)
+        try {
+            const r = await userServices.checkAuth()
             if (r.ok) {
                 const userProfile: UserProfile = await r.json()
                 setLoggedUser(userProfile)
+                setIsLoggedIn(true)
             } else {
                 setLoggedUser(undefined)
+                setIsLoggedIn(false)
             }
-            setIsLoggedIn(r.ok)
-        })
+        } catch (e: unknown) {
+            const err = e as Error
+            setError(err?.message || 'Auth check error')
+        }
+        setIsLoading(false)
     }
 
     useEffect(() => {
-        const fetchAuth = async () => {
-            setIsLoading(true)
-            await checkAuth()
-            setIsLoading(false)
-        }
+        checkAuth()
+        // eslint-disable-next-line react-hooks/exhaustive-deps
+    }, [])
 
-        fetchAuth()
-    }, [checkAuth, isLoggedIn])
+    const contextValue = {
+        login,
+        register,
+        logout,
+        checkAuth,
+        loggedUser,
+        isLoggedIn,
+        isLoading,
+        error,
+    }
 
     return (
-        <AuthContext.Provider
-            value={{
-                login,
-                register,
-                logout,
-                checkAuth,
-                loggedUser,
-                isLoggedIn,
-            }}
-        >
+        <AuthContext.Provider value={contextValue}>
             {children}
         </AuthContext.Provider>
     )
@@ -100,7 +152,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 export function useAuth() {
     const context = useContext(AuthContext)
     if (context === undefined) {
-        throw new Error('useSocket must be used within a AuthProvider')
+        throw new Error('useAuth must be used within an AuthProvider')
     }
     return context
 }

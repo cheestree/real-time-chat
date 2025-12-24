@@ -1,9 +1,7 @@
-'use client'
+import '@/app/globals.css'
+import AppProviders from '@/components/AppProviders'
 import CustomLayout from '@/components/customlayout/CustomLayout'
 import React from 'react'
-
-import vt323 from '@/lib/font'
-import './globals.css'
 
 export default function RootLayout({
     children,
@@ -11,12 +9,14 @@ export default function RootLayout({
     children: React.ReactNode
 }) {
     return (
-        <html lang="en">
+        <html lang="en" suppressHydrationWarning={true}>
             <head>
                 <title>RealTimeChat</title>
             </head>
-            <body className={vt323.className}>
-                <CustomLayout>{children}</CustomLayout>
+            <body>
+                <AppProviders>
+                    <CustomLayout>{children}</CustomLayout>
+                </AppProviders>
             </body>
         </html>
     )

@@ -1,3 +1,5 @@
+'use client'
+
 import { Dialog } from '@mui/material'
 import {
     createContext,
@@ -7,7 +9,7 @@ import {
     useState,
 } from 'react'
 
-import './overlay.css'
+import styles from '@/components/context/overlay/overlay.module.css'
 
 interface OverlayContextType {
     handleClose: () => void
@@ -33,7 +35,7 @@ export function OverlayProvider({ children }: { children: ReactNode }) {
                 handleShow,
             }}
         >
-            <Dialog className="dialog-box" open={show} onClose={handleClose}>
+            <Dialog className={styles.dialog} open={show} onClose={handleClose}>
                 {modal}
             </Dialog>
             {children}

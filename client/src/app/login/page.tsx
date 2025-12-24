@@ -2,28 +2,35 @@
 
 import { useAuth } from '@/components/context/AuthContext'
 import { Button, FormGroup, TextField } from '@mui/material'
-import { redirect } from 'next/navigation'
+import { useRouter } from 'next/navigation'
 import { FormEvent, useEffect, useState } from 'react'
-
 import styles from './login.module.css'
 
-export default function Login() {
+function LoginPage() {
     const { login, isLoggedIn } = useAuth()
     const [username, setUsername] = useState('')
     const [password, setPassword] = useState('')
+    const [error, setError] = useState<string | null>(null)
+    const router = useRouter()
+
+    useEffect(() => {
+        if (isLoggedIn) {
+            router.replace('/app')
+        }
+    }, [isLoggedIn, router])
 
     const handleSubmit = async (event: FormEvent<HTMLFormElement>) => {
         event.preventDefault()
-
-        await login(username, password)
-
+        setError(null)
+        const result = await login(username, password)
+        if (result.success) {
+            router.replace('/app')
+        } else {
+            setError(result.message || 'Login failed')
+        }
         setUsername('')
         setPassword('')
     }
-
-    useEffect(() => {
-        if (isLoggedIn) redirect('/app')
-    }, [isLoggedIn])
 
     return (
         <div className={styles.container}>
@@ -51,6 +58,12 @@ export default function Login() {
                         />
                     </FormGroup>
 
+                    {error && (
+                        <div style={{ color: 'red', marginBottom: 8 }}>
+                            {error}
+                        </div>
+                    )}
+
                     <Button variant="contained" color="primary" type="submit">
                         Login
                     </Button>
@@ -59,3 +72,5 @@ export default function Login() {
         </div>
     )
 }
+
+export default LoginPage

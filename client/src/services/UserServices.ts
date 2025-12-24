@@ -1,36 +1,35 @@
-import { get, post } from '@/services/requests/requests'
+import { Path } from '@/http/path'
+import { get, post } from '@/http/requests'
 
 class UserServices {
-    private readonly url: string
-    constructor(user_url: string) {
-        this.url = user_url
-    }
     async login(username: string, password: string): Promise<Response> {
-        return post(this.url + '/login', true, {
+        return post(process.env.NEXT_PUBLIC_API_URL + Path.LOGIN, true, {
             username: username,
             password: password,
         })
     }
     async logout(): Promise<boolean> {
-        return await post(this.url + '/logout', true, null).then(
-            async (response) => {
-                return response.ok
-            }
-        )
+        return await post(
+            process.env.NEXT_PUBLIC_API_URL + Path.LOGOUT,
+            true,
+            null
+        ).then(async (response) => {
+            return response.ok
+        })
     }
     async register(
         username: string,
         email: string,
         password: string
     ): Promise<Response> {
-        return post(this.url + '/register', false, {
+        return post(process.env.NEXT_PUBLIC_API_URL + Path.REGISTER, false, {
             username: username,
             email: email,
             password: password,
         })
     }
     async checkAuth(): Promise<Response> {
-        return get(this.url + '/auth', true)
+        return get(process.env.NEXT_PUBLIC_API_URL + Path.AUTH_CHECK, true)
     }
 }
 

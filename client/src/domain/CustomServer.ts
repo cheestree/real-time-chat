@@ -1,4 +1,4 @@
-import { CustomChannel } from '@/components/domain/CustomChannel'
+import { CustomChannel } from './CustomChannel'
 import { UserProfile } from './UserProfile'
 
 export class CustomServer {

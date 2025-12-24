@@ -1,8 +1,10 @@
+'use client'
+
 import { useSocket } from '@/components/context/SocketContext'
-import { CustomServer } from '@/components/domain/CustomServer'
 import Member from '@/components/members/Member'
 import { Fragment, useState } from 'react'
 
+import { CustomServer } from '@/domain/CustomServer'
 import styled from 'styled-components'
 import styles from './bottom.module.css'
 

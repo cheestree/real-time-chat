@@ -1,6 +1,8 @@
+'use client'
+
 import { useAuth } from '@/components/context/AuthContext'
 import { useContextMenu } from '@/components/context/ContextMenuContext'
-import { useOverlay } from '@/components/context/OverlayContext'
+import { useOverlay } from '@/components/context/overlay/OverlayContext'
 import { useSocket } from '@/components/context/SocketContext'
 import ServerCreateForm from '@/components/servers/ServerCreateForm'
 import { Add } from '@mui/icons-material'
@@ -41,12 +43,11 @@ export default function Servers() {
     return (
         <Scrollbar className={styles.servers}>
             {servers &&
-                loggedUser &&
                 servers.map((server) => (
                     <Server
                         key={server.id}
                         server={server}
-                        user={loggedUser}
+                        user={loggedUser!}
                         openContextMenu={openContextMenu}
                         deleteServer={deleteServer}
                         leaveServer={leaveServer}

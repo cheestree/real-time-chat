@@ -1,7 +1,9 @@
-import { CustomChannel } from '@/components/domain/CustomChannel'
+'use client'
+
 import TagIcon from '@mui/icons-material/Tag'
 import { Button } from '@mui/material'
 
+import { CustomChannel } from '@/domain/CustomChannel'
 import styles from './channel.module.css'
 
 export default function Channel({

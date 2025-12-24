@@ -1,23 +1,40 @@
 'use client'
 
+import ChatArea from '@/components/chat/ChatArea'
+import { useAuth } from '@/components/context/AuthContext'
 import Servers from '@/components/servers/Servers'
 import TaskBar from '@/components/taskbar/TaskBar'
-
-import ChatArea from '@/components/chat/ChatArea'
-import { OverlayProvider } from '@/components/context/OverlayContext'
-import { SocketProvider } from '@/components/context/SocketContext'
+import { useRouter } from 'next/navigation'
+import { useEffect } from 'react'
 import styles from './app.module.css'
+
+function AuthGuard({ children }: { children: React.ReactNode }) {
+    const { isLoggedIn, isLoading } = useAuth()
+    const router = useRouter()
+
+    useEffect(() => {
+        if (!isLoading && !isLoggedIn) {
+            router.replace('/login')
+        }
+    }, [isLoggedIn, isLoading, router])
+
+    if (isLoading) {
+        return <div>Loading...</div>
+    }
+    if (!isLoggedIn) {
+        return null
+    }
+    return <>{children}</>
+}
 
 export default function App() {
     return (
         <div className={styles.app}>
-            <SocketProvider>
-                <OverlayProvider>
-                    <Servers />
-                    <TaskBar />
-                    <ChatArea />
-                </OverlayProvider>
-            </SocketProvider>
+            <AuthGuard>
+                <Servers />
+                <TaskBar />
+                <ChatArea />
+            </AuthGuard>
         </div>
     )
 }

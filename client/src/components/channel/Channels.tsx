@@ -1,7 +1,9 @@
-import Channel from '@/components/channel/channel/Channel'
-import { CustomChannel } from '@/components/domain/CustomChannel'
-import { CustomServer } from '@/components/domain/CustomServer'
+'use client'
 
+import Channel from '@/components/channel/channel/Channel'
+
+import { CustomChannel } from '@/domain/CustomChannel'
+import { CustomServer } from '@/domain/CustomServer'
 import styles from './channels.module.css'
 
 export default function Channels({

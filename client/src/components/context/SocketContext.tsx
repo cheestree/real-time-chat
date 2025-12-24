@@ -1,9 +1,9 @@
 'use client'
 
-import { CustomChannel } from '@/components/domain/CustomChannel'
-import { CustomServer } from '@/components/domain/CustomServer'
-import { Message } from '@/components/domain/Message'
-import { UserProfile } from '@/components/domain/UserProfile'
+import { CustomChannel } from '@/domain/CustomChannel'
+import { CustomServer } from '@/domain/CustomServer'
+import { Message } from '@/domain/Message'
+import { UserProfile } from '@/domain/UserProfile'
 import {
     createContext,
     ReactNode,
@@ -33,8 +33,7 @@ interface SocketContextType {
 
 const SocketContext = createContext<SocketContextType | undefined>(undefined)
 
-const API_URL = 'http://localhost:4000'
-const socket = io(API_URL, {
+const socket = io(process.env.NEXT_PUBLIC_SOCKET_URL, {
     withCredentials: true,
 })
 

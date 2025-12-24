@@ -1,7 +1,9 @@
+'use client'
+
 import AddChannelForm from '@/components/channel/AddChannelForm'
 import Channels from '@/components/channel/Channels'
 import CreateChannel from '@/components/channel/createchannel/CreateChannel'
-import { CustomServer } from '@/components/domain/CustomServer'
+import { CustomServer } from '@/domain/CustomServer'
 
 import styles from './serverChannels.module.css'
 

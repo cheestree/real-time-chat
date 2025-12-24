@@ -1,4 +1,6 @@
-import { useOverlay } from '@/components/context/OverlayContext'
+'use client'
+
+import { useOverlay } from '@/components/context/overlay/OverlayContext'
 import { useSocket } from '@/components/context/SocketContext'
 import { Button, Container, TextField } from '@mui/material'
 import { useState } from 'react'

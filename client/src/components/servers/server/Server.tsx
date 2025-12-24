@@ -1,7 +1,9 @@
+'use client'
+
 import { ContextMenuOption } from '@/components/context/ContextMenuContext'
-import { CustomServer } from '@/components/domain/CustomServer'
-import { UserProfile } from '@/components/domain/UserProfile'
 import styles from '@/components/servers/server.module.css'
+import { CustomServer } from '@/domain/CustomServer'
+import { UserProfile } from '@/domain/UserProfile'
 import Image from 'next/image'
 import React from 'react'
 

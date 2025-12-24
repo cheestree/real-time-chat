@@ -1,4 +1,4 @@
-export class Message {
+export type Message = {
     author: string
     message: string
 }

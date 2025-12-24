@@ -1,4 +1,6 @@
-import { useOverlay } from '@/components/context/OverlayContext'
+'use client'
+
+import { useOverlay } from '@/components/context/overlay/OverlayContext'
 import { Button } from '@mui/material'
 import { ReactElement } from 'react'
 

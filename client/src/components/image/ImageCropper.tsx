@@ -1,3 +1,5 @@
+'use client'
+
 import React, { ChangeEvent, RefObject, useRef, useState } from 'react'
 import {
     CircleStencil,

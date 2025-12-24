@@ -1,3 +1,5 @@
+'use client'
+
 import ChatBottom from '@/components/chat/bottom/ChatBottom'
 import ChatTop from '@/components/chat/top/ChatTop'
 import { useSocket } from '@/components/context/SocketContext'
