@@ -1,6 +1,6 @@
 import { RequestHandler } from 'express'
-import { UserLoginInputModel } from '../domain/user/input/UserLoginInputModel'
-import { UserRegisterInputModel } from '../domain/user/input/UserRegisterInputModel'
+import { UserLogin } from '../http/model/input/user/UserLogin'
+import { UserRegister } from '../http/model/input/user/UserRegister'
 import UserServices from '../services/UserServices'
 
 class UserController {
@@ -10,7 +10,7 @@ class UserController {
     }
     login: RequestHandler = async (req, res, next) => {
         try {
-            const loginCreds: UserLoginInputModel = req.body
+            const loginCreds: UserLogin = req.body
             const [token, options, user] = await this.services.login(loginCreds)
             res.status(200)
                 .cookie('token', token, options)
@@ -28,7 +28,7 @@ class UserController {
     }
     register: RequestHandler = async (req, res, next) => {
         try {
-            const registerCreds: UserRegisterInputModel = req.body
+            const registerCreds: UserRegister = req.body
             const userId = await this.services.register(registerCreds)
             res.status(201).json({ id: userId })
         } catch (error) {

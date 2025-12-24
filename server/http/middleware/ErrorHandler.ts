@@ -1,5 +1,5 @@
 import { ErrorRequestHandler, NextFunction, Request, Response } from 'express'
-import { HttpError } from '../domain/error/Error'
+import { HttpError } from '../../domain/error/Error'
 
 const ErrorHandler: ErrorRequestHandler = (
     err: HttpError,

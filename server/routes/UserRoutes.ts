@@ -1,35 +1,47 @@
 import { Router } from 'express'
 import UserController from '../controller/UserController'
-import { UserLoginInputModelValidation } from '../domain/user/input/UserLoginInputModel'
-import { UserRegisterInputModelValidation } from '../domain/user/input/UserRegisterInputModel'
-import authenticatorWithServices from '../middleware/Authenticator'
-import { ValidateInput } from '../middleware/ValidateInput'
+import authenticatorWithServices from '../http/middleware/Authenticator'
+import { ValidateInput } from '../http/middleware/ValidateInput'
+import { UserLoginValidation } from '../http/model/input/user/UserLogin'
+import { UserRegisterValidation } from '../http/model/input/user/UserRegister'
+import { Path } from '../http/path/Path'
 import UserDataMem from '../repository/user/UserDataMem'
 import UserServices from '../services/UserServices'
 
-const userRouter = Router()
-const userRepository = new UserDataMem()
-//  const userRepository = new UserRepository()
-const userServices = new UserServices(userRepository)
-const userController = new UserController(userServices)
+class UserRoutes {
+    public router = Router()
+    public userServices: UserServices
+    private userController: UserController
 
-userRouter.post(
-    '/login',
-    UserLoginInputModelValidation,
-    ValidateInput,
-    userController.login
-)
-userRouter.post('/logout', userController.logout)
-userRouter.post(
-    '/register',
-    UserRegisterInputModelValidation,
-    ValidateInput,
-    userController.register
-)
-userRouter.get(
-    '/auth',
-    authenticatorWithServices(userServices),
-    userController.checkAuth
-)
+    constructor() {
+        const userRepository = new UserDataMem()
+        //  const userRepository = new UserRepository();
+        this.userServices = new UserServices(userRepository)
+        this.userController = new UserController(this.userServices)
+        this.initRoutes()
+    }
 
-export { userRouter, userServices }
+    private initRoutes() {
+        this.router.post(
+            Path.USERS.LOGIN,
+            UserLoginValidation,
+            ValidateInput,
+            this.userController.login
+        )
+        this.router.post(Path.USERS.LOGOUT, this.userController.logout)
+        this.router.post(
+            Path.USERS.REGISTER,
+            UserRegisterValidation,
+            ValidateInput,
+            this.userController.register
+        )
+        this.router.get(
+            Path.USERS.AUTH,
+            authenticatorWithServices(this.userServices),
+            this.userController.checkAuth
+        )
+    }
+}
+
+const userRoutes = new UserRoutes()
+export { userRoutes }

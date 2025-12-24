@@ -34,7 +34,9 @@ class ServerDataMem implements ServerRepositoryInterface {
         owner: UserProfile,
         icon: string
     ): Promise<CustomServer> {
+        const nServer = this.servers.length
         const server = new CustomServer(
+            nServer + 1,
             serverName,
             serverDescription,
             owner,
@@ -103,7 +105,9 @@ class ServerDataMem implements ServerRepositoryInterface {
     ): Promise<CustomChannel> {
         for (const server of this.servers) {
             if (server.id === serverId) {
+                const nChannels = server.channels.length
                 const channel = new CustomChannel(
+                    nChannels + 1,
                     channelName,
                     channelDescription
                 )

@@ -1,4 +1,4 @@
-import { HttpError } from '../domain/error/Error'
+import { HttpError } from '../../domain/error/Error'
 
 export function requireOrThrow<T extends HttpError>(
     error: new (message?: string) => T,

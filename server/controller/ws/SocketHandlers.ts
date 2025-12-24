@@ -3,6 +3,7 @@ import { Server, Socket } from 'socket.io'
 import { Message } from '../../domain/Message'
 import { Credentials } from '../../domain/user/Credentials'
 import { UserProfile } from '../../domain/user/UserProfile'
+import { SocketEvent } from '../../http/events/SocketEvent'
 import serverServices from '../../services/ServerServices'
 import userServices from '../../services/UserServices'
 
@@ -28,12 +29,12 @@ const SocketHandlers = (
         try {
             const userServers = await serverServices.getUserServers(user)
             userServers.forEach((server) => {
-                socket.join(server.id.toString(10))
+                socket.join(`${server.id}`)
             })
-            io.to(id).emit('userServersSuccess', userServers)
+            io.to(id).emit(SocketEvent.USER_SERVERS_SUCCESS, userServers)
         } catch (error: unknown) {
             const errorMessage: string = (error as Error).message
-            io.to(id).emit('userServersError', errorMessage)
+            io.to(id).emit(SocketEvent.USER_SERVERS_ERROR, errorMessage)
         }
     }
     const createServer = async function (data: {
@@ -51,11 +52,11 @@ const SocketHandlers = (
                 serverIcon
             )
 
-            socket.join(server.id.toString(10))
-            io.to(id).emit('createServerSuccess', server)
+            socket.join(`${server.id}`)
+            io.to(id).emit(SocketEvent.CREATE_SERVER_SUCCESS, server)
         } catch (error: unknown) {
             const errorMessage: string = (error as Error).message
-            io.to(id).emit('createServerError', errorMessage)
+            io.to(id).emit(SocketEvent.CREATE_SERVER_ERROR, errorMessage)
         }
     }
     const joinServer = async function (data: { serverId: number }) {
@@ -67,15 +68,15 @@ const SocketHandlers = (
                 user
             )
 
-            socket.join(serverFound.id.toString(10))
-            io.to(serverFound.id.toString(10)).emit('memberJoined', {
+            socket.join(`${serverFound.id}`)
+            io.to(`${serverFound.id}`).emit(SocketEvent.MEMBER_JOINED, {
                 user: { id: credentials.id, username: credentials.username },
                 serverId: serverFound.id,
             })
-            io.to(id).emit('joinServerSuccess', serverFound)
+            io.to(id).emit(SocketEvent.JOIN_SERVER_SUCCESS, serverFound)
         } catch (error: unknown) {
             const errorMessage: string = (error as Error).message
-            io.to(id).emit('joinServerError', errorMessage)
+            io.to(id).emit(SocketEvent.JOIN_SERVER_ERROR, errorMessage)
         }
     }
     const createChannel = async function (data: {
@@ -92,13 +93,13 @@ const SocketHandlers = (
                 channelDescription
             )
 
-            io.to(serverId.toString(10)).emit('createChannelSuccess', {
+            io.to(`${serverId}`).emit(SocketEvent.CREATE_CHANNEL_SUCCESS, {
                 serverId: serverId,
                 channel: channel,
             })
         } catch (error: unknown) {
             const errorMessage: string = (error as Error).message
-            io.to(id).emit('createChannelError', errorMessage)
+            io.to(id).emit(SocketEvent.CREATE_CHANNEL_ERROR, errorMessage)
         }
     }
     const messageServer = async function (data: {
@@ -115,14 +116,14 @@ const SocketHandlers = (
             }
             await serverServices.messageChannel(serverId, channelId, newMessage)
 
-            io.to(serverId.toString(10)).emit('messageServerSuccess', {
+            io.to(`${serverId}`).emit(SocketEvent.MESSAGE_SERVER_SUCCESS, {
                 serverId: serverId,
                 channelId: channelId,
                 message: newMessage,
             })
         } catch (error: unknown) {
             const errorMessage: string = (error as Error).message
-            io.to(id).emit('messageServerError', errorMessage)
+            io.to(id).emit(SocketEvent.MESSAGE_SERVER_ERROR, errorMessage)
         }
     }
     const leaveServer = async function (data: { serverId: number }) {
@@ -131,11 +132,14 @@ const SocketHandlers = (
             console.log('Server ID to leave: ' + serverId)
             const server = await serverServices.leaveServer(serverId, user)
 
-            socket.leave(server.toString())
-            io.to(id).emit('leaveServerSuccess', 'Left successfully')
+            socket.leave(`${server}`)
+            io.to(id).emit(
+                SocketEvent.LEAVE_SERVER_SUCCESS,
+                'Left successfully'
+            )
         } catch (error: unknown) {
             const errorMessage: string = (error as Error).message
-            io.to(id).emit('leaveServerError', errorMessage)
+            io.to(id).emit(SocketEvent.LEAVE_SERVER_ERROR, errorMessage)
         }
     }
     const deleteServer = async function (data: { serverId: number }) {
@@ -145,28 +149,30 @@ const SocketHandlers = (
             const server = await serverServices.deleteServer(serverId, user)
 
             server.forEach((u) =>
-                io.to(u.id.toString()).emit('deleteServerSuccess', serverId)
+                io
+                    .to(`${u.id}`)
+                    .emit(SocketEvent.DELETE_SERVER_SUCCESS, serverId)
             )
 
-            socket.leave(serverId.toString())
-            io.to(id).emit('deleteServerSuccess', serverId)
+            socket.leave(`${serverId}`)
+            io.to(id).emit(SocketEvent.DELETE_SERVER_SUCCESS, serverId)
         } catch (error: unknown) {
             const errorMessage: string = (error as Error).message
-            io.to(id).emit('deleteServerError', errorMessage)
+            io.to(id).emit(SocketEvent.DELETE_SERVER_ERROR, errorMessage)
         }
     }
     const disconnect = async function () {
         console.log(`Client disconnected from main`)
     }
 
-    socket.on('userServers', sendUserServers)
-    socket.on('createServer', createServer)
-    socket.on('joinServer', joinServer)
-    socket.on('createChannel', createChannel)
-    socket.on('messageServer', messageServer)
-    socket.on('leaveServer', leaveServer)
-    socket.on('deleteServer', deleteServer)
-    socket.on('disconnect', disconnect)
+    socket.on(SocketEvent.USER_SERVERS, sendUserServers)
+    socket.on(SocketEvent.CREATE_SERVER, createServer)
+    socket.on(SocketEvent.JOIN_SERVER, joinServer)
+    socket.on(SocketEvent.CREATE_CHANNEL, createChannel)
+    socket.on(SocketEvent.MESSAGE_SERVER, messageServer)
+    socket.on(SocketEvent.LEAVE_SERVER, leaveServer)
+    socket.on(SocketEvent.DELETE_SERVER, deleteServer)
+    socket.on(SocketEvent.DISCONNECT, disconnect)
 }
 
 export default SocketHandlers

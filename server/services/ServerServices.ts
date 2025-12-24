@@ -3,8 +3,8 @@ import { CustomServer } from '../domain/CustomServer'
 import { Message } from '../domain/Message'
 import { BadRequestError } from '../domain/error/Error'
 import { UserProfile } from '../domain/user/UserProfile'
-import { requireOrThrow } from '../middleware/requireOrThrow'
 import { ServerRepositoryInterface } from '../repository/server/ServerRepositoryInterface'
+import { requireOrThrow } from './utils/requireOrThrow'
 
 class ServerServices {
     servers: ServerRepositoryInterface

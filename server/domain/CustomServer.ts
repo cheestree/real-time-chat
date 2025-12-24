@@ -1,15 +1,8 @@
 import { CustomChannel } from './CustomChannel'
 import { UserProfile } from './user/UserProfile'
 
-let serialServer = 0
-
-function setAndIncrementServerID() {
-    serialServer += 1
-    return serialServer
-}
-
 export class CustomServer {
-    id: number = setAndIncrementServerID()
+    id: number
     name: string
     owner: UserProfile[]
     channels: CustomChannel[]
@@ -17,14 +10,16 @@ export class CustomServer {
     icon: string = ''
     description: string
     constructor(
+        id: number,
         serverName: string,
         description: string,
         owner: UserProfile,
         icon: string
     ) {
+        this.id = id
         this.name = serverName
         this.owner = [owner]
-        this.channels = [new CustomChannel('general', 'First channel')]
+        this.channels = [new CustomChannel(0, 'general', 'First channel')]
         this.users = [owner]
         this.description = description
         if (icon) this.icon = icon

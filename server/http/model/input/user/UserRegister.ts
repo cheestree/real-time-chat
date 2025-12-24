@@ -1,11 +1,13 @@
 import { checkSchema } from 'express-validator'
 
-export class UserLoginInputModel {
+export class UserRegister {
     username!: string
+    email!: string
     password!: string
 }
 
-export const UserLoginInputModelValidation = checkSchema({
+export const UserRegisterValidation = checkSchema({
     username: { isLength: { options: { min: 1, max: 16 } } },
+    email: { isEmail: true },
     password: { isLength: { options: { min: 1, max: 16 } } },
 })

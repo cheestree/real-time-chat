@@ -1,11 +1,11 @@
 import { UserDomain } from '../configs/UserDomain'
 import { BadRequestError } from '../domain/error/Error'
 import { Credentials } from '../domain/user/Credentials'
-import { UserLoginInputModel } from '../domain/user/input/UserLoginInputModel'
-import { UserRegisterInputModel } from '../domain/user/input/UserRegisterInputModel'
 import { UserProfile } from '../domain/user/UserProfile'
-import { requireOrThrow } from '../middleware/requireOrThrow'
+import { UserLogin } from '../http/model/input/user/UserLogin'
+import { UserRegister } from '../http/model/input/user/UserRegister'
 import { UserRepositoryInterface } from '../repository/user/UserRepositoryInterface'
+import { requireOrThrow } from './utils/requireOrThrow'
 
 class UserServices {
     private repo: UserRepositoryInterface
@@ -14,7 +14,7 @@ class UserServices {
         this.repo = repo
         this.domain = new UserDomain()
     }
-    async login(login: UserLoginInputModel): Promise<[string, object, object]> {
+    async login(login: UserLogin): Promise<[string, object, object]> {
         const user = await this.repo.getUserByUsername(login.username)
         requireOrThrow(
             BadRequestError,
@@ -52,7 +52,7 @@ class UserServices {
 
     }
     */
-    async register(register: UserRegisterInputModel): Promise<number> {
+    async register(register: UserRegister): Promise<number> {
         const hashedPassword = await this.domain.hashPassword(register.password)
         const id = await this.repo.createUser(
             register.username,

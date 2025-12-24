@@ -1,19 +1,26 @@
 import bodyParser from 'body-parser'
 import cookieParser from 'cookie-parser'
+import dotenv from 'dotenv'
 import express from 'express'
 import session from 'express-session'
 import { createServer } from 'http'
 import { Server, Socket } from 'socket.io'
 import SocketHandlers from './controller/ws/SocketHandlers'
-import ErrorHandler from './middleware/ErrorHandler'
-import { serverServices } from './routes/ServerRoutes'
-import { userRouter, userServices } from './routes/UserRoutes'
+import ErrorHandler from './http/middleware/ErrorHandler'
+import { serverRoutes } from './routes/ServerRoutes'
+import { userRoutes } from './routes/UserRoutes'
+
+dotenv.config()
+
+if (!process.env.SECRET || !process.env.PORT_SERVER || !process.env.HOST) {
+    throw new Error('Missing required environment variables')
+}
 
 const app = express()
 const httpServer = createServer(app)
 
 const sessionMiddleware = session({
-    secret: 'keyboard cat',
+    secret: process.env.SECRET,
     resave: false,
     saveUninitialized: true,
     cookie: { secure: true },
@@ -22,7 +29,7 @@ const sessionMiddleware = session({
 const io = new Server(httpServer, {
     maxHttpBufferSize: 3e8,
     cors: {
-        origin: 'http://localhost:3000',
+        origin: process.env.ORIGIN,
         credentials: true,
     },
 })
@@ -37,17 +44,21 @@ io.use(async (socket, next) => {
         for (const cookie of cookieArray) {
             const [name, value] = cookie.trim().split('=')
             if (name === 'token') {
-                socket.data = await userServices.checkAuth(value)
+                socket.data = await userRoutes.userServices.checkAuth(value)
                 break
             }
         }
     }
-
     next()
 })
 
 const onConnection = (socket: Socket) => {
-    SocketHandlers(io, socket, userServices, serverServices)
+    SocketHandlers(
+        io,
+        socket,
+        userRoutes.userServices,
+        serverRoutes.serverServices
+    )
 }
 
 io.on('connection', onConnection)
@@ -56,10 +67,11 @@ app.use(sessionMiddleware)
 app.use(bodyParser.json())
 app.use(cookieParser())
 
-app.use('/api', userRouter)
+app.use('/api', userRoutes.router)
 app.use(ErrorHandler)
 
 // Start the server
-const PORT = 4000
-httpServer.listen(PORT)
-console.log(`Server is running on http://localhost:${PORT}`)
+httpServer.listen(Number(process.env.PORT_SERVER), process.env.HOST)
+console.log(
+    `Server is running on http://${process.env.HOST}:${process.env.PORT_SERVER}`
+)

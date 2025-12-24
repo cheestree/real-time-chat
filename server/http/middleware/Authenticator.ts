@@ -1,5 +1,5 @@
 import { RequestHandler } from 'express'
-import UserServices from '../services/UserServices'
+import UserServices from '../../services/UserServices'
 
 const authenticatorWithServices = (
     userService: UserServices
