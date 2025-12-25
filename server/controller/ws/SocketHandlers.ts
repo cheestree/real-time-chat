@@ -1,11 +1,13 @@
 import type { Request } from 'express'
 import { Server, Socket } from 'socket.io'
+import { NotFoundError } from '../../domain/error/Error'
 import { Message } from '../../domain/message/Message'
 import { Credentials } from '../../domain/user/Credentials'
 import { UserProfile } from '../../domain/user/UserProfile'
 import { SocketEvent } from '../../http/events/SocketEvent'
 import serverServices from '../../services/ServerServices'
 import userServices from '../../services/UserServices'
+import { requireOrThrow } from '../../services/utils/requireOrThrow'
 
 const SocketHandlers = (
     io: Server,
@@ -112,7 +114,7 @@ const SocketHandlers = (
 
             const newMessage: Message = {
                 author: user.username,
-                message: message,
+                content: message,
             }
             await serverServices.messageChannel(serverId, channelId, newMessage)
 
@@ -146,12 +148,16 @@ const SocketHandlers = (
         try {
             const { serverId } = data
             console.log('Server ID to delete: ' + serverId)
-            const server = await serverServices.deleteServer(serverId, user)
+            requireOrThrow(
+                NotFoundError,
+                await serverServices.serverExists(serverId),
+                "Server doesn't exist."
+            )
+            const usersToNotify = await serverServices.getServerById(serverId)
+            await serverServices.deleteServer(serverId, user)
 
-            server.forEach((u) =>
-                io
-                    .to(`${u.id}`)
-                    .emit(SocketEvent.DELETE_SERVER_SUCCESS, serverId)
+            usersToNotify!.users.forEach((u) =>
+                io.to(`${u}`).emit(SocketEvent.DELETE_SERVER_SUCCESS, serverId)
             )
 
             socket.leave(`${serverId}`)

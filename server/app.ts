@@ -70,7 +70,7 @@ app.use('/api', userRoutes.router)
 app.use(ErrorHandler)
 
 // Start the server
-httpServer.listen(Number(process.env.PORT_SERVER), process.env.HOST)
+httpServer.listen(Number(process.env.SERVER_PORT), process.env.SERVER_HOST)
 console.log(
-    `Server is running on http://${process.env.HOST}:${process.env.PORT_SERVER}`
+    `Server is running on http://${process.env.SERVER_HOST}:${process.env.SERVER_PORT}`
 )

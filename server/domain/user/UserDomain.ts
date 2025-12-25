@@ -1,6 +1,6 @@
 import { compare, hash } from 'bcrypt'
 import { sign, verify } from 'jsonwebtoken'
-import { Credentials } from '../domain/user/Credentials'
+import { Credentials } from './Credentials'
 
 export class UserDomain {
     getExpireTime(hours: number = 2): number {

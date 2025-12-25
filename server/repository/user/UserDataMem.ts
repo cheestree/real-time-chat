@@ -1,8 +1,8 @@
 import { BadRequestError } from '../../domain/error/Error'
-import { UserRepositoryInterface } from '../../domain/interfaces/IUserRepository'
 import { User } from '../../domain/user/User'
+import { IUserRepository } from '../../repository/interfaces/IUserRepository'
 
-class UserDataMem implements UserRepositoryInterface {
+class UserDataMem implements IUserRepository {
     users: User[] = []
 
     async createUser(

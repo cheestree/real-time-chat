@@ -14,6 +14,12 @@ class ServerServices {
     getUserServers = async (user: UserProfile) => {
         return await this.servers.getUserServers(user.id)
     }
+    getServerById = async (serverId: number) => {
+        return await this.servers.getServerById(serverId)
+    }
+    serverExists = async (serverId: number) => {
+        return await this.servers.serverExists(serverId)
+    }
     createServer = async (
         serverName: string,
         serverDescription: string,
@@ -72,25 +78,20 @@ class ServerServices {
     ): Promise<Message> => {
         requireOrThrow(
             BadRequestError,
-            await this.servers.serverExists(serverId),
-            "Server doesn't exist."
-        )
-        requireOrThrow(
-            BadRequestError,
             await this.servers.channelExists(serverId, channelId),
             "Channel doesn't exist."
         )
         requireOrThrow(
             BadRequestError,
-            message.message.trim() != '',
-            "Message can't be an empty string."
+            message.content.trim() != '',
+            "Content can't be an empty string."
         )
-        return await this.servers.messageChannel(serverId, channelId, message)
+        return await this.servers.messageChannel(channelId, message)
     }
     leaveServer = async (
         serverId: number,
         user: UserProfile
-    ): Promise<number> => {
+    ): Promise<boolean> => {
         requireOrThrow(
             BadRequestError,
             await this.servers.serverExists(serverId),
@@ -101,7 +102,7 @@ class ServerServices {
     deleteServer = async (
         serverId: number,
         user: UserProfile
-    ): Promise<UserProfile[]> => {
+    ): Promise<boolean> => {
         requireOrThrow(
             BadRequestError,
             await this.servers.serverExists(serverId),

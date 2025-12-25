@@ -1,24 +1,24 @@
-import { CustomChannel } from '../../domain/channel/Channel'
+import { Channel } from '../../domain/channel/Channel'
 import { BadRequestError } from '../../domain/error/Error'
-import { ServerRepositoryInterface } from '../../domain/interfaces/IServerRepository'
 import { Message } from '../../domain/message/Message'
-import { CustomServer } from '../../domain/server/Server'
-import { UserProfile } from '../../domain/user/UserProfile'
+import { Server } from '../../domain/server/Server'
+import { IServerRepository } from '../../repository/interfaces/IServerRepository'
 
-class ServerDataMem implements ServerRepositoryInterface {
-    servers: CustomServer[] = []
+class ServerDataMem implements IServerRepository {
+    servers: Server[] = []
 
     async messageChannel(
-        serverId: number,
         channelId: number,
         message: Message
     ): Promise<Message> {
+        throw new Error('Method not implemented.')
+        /*
         for (let i = 0; i < this.servers.length; i++) {
             const server = this.servers[i]
             if (server.id == serverId) {
                 for (let j = 0; j < server.channels.length; j++) {
                     const channel = server.channels[j]
-                    if (channel.id == channelId) {
+                    if (channel == channelId) {
                         channel.messages.push(message)
                         return message
                     }
@@ -26,62 +26,59 @@ class ServerDataMem implements ServerRepositoryInterface {
             }
         }
         throw new Error('Server or channel not found')
+        */
     }
 
     async createServer(
         serverName: string,
         serverDescription: string,
-        owner: UserProfile,
+        ownerId: number,
         icon: string
-    ): Promise<CustomServer> {
+    ): Promise<Server> {
         const nServer = this.servers.length
-        const server = new CustomServer(
+        const server = new Server(
             nServer + 1,
             serverName,
             serverDescription,
-            owner,
+            ownerId,
             icon
         )
         this.servers.push(server)
         return server
     }
 
-    async getServerById(id: number): Promise<CustomServer> {
+    async getServerById(id: number): Promise<Server> {
         return this.servers.find((server) => server.id == id)!
     }
 
-    async addUserToServer(
-        serverId: number,
-        user: UserProfile
-    ): Promise<CustomServer> {
+    async addUserToServer(serverId: number, userId: number): Promise<Server> {
+        /*
         for (const srv of this.servers) {
             if (srv.id == serverId) {
                 srv.users.push(user)
                 return srv
             }
         }
+        */
         throw new BadRequestError('Server not found')
     }
 
-    async leaveServer(serverId: number, user: UserProfile): Promise<number> {
+    async leaveServer(serverId: number, userId: number): Promise<boolean> {
         for (const srv of this.servers) {
             if (srv.id == serverId) {
-                srv.users = srv.users.filter((u) => u.id != user.id)
-                return srv.id
+                srv.users = srv.users.filter((u) => u != userId)
+                return true
             }
         }
         throw new BadRequestError('Server not found')
     }
 
-    async deleteServer(
-        serverId: number,
-        user: UserProfile
-    ): Promise<UserProfile[]> {
+    async deleteServer(serverId: number, userId: number): Promise<boolean> {
         for (const srv of this.servers) {
-            if (srv.id == serverId && srv.owner.some((o) => o.id == user.id)) {
+            if (srv.id == serverId && srv.owner.some((o) => o == userId)) {
                 const server = srv
                 this.servers = this.servers.filter((s) => s.id != serverId)
-                return server.users
+                return true
             }
         }
         throw new BadRequestError('Server not found')
@@ -91,7 +88,7 @@ class ServerDataMem implements ServerRepositoryInterface {
         const server = this.servers.find((s) => s.id == serverId)
         if (!server) return false
         for (const channel of server.channels) {
-            if (channel.id === channelId) {
+            if (channel === channelId) {
                 return true
             }
         }
@@ -102,11 +99,13 @@ class ServerDataMem implements ServerRepositoryInterface {
         serverId: number,
         channelName: string,
         channelDescription: string
-    ): Promise<CustomChannel> {
+    ): Promise<Channel> {
+        throw new Error('Method not implemented.')
+        /*
         for (const server of this.servers) {
             if (server.id === serverId) {
                 const nChannels = server.channels.length
-                const channel = new CustomChannel(
+                const channel = new Channel(
                     nChannels + 1,
                     channelName,
                     channelDescription
@@ -116,6 +115,7 @@ class ServerDataMem implements ServerRepositoryInterface {
             }
         }
         throw new BadRequestError('Server not found')
+        */
     }
 
     async serverExists(serverId: number): Promise<boolean> {
@@ -127,7 +127,7 @@ class ServerDataMem implements ServerRepositoryInterface {
         return false
     }
 
-    async getServerByName(name: string): Promise<CustomServer> {
+    async getServerByName(name: string): Promise<Server> {
         for (const server of this.servers) {
             if (server.name == name) {
                 return server
@@ -136,8 +136,8 @@ class ServerDataMem implements ServerRepositoryInterface {
         throw new BadRequestError('Server not found')
     }
 
-    async getUserServers(user: UserProfile): Promise<CustomServer[]> {
-        return this.servers.filter((s) => s.users.some((u) => u.id == user.id))
+    async getUserServers(userId: number): Promise<Server[]> {
+        return this.servers.filter((s) => s.users.some((u) => u == userId))
     }
 }
 

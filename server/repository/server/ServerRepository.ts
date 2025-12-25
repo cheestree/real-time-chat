@@ -1,15 +1,28 @@
 import * as Cassandra from 'cassandra-driver'
+import dotenv from 'dotenv'
 import { MongoClient } from 'mongodb'
 import { Channel } from '../../domain/channel/Channel'
 import { Message } from '../../domain/message/Message'
 import { Server } from '../../domain/server/Server'
 import { IServerRepository } from '../interfaces/IServerRepository'
 
+interface ServerDocument {
+    id: number
+    name: string
+    description: string
+    ownerId: number
+    icon: string
+    users: number[]
+    channels: number[]
+}
+
 class ServerRepository implements IServerRepository {
     private mdb: MongoClient
     private cdb: Cassandra.Client
 
     constructor() {
+        dotenv.config()
+
         this.mdb = new MongoClient(process.env.MONGODB_URI!)
         this.cdb = new Cassandra.Client({
             contactPoints: (process.env.CASSANDRA_CONTACT_POINTS || 'localhost')
@@ -19,6 +32,13 @@ class ServerRepository implements IServerRepository {
                 process.env.CASSANDRA_LOCAL_DATACENTER || 'datacenter1',
             keyspace: process.env.CASSANDRA_KEYSPACE || 'rtchat',
         })
+    }
+
+    async getServerById(serverId: number): Promise<Server | undefined> {
+        return this.mdb
+            .db('rtchat')
+            .collection('servers')
+            .findOne({ id: serverId }) as unknown as Server
     }
 
     async addUserToServer(serverId: number, userId: number): Promise<Server> {
@@ -66,7 +86,7 @@ class ServerRepository implements IServerRepository {
         await this.mdb
             .db('rtchat')
             .collection('servers')
-            .updateOne({ id: serverId }, { $push: { channels: channelId } })
+            .updateOne({ id: serverId }, { $addToSet: { channels: channelId } })
         return channel
     }
 
@@ -96,26 +116,21 @@ class ServerRepository implements IServerRepository {
     }
 
     async messageChannel(
-        serverId: number,
         channelId: number,
         message: Message
     ): Promise<Message> {
         // Store message in Cassandra
+        const id = Cassandra.types.Uuid.random()
+        const timestamp = new Date()
         await this.cdb.execute(
-            'INSERT INTO messages (server_id, channel_id, sender_id, content, timestamp) VALUES (?, ?, ?, ?, ?)',
-            [
-                serverId,
-                channelId,
-                message.senderId,
-                message.content,
-                message.timestamp,
-            ]
+            'INSERT INTO messages (channel_id, id, username, message, created_at) VALUES (?, ?, ?, ?, ?)',
+            [channelId, id, message.content, timestamp]
         )
         // Optionally, also store in MongoDB for channel history
         await this.mdb
             .db('rtchat')
             .collection('channels')
-            .updateOne({ id: channelId }, { $push: { messages: message } })
+            .updateOne({ id: channelId }, { $addToSet: { messages: message } })
         return message
     }
 
@@ -138,7 +153,7 @@ class ServerRepository implements IServerRepository {
     async leaveServer(serverId: number, userId: number): Promise<boolean> {
         return await this.mdb
             .db('rtchat')
-            .collection('servers')
+            .collection<ServerDocument>('servers')
             .updateOne({ id: serverId }, { $pull: { users: userId } })
             .then(() => true)
             .catch(() => false)
