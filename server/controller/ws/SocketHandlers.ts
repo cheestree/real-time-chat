@@ -1,6 +1,6 @@
 import type { Request } from 'express'
 import { Server, Socket } from 'socket.io'
-import { Message } from '../../domain/Message'
+import { Message } from '../../domain/message/Message'
 import { Credentials } from '../../domain/user/Credentials'
 import { UserProfile } from '../../domain/user/UserProfile'
 import { SocketEvent } from '../../http/events/SocketEvent'

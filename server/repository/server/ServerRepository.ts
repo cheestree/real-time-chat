@@ -1,9 +1,9 @@
-import { CustomChannel } from '../../domain/CustomChannel'
-import { CustomServer } from '../../domain/CustomServer'
-import { Message } from '../../domain/Message'
+import { CustomChannel } from '../../domain/channel/Channel'
+import { ServerRepositoryInterface } from '../../domain/interfaces/IServerRepository'
+import { Message } from '../../domain/message/Message'
+import { CustomServer } from '../../domain/server/Server'
 import { User } from '../../domain/user/User'
 import { UserProfile } from '../../domain/user/UserProfile'
-import { ServerRepositoryInterface } from './ServerRepositoryInterface'
 
 class ServerRepository implements ServerRepositoryInterface {
     async addUserToServer(serverId: number, user: User): Promise<CustomServer> {
@@ -62,3 +62,5 @@ class ServerRepository implements ServerRepositoryInterface {
         return Promise.resolve([])
     }
 }
+
+export default ServerRepository

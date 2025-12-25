@@ -1,7 +1,7 @@
-import { Message } from './Message'
-import { UserProfile } from './user/UserProfile'
+import { Message } from '../message/Message'
+import { UserProfile } from '../user/UserProfile'
 
-export class CustomChannel {
+export class Channel {
     id: number
     name: string
     description: string

@@ -9,18 +9,17 @@ import SocketHandlers from './controller/ws/SocketHandlers'
 import ErrorHandler from './http/middleware/ErrorHandler'
 import { serverRoutes } from './routes/ServerRoutes'
 import { userRoutes } from './routes/UserRoutes'
+import { envCheck } from './utils/envCheck'
 
 dotenv.config()
 
-if (!process.env.SECRET || !process.env.PORT_SERVER || !process.env.HOST) {
-    throw new Error('Missing required environment variables')
-}
+envCheck()
 
 const app = express()
 const httpServer = createServer(app)
 
 const sessionMiddleware = session({
-    secret: process.env.SECRET,
+    secret: process.env.JWT_SECRET!,
     resave: false,
     saveUninitialized: true,
     cookie: { secure: true },

@@ -58,7 +58,8 @@ export default function ChatBottom({
             result.push(<span key={`part-${i}`}>{parts[i]}</span>) // Add the text part
             if (i < parts.length - 1) {
                 // Check if there is a URL at this index
-                const url = parts[i + 1].match(urlRegex) // Extract the URL
+                const nextPart = parts[i + 1]
+                const url = nextPart ? nextPart.match(urlRegex) : null // Extract the URL safely
                 if (url && url.length > 0) {
                     result.push(
                         // Add the URL as a link

@@ -2,23 +2,21 @@
 import next from '@next/eslint-plugin-next'
 import react from 'eslint-plugin-react'
 import hooks from 'eslint-plugin-react-hooks'
-import { defineConfig } from 'eslint/config'
 import globals from 'globals'
 import tseslint from 'typescript-eslint'
 
-export default defineConfig([
+export default [
     {
         ignores: ['dist', 'node_modules', '.next'],
     },
     ...tseslint.configs.recommended,
     {
+        files: ['**/*.{js,jsx,ts,tsx}'],
         plugins: {
-            next,
+            '@next/next': next,
+            react: react,
+            'react-hooks': hooks,
         },
-        ...next.configs['core-web-vitals'],
-    },
-    {
-        plugins: { react, 'react-hooks': hooks },
         languageOptions: {
             ecmaVersion: 2023,
             sourceType: 'module',
@@ -30,11 +28,11 @@ export default defineConfig([
             },
         },
         rules: {
-            '@typescript-eslint/no-unused-vars': 'warn',
-            'no-unused-vars': 'warn',
-
+            ...next.configs['recommended'].rules,
+            ...next.configs['core-web-vitals'].rules,
+            '@typescript-eslint/no-unused-vars': 'off',
             'react-hooks/rules-of-hooks': 'error',
             'react-hooks/exhaustive-deps': 'warn',
         },
     },
-])
+]

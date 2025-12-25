@@ -1,10 +1,10 @@
-import { UserDomain } from '../configs/UserDomain'
 import { BadRequestError } from '../domain/error/Error'
+import { UserRepositoryInterface } from '../domain/interfaces/IUserRepository'
 import { Credentials } from '../domain/user/Credentials'
+import { UserDomain } from '../domain/user/UserDomain'
 import { UserProfile } from '../domain/user/UserProfile'
 import { UserLogin } from '../http/model/input/user/UserLogin'
 import { UserRegister } from '../http/model/input/user/UserRegister'
-import { UserRepositoryInterface } from '../repository/user/UserRepositoryInterface'
 import { requireOrThrow } from './utils/requireOrThrow'
 
 class UserServices {
@@ -24,7 +24,7 @@ class UserServices {
 
         const verifiyPassword = await this.domain.verifyPassword(
             login.password,
-            user.password
+            user!.password
         )
 
         requireOrThrow(
@@ -34,7 +34,7 @@ class UserServices {
         )
 
         const tokenPromise = await this.domain.createToken(
-            user.id,
+            user!.id,
             login.username,
             login.password,
             this.domain.getExpireTime()
@@ -45,7 +45,11 @@ class UserServices {
             secure: true,
             maxAge: expireTime,
         }
-        return [tokenPromise, options, { id: user.id, username: user.username }]
+        return [
+            tokenPromise,
+            options,
+            { id: user!.id, username: user!.username },
+        ]
     }
     /*
     async logout(res): Promise<boolean> {
@@ -64,7 +68,7 @@ class UserServices {
             id !== undefined,
             'Something happened while registering'
         )
-        return id
+        return id!
     }
     async checkAuth(token: string): Promise<Credentials | undefined> {
         return await this.domain.validateToken(token)
@@ -76,7 +80,7 @@ class UserServices {
             id !== undefined,
             'Something happened while fetching user'
         )
-        return { id: user.id, username: user.username }
+        return { id: user!.id, username: user!.username }
     }
 }
 

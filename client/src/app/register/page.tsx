@@ -2,7 +2,7 @@
 
 import { useAuth } from '@/components/context/AuthContext'
 import { Button, FormGroup, TextField } from '@mui/material'
-import { useRouter } from 'next/router'
+import { useRouter } from 'next/navigation'
 import { FormEvent, useEffect, useState } from 'react'
 import styles from './register.module.css'
 

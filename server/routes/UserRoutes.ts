@@ -5,7 +5,7 @@ import { ValidateInput } from '../http/middleware/ValidateInput'
 import { UserLoginValidation } from '../http/model/input/user/UserLogin'
 import { UserRegisterValidation } from '../http/model/input/user/UserRegister'
 import { Path } from '../http/path/Path'
-import UserDataMem from '../repository/user/UserDataMem'
+import { createUserRepository } from '../repository/user/createUserRepository'
 import UserServices from '../services/UserServices'
 
 class UserRoutes {
@@ -14,8 +14,7 @@ class UserRoutes {
     private userController: UserController
 
     constructor() {
-        const userRepository = new UserDataMem()
-        //  const userRepository = new UserRepository();
+        const userRepository = createUserRepository()
         this.userServices = new UserServices(userRepository)
         this.userController = new UserController(this.userServices)
         this.initRoutes()

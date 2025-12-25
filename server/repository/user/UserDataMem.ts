@@ -1,6 +1,6 @@
 import { BadRequestError } from '../../domain/error/Error'
+import { UserRepositoryInterface } from '../../domain/interfaces/IUserRepository'
 import { User } from '../../domain/user/User'
-import { UserRepositoryInterface } from './UserRepositoryInterface'
 
 class UserDataMem implements UserRepositoryInterface {
     users: User[] = []
@@ -28,7 +28,7 @@ class UserDataMem implements UserRepositoryInterface {
         throw new BadRequestError('UserProfile not found')
     }
 
-    async getUserByUsername(username: string): Promise<User> {
+    async getUserByUsername(username: string): Promise<User | undefined> {
         const user = this.users.find((user) => user.username == username)
         if (user) {
             return user

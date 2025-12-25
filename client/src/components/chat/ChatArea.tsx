@@ -13,17 +13,19 @@ export default function ChatArea() {
 
     return (
         <div className={styles.mainWindow}>
-            {servers[currentServer] && (
+            {servers[currentServer] && servers[currentServer].channels[currentChannel] && (
                 <ChatTop
-                    channel={servers[currentServer].channels[currentChannel]}
+                    channel={servers[currentServer].channels[currentChannel]!}
                     showMembersToggle={() => setShowMembers(!showMembers)}
                 />
             )}
-            <ChatBottom
-                currentServer={servers[currentServer]}
-                currentChannel={currentChannel}
-                isShowMembers={showMembers}
-            />
+            {servers[currentServer] && servers[currentServer].channels[currentChannel] && (
+                <ChatBottom
+                    currentServer={servers[currentServer]}
+                    currentChannel={currentChannel}
+                    isShowMembers={showMembers}
+                />
+            )}
         </div>
     )
 }

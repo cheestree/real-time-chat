@@ -1,7 +1,7 @@
 import { Router } from 'express'
 import ServerController from '../controller/ServerController'
 import { Path } from '../http/path/Path'
-import ServerDataMem from '../repository/server/ServerDataMem'
+import { createServerRepository } from '../repository/server/createServerRepository'
 import ServerServices from '../services/ServerServices'
 
 class ServerRoutes {
@@ -10,10 +10,9 @@ class ServerRoutes {
     private serverController: ServerController
 
     constructor() {
-        const serverRepository = new ServerDataMem()
-        //  const serverRepository = new ServerRepository();
+        const serverRepository = createServerRepository()
         this.serverServices = new ServerServices(serverRepository)
-        this.serverController = new ServerController()
+        this.serverController = new ServerController(this.serverServices)
         this.initRoutes()
     }
 

@@ -1,9 +1,9 @@
-import { CustomChannel } from '../../domain/CustomChannel'
-import { CustomServer } from '../../domain/CustomServer'
+import { CustomChannel } from '../../domain/channel/Channel'
 import { BadRequestError } from '../../domain/error/Error'
-import { Message } from '../../domain/Message'
+import { ServerRepositoryInterface } from '../../domain/interfaces/IServerRepository'
+import { Message } from '../../domain/message/Message'
+import { CustomServer } from '../../domain/server/Server'
 import { UserProfile } from '../../domain/user/UserProfile'
-import { ServerRepositoryInterface } from './ServerRepositoryInterface'
 
 class ServerDataMem implements ServerRepositoryInterface {
     servers: CustomServer[] = []

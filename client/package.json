@@ -3,9 +3,12 @@
     "version": "0.1.0",
     "private": true,
     "scripts": {
-        "dev": "npx prettier . --write && npx eslint . && next dev",
-        "build": "npx prettier . --write && npx eslint . && next build",
-        "start": "npx prettier . --write && npx eslint . && next start"
+        "dev": "next dev",
+        "build": "next build",
+        "start": "next start",
+        "lint": "next lint",
+        "format": "prettier --write .",
+        "format:check": "prettier --check ."
     },
     "dependencies": {
         "@emotion/react": "^11.14.0",

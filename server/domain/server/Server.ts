@@ -1,11 +1,11 @@
-import { CustomChannel } from './CustomChannel'
-import { UserProfile } from './user/UserProfile'
+import { Channel } from '../channel/Channel'
+import { UserProfile } from '../user/UserProfile'
 
-export class CustomServer {
+export class Server {
     id: number
     name: string
     owner: UserProfile[]
-    channels: CustomChannel[]
+    channels: Channel[]
     users: UserProfile[]
     icon: string = ''
     description: string
@@ -19,7 +19,7 @@ export class CustomServer {
         this.id = id
         this.name = serverName
         this.owner = [owner]
-        this.channels = [new CustomChannel(0, 'general', 'First channel')]
+        this.channels = [new Channel(0, 'general', 'First channel')]
         this.users = [owner]
         this.description = description
         if (icon) this.icon = icon

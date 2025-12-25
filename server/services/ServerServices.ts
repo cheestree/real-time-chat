@@ -1,9 +1,9 @@
-import { CustomChannel } from '../domain/CustomChannel'
-import { CustomServer } from '../domain/CustomServer'
-import { Message } from '../domain/Message'
+import { CustomChannel } from '../domain/channel/Channel'
 import { BadRequestError } from '../domain/error/Error'
+import { ServerRepositoryInterface } from '../domain/interfaces/IServerRepository'
+import { Message } from '../domain/message/Message'
+import { CustomServer } from '../domain/server/Server'
 import { UserProfile } from '../domain/user/UserProfile'
-import { ServerRepositoryInterface } from '../repository/server/ServerRepositoryInterface'
 import { requireOrThrow } from './utils/requireOrThrow'
 
 class ServerServices {
