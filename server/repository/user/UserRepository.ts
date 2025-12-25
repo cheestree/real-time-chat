@@ -1,10 +1,10 @@
 import { Kysely, PostgresDialect } from 'kysely'
 import { Pool } from 'pg'
-import { UserRepositoryInterface } from '../../domain/interfaces/IUserRepository'
+import { IUserRepository } from '../../repository/interfaces/IUserRepository'
 import { Database } from '../Database'
 import { UserSelectable } from '../selectables/UserSelectable'
 
-class UserRepository implements UserRepositoryInterface {
+class UserRepository implements IUserRepository {
     private db: Kysely<Database>
 
     constructor() {

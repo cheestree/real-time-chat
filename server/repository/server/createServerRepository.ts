@@ -1,4 +1,3 @@
-import ServerDataMem from './ServerDataMem'
 import ServerRepository from './ServerRepository'
 
 export function createServerRepository() {
@@ -7,6 +6,6 @@ export function createServerRepository() {
     } else if (process.env.NODE_ENV === 'dev') {
         return new ServerRepository()
     } else {
-        return new ServerDataMem()
+        return new ServerRepository()
     }
 }

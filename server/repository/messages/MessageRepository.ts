@@ -1,0 +1,1 @@
+class MessageRepository implements IMessageRepository {}

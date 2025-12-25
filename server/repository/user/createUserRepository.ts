@@ -1,4 +1,3 @@
-import UserDataMem from './UserDataMem'
 import UserRepository from './UserRepository'
 
 export function createUserRepository() {
@@ -7,6 +6,6 @@ export function createUserRepository() {
     } else if (process.env.NODE_ENV === 'dev') {
         return new UserRepository()
     } else {
-        return new UserDataMem()
+        return new UserRepository()
     }
 }

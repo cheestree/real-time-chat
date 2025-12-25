@@ -1,16 +1,16 @@
 import { BadRequestError } from '../domain/error/Error'
-import { UserRepositoryInterface } from '../domain/interfaces/IUserRepository'
 import { Credentials } from '../domain/user/Credentials'
 import { UserDomain } from '../domain/user/UserDomain'
 import { UserProfile } from '../domain/user/UserProfile'
 import { UserLogin } from '../http/model/input/user/UserLogin'
 import { UserRegister } from '../http/model/input/user/UserRegister'
+import { IUserRepository } from '../repository/interfaces/IUserRepository'
 import { requireOrThrow } from './utils/requireOrThrow'
 
 class UserServices {
-    private repo: UserRepositoryInterface
+    private repo: IUserRepository
     private domain: UserDomain
-    constructor(repo: UserRepositoryInterface) {
+    constructor(repo: IUserRepository) {
         this.repo = repo
         this.domain = new UserDomain()
     }

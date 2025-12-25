@@ -1,26 +1,24 @@
-import { Channel } from '../channel/Channel'
-import { UserProfile } from '../user/UserProfile'
-
 export class Server {
     id: number
     name: string
-    owner: UserProfile[]
-    channels: Channel[]
-    users: UserProfile[]
+    owner: number[]
+    channels: number[]
+    users: number[]
     icon: string = ''
     description: string
     constructor(
         id: number,
         serverName: string,
         description: string,
-        owner: UserProfile,
-        icon: string
+        ownerId: number,
+        icon: string,
+        channelIds: number[] = []
     ) {
         this.id = id
         this.name = serverName
-        this.owner = [owner]
-        this.channels = [new Channel(0, 'general', 'First channel')]
-        this.users = [owner]
+        this.owner = [ownerId]
+        this.channels = channelIds.length > 0 ? channelIds : []
+        this.users = [ownerId]
         this.description = description
         if (icon) this.icon = icon
     }

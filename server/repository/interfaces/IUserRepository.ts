@@ -1,6 +1,6 @@
 import { User } from '../user/User'
 
-export interface UserRepositoryInterface {
+export interface IUserRepository {
     getUserByUsername: (username: string) => Promise<User | undefined>
     getUserById: (id: number) => Promise<User | undefined>
     createUser: (

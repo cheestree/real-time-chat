@@ -1,34 +1,98 @@
-import { CustomChannel } from '../../domain/channel/Channel'
-import { ServerRepositoryInterface } from '../../domain/interfaces/IServerRepository'
+import * as Cassandra from 'cassandra-driver'
+import { MongoClient } from 'mongodb'
+import { Channel } from '../../domain/channel/Channel'
 import { Message } from '../../domain/message/Message'
-import { CustomServer } from '../../domain/server/Server'
-import { User } from '../../domain/user/User'
-import { UserProfile } from '../../domain/user/UserProfile'
+import { Server } from '../../domain/server/Server'
+import { IServerRepository } from '../interfaces/IServerRepository'
 
-class ServerRepository implements ServerRepositoryInterface {
-    async addUserToServer(serverId: number, user: User): Promise<CustomServer> {
-        return undefined
+class ServerRepository implements IServerRepository {
+    private mdb: MongoClient
+    private cdb: Cassandra.Client
+
+    constructor() {
+        this.mdb = new MongoClient(process.env.MONGODB_URI!)
+        this.cdb = new Cassandra.Client({
+            contactPoints: (process.env.CASSANDRA_CONTACT_POINTS || 'localhost')
+                .split(',')
+                .map((cp) => cp.trim()),
+            localDataCenter:
+                process.env.CASSANDRA_LOCAL_DATACENTER || 'datacenter1',
+            keyspace: process.env.CASSANDRA_KEYSPACE || 'rtchat',
+        })
+    }
+
+    async addUserToServer(serverId: number, userId: number): Promise<Server> {
+        await this.mdb
+            .db('rtchat')
+            .collection('servers')
+            .updateOne({ id: serverId }, { $addToSet: { users: userId } })
+        const updated = await this.mdb
+            .db('rtchat')
+            .collection('servers')
+            .findOne({ id: serverId })
+        return updated as unknown as Server
     }
 
     async channelExists(serverId: number, channelId: number): Promise<boolean> {
-        return undefined
+        const server = await this.mdb
+            .db('rtchat')
+            .collection('servers')
+            .findOne({ id: serverId })
+        if (!server) return false
+        return (
+            Array.isArray(server.channels) &&
+            server.channels.includes(channelId)
+        )
     }
 
     async createChannel(
         serverId: number,
         channelName: string,
         channelDescription: string
-    ): Promise<CustomChannel> {
-        return undefined
+    ): Promise<Channel> {
+        // Generate a numeric channelId (auto-increment simulation)
+        const channelsCol = this.mdb.db('rtchat').collection('channels')
+        const channelCount = await channelsCol.countDocuments()
+        const channelId = channelCount + 1
+        const channel: Channel = {
+            id: channelId,
+            name: channelName,
+            description: channelDescription,
+            messages: [],
+            blacklist: [],
+            whitelist: [],
+        } as Channel
+        await channelsCol.insertOne(channel)
+        await this.mdb
+            .db('rtchat')
+            .collection('servers')
+            .updateOne({ id: serverId }, { $push: { channels: channelId } })
+        return channel
     }
 
     async createServer(
         serverName: string,
         serverDescription: string,
-        owner: User,
+        ownerId: number,
         icon: string
-    ): Promise<CustomServer> {
-        return undefined
+    ): Promise<Server> {
+        return this.mdb
+            .db('rtchat')
+            .collection('servers')
+            .insertOne({
+                name: serverName,
+                description: serverDescription,
+                ownerId: ownerId,
+                icon: icon,
+                users: [ownerId],
+                channels: [],
+            })
+            .then((result) =>
+                this.mdb
+                    .db('rtchat')
+                    .collection('servers')
+                    .findOne({ _id: result.insertedId })
+            ) as unknown as Server
     }
 
     async messageChannel(
@@ -36,30 +100,71 @@ class ServerRepository implements ServerRepositoryInterface {
         channelId: number,
         message: Message
     ): Promise<Message> {
-        return undefined
+        // Store message in Cassandra
+        await this.cdb.execute(
+            'INSERT INTO messages (server_id, channel_id, sender_id, content, timestamp) VALUES (?, ?, ?, ?, ?)',
+            [
+                serverId,
+                channelId,
+                message.senderId,
+                message.content,
+                message.timestamp,
+            ]
+        )
+        // Optionally, also store in MongoDB for channel history
+        await this.mdb
+            .db('rtchat')
+            .collection('channels')
+            .updateOne({ id: channelId }, { $push: { messages: message } })
+        return message
     }
 
     async serverExists(serverId: number): Promise<boolean> {
-        return false
+        return (
+            this.mdb
+                .db('rtchat')
+                .collection('servers')
+                .findOne({ id: serverId }) != null
+        )
     }
 
-    async getServerByName(name: string): Promise<CustomServer> {
-        return undefined
+    async getServerByName(serverName: string): Promise<Server | undefined> {
+        return this.mdb
+            .db('rtchat')
+            .collection('servers')
+            .findOne({ name: serverName }) as unknown as Server
     }
 
-    async leaveServer(serverId: number, user: UserProfile): Promise<number> {
-        return false
+    async leaveServer(serverId: number, userId: number): Promise<boolean> {
+        return await this.mdb
+            .db('rtchat')
+            .collection('servers')
+            .updateOne({ id: serverId }, { $pull: { users: userId } })
+            .then(() => true)
+            .catch(() => false)
     }
 
-    async deleteServer(
-        serverId: number,
-        user: UserProfile
-    ): Promise<UserProfile[]> {
-        return Promise.resolve([])
+    async deleteServer(serverId: number, ownerId: number): Promise<boolean> {
+        // Find server and get user list
+        const server = await this.mdb
+            .db('rtchat')
+            .collection('servers')
+            .findOne({ id: serverId, ownerId: ownerId })
+        if (!server) return false
+        const users = server.users || []
+        await this.mdb
+            .db('rtchat')
+            .collection('servers')
+            .deleteOne({ id: serverId, ownerId: ownerId })
+        return true
     }
 
-    async getUserServers(user: UserProfile): Promise<CustomServer[]> {
-        return Promise.resolve([])
+    async getUserServers(userId: number): Promise<Server[]> {
+        return this.mdb
+            .db('rtchat')
+            .collection('servers')
+            .find({ users: { $in: [userId] } })
+            .toArray() as unknown as Server[]
     }
 }
 

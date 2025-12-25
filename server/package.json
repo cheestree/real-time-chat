@@ -4,7 +4,10 @@
     "description": "",
     "main": "app.ts",
     "scripts": {
-        "dev": "npx prettier . --write && npx eslint . --ext .js,.jsx,.ts,.tsx --ignore-pattern .next && npx ts-node app.ts"
+        "format": "npx prettier . --write",
+        "lint": "npx eslint . --ext .js,.jsx,.ts,.tsx --ignore-pattern .next",
+        "start": "npx ts-node app.ts",
+        "dev": "npm run format && npm run lint && npm run start"
     },
     "author": "",
     "license": "ISC",
@@ -16,6 +19,7 @@
         "@types/pg": "^8.16.0",
         "bcrypt": "^5.1.1",
         "body-parser": "^1.20.4",
+        "cassandra-driver": "^4.8.0",
         "cookie-parser": "^1.4.7",
         "dotenv": "^17.2.3",
         "express": "^4.22.1",
@@ -23,6 +27,7 @@
         "express-validator": "^7.3.1",
         "jsonwebtoken": "^9.0.3",
         "kysely": "^0.28.9",
+        "mongodb": "^7.0.0",
         "pg": "^8.16.3",
         "socket.io": "^4.8.1"
     },
