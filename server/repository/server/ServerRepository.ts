@@ -1,3 +1,4 @@
+import { UUID } from 'bson'
 import * as Cassandra from 'cassandra-driver'
 import dotenv from 'dotenv'
 import { MongoClient } from 'mongodb'
@@ -32,6 +33,15 @@ class ServerRepository implements IServerRepository {
                 process.env.CASSANDRA_LOCAL_DATACENTER || 'datacenter1',
             keyspace: process.env.CASSANDRA_KEYSPACE || 'rtchat',
         })
+    }
+    userExists(userId: UUID): Promise<boolean> {
+        throw new Error('Method not implemented.')
+    }
+    isServerOwner(serverId: number, userId: number): Promise<boolean> {
+        throw new Error('Method not implemented.')
+    }
+    containsUser(serverId: number, userId: number): Promise<boolean> {
+        throw new Error('Method not implemented.')
     }
 
     async getServerById(serverId: number): Promise<Server | undefined> {

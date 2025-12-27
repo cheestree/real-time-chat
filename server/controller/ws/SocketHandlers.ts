@@ -2,8 +2,8 @@ import type { Request } from 'express'
 import { Server, Socket } from 'socket.io'
 import { NotFoundError } from '../../domain/error/Error'
 import { Message } from '../../domain/message/Message'
+import { AuthenticatedUser } from '../../domain/user/AuthenticatedUser'
 import { Credentials } from '../../domain/user/Credentials'
-import { UserProfile } from '../../domain/user/UserProfile'
 import { SocketEvent } from '../../http/events/SocketEvent'
 import serverServices from '../../services/ServerServices'
 import userServices from '../../services/UserServices'
@@ -22,14 +22,17 @@ const SocketHandlers = (
 
     const id = socket.id
     const credentials: Credentials = socket.data
-    const user: UserProfile = {
+    const authenticatedUser: AuthenticatedUser = {
+        internalId: credentials.internalId,
         id: credentials.id,
         username: credentials.username,
     }
 
     const sendUserServers = async () => {
         try {
-            const userServers = await serverServices.getUserServers(user)
+            const userServers = await serverServices.getUserServers(
+                authenticatedUser.id
+            )
             userServers.forEach((server) => {
                 socket.join(`${server.id}`)
             })
@@ -50,7 +53,7 @@ const SocketHandlers = (
             const server = await serverServices.createServer(
                 serverName,
                 serverDescription,
-                user,
+                authenticatedUser,
                 serverIcon
             )
 
@@ -67,7 +70,7 @@ const SocketHandlers = (
 
             const serverFound = await serverServices.addUserToServer(
                 serverId,
-                user
+                authenticatedUser
             )
 
             socket.join(`${serverFound.id}`)
@@ -113,7 +116,7 @@ const SocketHandlers = (
             const { serverId, channelId, message } = data
 
             const newMessage: Message = {
-                author: user.username,
+                author: authenticatedUser.username,
                 content: message,
             }
             await serverServices.messageChannel(serverId, channelId, newMessage)
@@ -132,7 +135,10 @@ const SocketHandlers = (
         try {
             const { serverId } = data
             console.log('Server ID to leave: ' + serverId)
-            const server = await serverServices.leaveServer(serverId, user)
+            const server = await serverServices.leaveServer(
+                serverId,
+                authenticatedUser
+            )
 
             socket.leave(`${server}`)
             io.to(id).emit(
@@ -154,7 +160,7 @@ const SocketHandlers = (
                 "Server doesn't exist."
             )
             const usersToNotify = await serverServices.getServerById(serverId)
-            await serverServices.deleteServer(serverId, user)
+            await serverServices.deleteServer(serverId, authenticatedUser)
 
             usersToNotify!.users.forEach((u) =>
                 io.to(`${u}`).emit(SocketEvent.DELETE_SERVER_SUCCESS, serverId)

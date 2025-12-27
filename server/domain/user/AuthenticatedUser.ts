@@ -1,6 +1,5 @@
-export type Credentials = {
+export type AuthenticatedUser = {
     internalId: number
     id: string
     username: string
-    password: string
 }

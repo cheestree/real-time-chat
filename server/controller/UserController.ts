@@ -37,10 +37,9 @@ class UserController {
     }
     checkAuth: RequestHandler = async (req, res, next) => {
         try {
-            const user = await this.services.getUserById(
-                parseInt(<string>res.getHeader('user'))
-            )
-            res.status(200).json(user)
+            const authenticatedUser = (req as any).authenticatedUser
+
+            res.status(200).json(authenticatedUser)
         } catch (error) {
             next(error)
         }

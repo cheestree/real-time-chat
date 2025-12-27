@@ -12,15 +12,15 @@ const authenticatorWithServices = (
         const token: string = req.cookies.token
 
         try {
-            const credential = await userService.checkAuth(token)
-            if (credential) {
-                res.setHeader('user', credential.id)
+            const authenticatedUser = await userService.checkAuth(token)
+            if (authenticatedUser) {
+                ;(req as any).authenticatedUser = authenticatedUser
                 return next()
             }
-            return res.send('Token invalid')
+            return res.status(401).send('Token invalid')
         } catch (err) {
             console.log(err)
-            return res.send(err)
+            return res.status(401).send('Authentication error')
         }
     }
 }

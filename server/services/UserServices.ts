@@ -1,5 +1,5 @@
 import { BadRequestError } from '../domain/error/Error'
-import { Credentials } from '../domain/user/Credentials'
+import { AuthenticatedUser } from '../domain/user/AuthenticatedUser'
 import { UserDomain } from '../domain/user/UserDomain'
 import { UserProfile } from '../domain/user/UserProfile'
 import { UserLogin } from '../http/model/input/user/UserLogin'
@@ -34,6 +34,7 @@ class UserServices {
         )
 
         const tokenPromise = await this.domain.createToken(
+            user!.internalId,
             user!.id,
             login.username,
             login.password,
@@ -56,13 +57,13 @@ class UserServices {
 
     }
     */
-    async register(register: UserRegister): Promise<number> {
+    async register(register: UserRegister): Promise<string> {
         const hashedPassword = await this.domain.hashPassword(register.password)
-        const id = await this.repo.createUser(
-            register.username,
-            hashedPassword,
-            register.email
-        )
+        const id = await this.repo.createUser({
+            username: register.username,
+            email: register.email,
+            password: hashedPassword,
+        })
         requireOrThrow(
             BadRequestError,
             id !== undefined,
@@ -70,8 +71,24 @@ class UserServices {
         )
         return id!
     }
-    async checkAuth(token: string): Promise<Credentials | undefined> {
-        return await this.domain.validateToken(token)
+    async checkAuth(token: string): Promise<AuthenticatedUser | undefined> {
+        const credentials = await this.domain.validateToken(token)
+        requireOrThrow(
+            BadRequestError,
+            token !== undefined,
+            'Something happened while validating token'
+        )
+        const user = await this.repo.getUserById(credentials!.internalId)
+        requireOrThrow(
+            BadRequestError,
+            user !== undefined,
+            'Something happened while fetching user'
+        )
+        return {
+            internalId: user!.internalId,
+            id: user!.id,
+            username: user!.username,
+        }
     }
     async getUserById(id: number): Promise<UserProfile> {
         const user = await this.repo.getUserById(id)

@@ -1,11 +1,10 @@
-import { User } from '../user/User'
+import { UserInsertable } from '../Database'
+import { UserSelectable } from '../selectables/UserSelectable'
 
 export interface IUserRepository {
-    getUserByUsername: (username: string) => Promise<User | undefined>
-    getUserById: (id: number) => Promise<User | undefined>
-    createUser: (
-        username: string,
-        password: string,
-        email: string
-    ) => Promise<number | undefined>
+    getUserByUsername: (username: string) => Promise<UserSelectable | undefined>
+    getUserById: (id: number) => Promise<UserSelectable | undefined>
+    getUserByUUID: (uuid: string) => Promise<UserSelectable | undefined>
+    createUser: (user: UserInsertable) => Promise<string | undefined>
+    userExists: (id: string) => Promise<boolean>
 }

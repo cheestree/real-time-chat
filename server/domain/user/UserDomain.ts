@@ -8,13 +8,15 @@ export class UserDomain {
         return hours * millisecondsInHour
     }
     async createToken(
-        id: number,
+        internalId: number,
+        id: string,
         username: string,
         password: string,
         expiration: number
     ): Promise<string> {
         const secretKey: string = process.env.JWT_SECRET || 'my-secret'
         const payload: Credentials = {
+            internalId: internalId,
             id: id,
             username: username,
             password: password,

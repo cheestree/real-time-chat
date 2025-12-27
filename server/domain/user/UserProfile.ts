@@ -1,4 +1,4 @@
 export type UserProfile = {
-    id: number
+    id: string
     username: string
 }

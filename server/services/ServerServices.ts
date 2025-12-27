@@ -2,17 +2,26 @@ import { Channel } from '../domain/channel/Channel'
 import { BadRequestError } from '../domain/error/Error'
 import { Message } from '../domain/message/Message'
 import { Server } from '../domain/server/Server'
-import { UserProfile } from '../domain/user/UserProfile'
+import { AuthenticatedUser } from '../domain/user/AuthenticatedUser'
 import { IServerRepository } from '../repository/interfaces/IServerRepository'
+import { IUserRepository } from '../repository/interfaces/IUserRepository'
 import { requireOrThrow } from './utils/requireOrThrow'
 
 class ServerServices {
     servers: IServerRepository
-    constructor(serverRepo: IServerRepository) {
+    users: IUserRepository
+    constructor(serverRepo: IServerRepository, userRepo: IUserRepository) {
         this.servers = serverRepo
+        this.users = userRepo
     }
-    getUserServers = async (user: UserProfile) => {
-        return await this.servers.getUserServers(user.id)
+    getUserServers = async (userId: string) => {
+        requireOrThrow(
+            BadRequestError,
+            await this.users.userExists(userId),
+            'User does not exist.'
+        )
+        const user = await this.users.getUserByUUID(userId)
+        return await this.servers.getUserServers(user!.internalId)
     }
     getServerById = async (serverId: number) => {
         return await this.servers.getServerById(serverId)
@@ -23,7 +32,7 @@ class ServerServices {
     createServer = async (
         serverName: string,
         serverDescription: string,
-        owner: UserProfile,
+        user: AuthenticatedUser,
         icon: string
     ): Promise<Server> => {
         const serverNameTrimmed = serverName.trim()
@@ -36,7 +45,7 @@ class ServerServices {
         return await this.servers.createServer(
             serverNameTrimmed,
             serverDescriptionTrimmed,
-            owner.id,
+            user.internalId,
             icon
         )
     }
@@ -62,14 +71,25 @@ class ServerServices {
     }
     addUserToServer = async (
         serverId: number,
-        user: UserProfile
+        authenticatedUser: AuthenticatedUser
     ): Promise<Server> => {
         requireOrThrow(
             BadRequestError,
-            serverId > 0,
-            "Server ID can't be a negative number."
+            await this.servers.serverExists(serverId),
+            "Server doesn't exist."
         )
-        return await this.servers.addUserToServer(serverId, user.id)
+        requireOrThrow(
+            BadRequestError,
+            (await this.servers.containsUser(
+                serverId,
+                authenticatedUser.internalId
+            )) === false,
+            'User is already a member of the server.'
+        )
+        return await this.servers.addUserToServer(
+            serverId,
+            authenticatedUser.internalId
+        )
     }
     messageChannel = async (
         serverId: number,
@@ -90,25 +110,39 @@ class ServerServices {
     }
     leaveServer = async (
         serverId: number,
-        user: UserProfile
+        authenticatedUser: AuthenticatedUser
     ): Promise<boolean> => {
         requireOrThrow(
             BadRequestError,
             await this.servers.serverExists(serverId),
             "Server doesn't exist."
         )
-        return await this.servers.leaveServer(serverId, user.id)
+        return await this.servers.leaveServer(
+            serverId,
+            authenticatedUser.internalId
+        )
     }
     deleteServer = async (
         serverId: number,
-        user: UserProfile
+        authenticatedUser: AuthenticatedUser
     ): Promise<boolean> => {
         requireOrThrow(
             BadRequestError,
             await this.servers.serverExists(serverId),
             "Server doesn't exist."
         )
-        return await this.servers.deleteServer(serverId, user.id)
+        requireOrThrow(
+            BadRequestError,
+            await this.servers.isServerOwner(
+                serverId,
+                authenticatedUser.internalId
+            ),
+            'Only the server owner can delete the server.'
+        )
+        return await this.servers.deleteServer(
+            serverId,
+            authenticatedUser.internalId
+        )
     }
 }
 
