@@ -1,190 +1,139 @@
 import type { Request } from 'express'
 import { Server, Socket } from 'socket.io'
 import { NotFoundError } from '../../domain/error/Error'
-import { Message } from '../../domain/message/Message'
 import { AuthenticatedUser } from '../../domain/user/AuthenticatedUser'
-import { Credentials } from '../../domain/user/Credentials'
-import { SocketEvent } from '../../http/events/SocketEvent'
-import serverServices from '../../services/ServerServices'
-import userServices from '../../services/UserServices'
+import { ChannelCreateInput } from '../../http/model/input/channel/ChannelCreateInput'
+import { MessageCreateInput } from '../../http/model/input/message/MessageCreateInput'
+import { ServerCreateInput } from '../../http/model/input/server/ServerCreateInput'
+import { ServerDeleteInput } from '../../http/model/input/server/ServerDeleteInput'
+import { ServerLeaveInput } from '../../http/model/input/server/ServerLeaveInput'
+import { UserLeft } from '../../http/model/output/server/UserLeft'
+import MessageServices from '../../services/MessageServices'
+import ServerServices from '../../services/ServerServices'
+import UserServices from '../../services/UserServices'
 import { requireOrThrow } from '../../services/utils/requireOrThrow'
+import { ClientToServerEvents, ServerToClientEvents } from './events'
 
-const SocketHandlers = (
-    io: Server,
+function asyncHandlerWrapper<T>(
+    handler: (data: T) => Promise<void>,
     socket: Socket,
-    userServices: userServices,
-    serverServices: serverServices
-) => {
+    onError?: (error: unknown, data?: T) => void
+) {
+    return async (data: T) => {
+        try {
+            await handler(data)
+        } catch (error) {
+            if (onError) {
+                onError(error, data)
+            } else {
+                const errorMessage = (error as Error).message
+                socket.emit('error', { message: errorMessage })
+            }
+        }
+    }
+}
+
+function registerSocketHandlers(
+    io: Server<ClientToServerEvents, ServerToClientEvents>,
+    socket: Socket<ClientToServerEvents, ServerToClientEvents>,
+    userServices: UserServices,
+    serverServices: ServerServices,
+    messageServices: MessageServices
+) {
     console.log(`Client connected to main`)
 
     const req = socket.request as Request
     socket.join(req.session.id)
 
-    const id = socket.id
-    const credentials: Credentials = socket.data
+    if (!socket.data.user) {
+        socket.emit('error', { message: 'Not authenticated' })
+        socket.disconnect()
+        return
+    }
+    const { internalId, publicId, username } = socket.data.user
+
     const authenticatedUser: AuthenticatedUser = {
-        internalId: credentials.internalId,
-        id: credentials.id,
-        username: credentials.username,
+        internalId,
+        publicId,
+        username,
     }
 
-    const sendUserServers = async () => {
-        try {
-            const userServers = await serverServices.getUserServers(
-                authenticatedUser.id
-            )
-            userServers.forEach((server) => {
-                socket.join(`${server.id}`)
-            })
-            io.to(id).emit(SocketEvent.USER_SERVERS_SUCCESS, userServers)
-        } catch (error: unknown) {
-            const errorMessage: string = (error as Error).message
-            io.to(id).emit(SocketEvent.USER_SERVERS_ERROR, errorMessage)
-        }
-    }
-    const createServer = async function (data: {
-        serverName: string
-        serverDescription: string
-        serverIcon: string
-    }) {
-        try {
-            const { serverName, serverDescription, serverIcon } = data
-
+    const createServer = asyncHandlerWrapper<ServerCreateInput>(
+        async (data) => {
             const server = await serverServices.createServer(
-                serverName,
-                serverDescription,
                 authenticatedUser,
-                serverIcon
+                data
             )
-
             socket.join(`${server.id}`)
-            io.to(id).emit(SocketEvent.CREATE_SERVER_SUCCESS, server)
-        } catch (error: unknown) {
-            const errorMessage: string = (error as Error).message
-            io.to(id).emit(SocketEvent.CREATE_SERVER_ERROR, errorMessage)
-        }
-    }
-    const joinServer = async function (data: { serverId: number }) {
-        try {
-            const { serverId } = data
+            socket.emit('serverCreated', server)
+        },
+        socket
+    )
 
-            const serverFound = await serverServices.addUserToServer(
-                serverId,
-                authenticatedUser
-            )
-
-            socket.join(`${serverFound.id}`)
-            io.to(`${serverFound.id}`).emit(SocketEvent.MEMBER_JOINED, {
-                user: { id: credentials.id, username: credentials.username },
-                serverId: serverFound.id,
-            })
-            io.to(id).emit(SocketEvent.JOIN_SERVER_SUCCESS, serverFound)
-        } catch (error: unknown) {
-            const errorMessage: string = (error as Error).message
-            io.to(id).emit(SocketEvent.JOIN_SERVER_ERROR, errorMessage)
-        }
-    }
-    const createChannel = async function (data: {
-        serverId: number
-        channelName: string
-        channelDescription: string
-    }) {
-        try {
-            const { serverId, channelName, channelDescription } = data
-
+    const createChannel = asyncHandlerWrapper<ChannelCreateInput>(
+        async (data) => {
             const channel = await serverServices.createChannel(
-                serverId,
-                channelName,
-                channelDescription
+                authenticatedUser,
+                data
+            )
+            io.to(`${data.serverId}`).emit('channelCreated', channel)
+        },
+        socket
+    )
+
+    const messageServer = asyncHandlerWrapper<MessageCreateInput>(
+        async (data) => {
+            const message = await messageServices.messageChannel(
+                authenticatedUser,
+                data
             )
 
-            io.to(`${serverId}`).emit(SocketEvent.CREATE_CHANNEL_SUCCESS, {
-                serverId: serverId,
-                channel: channel,
-            })
-        } catch (error: unknown) {
-            const errorMessage: string = (error as Error).message
-            io.to(id).emit(SocketEvent.CREATE_CHANNEL_ERROR, errorMessage)
-        }
-    }
-    const messageServer = async function (data: {
-        serverId: number
-        channelId: number
-        message: string
-    }) {
-        try {
-            const { serverId, channelId, message } = data
+            io.to(`${data.serverId}`).emit('messageSent', message)
+        },
+        socket
+    )
 
-            const newMessage: Message = {
-                author: authenticatedUser.username,
-                content: message,
-            }
-            await serverServices.messageChannel(serverId, channelId, newMessage)
-
-            io.to(`${serverId}`).emit(SocketEvent.MESSAGE_SERVER_SUCCESS, {
-                serverId: serverId,
-                channelId: channelId,
-                message: newMessage,
-            })
-        } catch (error: unknown) {
-            const errorMessage: string = (error as Error).message
-            io.to(id).emit(SocketEvent.MESSAGE_SERVER_ERROR, errorMessage)
+    const leaveServer = asyncHandlerWrapper<ServerLeaveInput>(async (data) => {
+        const server = await serverServices.leaveServer(authenticatedUser, data)
+        const left: UserLeft = {
+            serverId: data.id,
+            userId: authenticatedUser.publicId,
+            username: authenticatedUser.username,
         }
-    }
-    const leaveServer = async function (data: { serverId: number }) {
-        try {
-            const { serverId } = data
-            console.log('Server ID to leave: ' + serverId)
-            const server = await serverServices.leaveServer(
-                serverId,
-                authenticatedUser
-            )
 
-            socket.leave(`${server}`)
-            io.to(id).emit(
-                SocketEvent.LEAVE_SERVER_SUCCESS,
-                'Left successfully'
-            )
-        } catch (error: unknown) {
-            const errorMessage: string = (error as Error).message
-            io.to(id).emit(SocketEvent.LEAVE_SERVER_ERROR, errorMessage)
-        }
-    }
-    const deleteServer = async function (data: { serverId: number }) {
-        try {
-            const { serverId } = data
-            console.log('Server ID to delete: ' + serverId)
+        socket.leave(`${server}`)
+        io.to(`${data.id}`).emit('userLeftServer', left)
+    }, socket)
+
+    const deleteServer = asyncHandlerWrapper<ServerDeleteInput>(
+        async (data) => {
             requireOrThrow(
                 NotFoundError,
-                await serverServices.serverExists(serverId),
+                await serverServices.serverExists(data.id),
                 "Server doesn't exist."
             )
-            const usersToNotify = await serverServices.getServerById(serverId)
-            await serverServices.deleteServer(serverId, authenticatedUser)
-
+            const usersToNotify = await serverServices.getServerById(data.id)
+            await serverServices.deleteServer(authenticatedUser, data)
             usersToNotify!.users.forEach((u) =>
-                io.to(`${u}`).emit(SocketEvent.DELETE_SERVER_SUCCESS, serverId)
+                io.to(`${u}`).emit('serverDeleted', data.id)
             )
+            socket.leave(`${data.id}`)
+            io.to(`${data.id}`).emit('serverDeleted', data.id)
+        },
+        socket
+    )
 
-            socket.leave(`${serverId}`)
-            io.to(id).emit(SocketEvent.DELETE_SERVER_SUCCESS, serverId)
-        } catch (error: unknown) {
-            const errorMessage: string = (error as Error).message
-            io.to(id).emit(SocketEvent.DELETE_SERVER_ERROR, errorMessage)
-        }
-    }
-    const disconnect = async function () {
+    const disconnect = asyncHandlerWrapper(async () => {
         console.log(`Client disconnected from main`)
-    }
+        socket.disconnect()
+    }, socket)
 
-    socket.on(SocketEvent.USER_SERVERS, sendUserServers)
-    socket.on(SocketEvent.CREATE_SERVER, createServer)
-    socket.on(SocketEvent.JOIN_SERVER, joinServer)
-    socket.on(SocketEvent.CREATE_CHANNEL, createChannel)
-    socket.on(SocketEvent.MESSAGE_SERVER, messageServer)
-    socket.on(SocketEvent.LEAVE_SERVER, leaveServer)
-    socket.on(SocketEvent.DELETE_SERVER, deleteServer)
-    socket.on(SocketEvent.DISCONNECT, disconnect)
+    socket.on('createServer', createServer)
+    socket.on('createChannel', createChannel)
+    socket.on('messageServer', messageServer)
+    socket.on('leaveServer', leaveServer)
+    socket.on('deleteServer', deleteServer)
+    socket.on('disconnect', disconnect)
 }
 
-export default SocketHandlers
+export default registerSocketHandlers

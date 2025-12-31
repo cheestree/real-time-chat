@@ -2,20 +2,22 @@ import { BadRequestError } from '../domain/error/Error'
 import { AuthenticatedUser } from '../domain/user/AuthenticatedUser'
 import { UserDomain } from '../domain/user/UserDomain'
 import { UserProfile } from '../domain/user/UserProfile'
-import { UserLogin } from '../http/model/input/user/UserLogin'
-import { UserRegister } from '../http/model/input/user/UserRegister'
+import { UserLoginInput } from '../http/model/input/user/UserLoginInput'
+import { UserRegisterInput } from '../http/model/input/user/UserRegisterInput'
+import { LoginResult } from '../http/model/output/user/LoginResult'
 import { IUserRepository } from '../repository/interfaces/IUserRepository'
+import IUserServices from './interfaces/IUserServices'
 import { requireOrThrow } from './utils/requireOrThrow'
 
-class UserServices {
+class UserServices implements IUserServices {
     private repo: IUserRepository
     private domain: UserDomain
     constructor(repo: IUserRepository) {
         this.repo = repo
         this.domain = new UserDomain()
     }
-    async login(login: UserLogin): Promise<[string, object, object]> {
-        const user = await this.repo.getUserByUsername(login.username)
+    async login(input: UserLoginInput): Promise<LoginResult> {
+        const user = await this.repo.getUserByUsername(input.username)
         requireOrThrow(
             BadRequestError,
             user !== undefined,
@@ -23,7 +25,7 @@ class UserServices {
         )
 
         const verifiyPassword = await this.domain.verifyPassword(
-            login.password,
+            input.password,
             user!.password
         )
 
@@ -34,10 +36,10 @@ class UserServices {
         )
 
         const tokenPromise = await this.domain.createToken(
-            user!.internalId,
+            user!.internal_id,
             user!.id,
-            login.username,
-            login.password,
+            input.username,
+            input.password,
             this.domain.getExpireTime()
         )
         const expireTime = this.domain.getExpireTime()
@@ -46,18 +48,17 @@ class UserServices {
             secure: true,
             maxAge: expireTime,
         }
-        return [
-            tokenPromise,
-            options,
-            { id: user!.id, username: user!.username },
-        ]
+        const authUser: AuthenticatedUser = {
+            internalId: user!.internal_id,
+            publicId: user!.id,
+            username: user!.username,
+        }
+        return { token: tokenPromise, options, user: authUser }
     }
-    /*
-    async logout(res): Promise<boolean> {
-
+    async logout(user: AuthenticatedUser): Promise<boolean> {
+        return true
     }
-    */
-    async register(register: UserRegister): Promise<string> {
+    async register(register: UserRegisterInput): Promise<{ id: string }> {
         const hashedPassword = await this.domain.hashPassword(register.password)
         const id = await this.repo.createUser({
             username: register.username,
@@ -69,7 +70,7 @@ class UserServices {
             id !== undefined,
             'Something happened while registering'
         )
-        return id!
+        return { id: id! }
     }
     async checkAuth(token: string): Promise<AuthenticatedUser | undefined> {
         const credentials = await this.domain.validateToken(token)
@@ -85,8 +86,8 @@ class UserServices {
             'Something happened while fetching user'
         )
         return {
-            internalId: user!.internalId,
-            id: user!.id,
+            internalId: user!.internal_id,
+            publicId: user!.id,
             username: user!.username,
         }
     }

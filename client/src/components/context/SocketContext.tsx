@@ -46,18 +46,6 @@ export function SocketProvider({ children }: { children: ReactNode }) {
         socket.emit('userServers')
     }
 
-    function createServer(
-        serverName: string,
-        serverDescription: string,
-        serverIcon: string
-    ) {
-        socket.emit('createServer', {
-            serverName: serverName,
-            serverDescription: serverDescription,
-            serverIcon: serverIcon,
-        })
-    }
-
     function joinServer(serverId: number) {
         socket.emit('joinServer', { serverId: serverId })
     }
@@ -190,7 +178,6 @@ export function SocketProvider({ children }: { children: ReactNode }) {
         getUserServers()
 
         socket.on('userServersSuccess', onUserServersSuccess)
-        socket.on('createServerSuccess', onCreateServerSuccess)
         socket.on('joinServerSuccess', onJoinServerSuccess)
         socket.on('memberJoined', onMemberJoinSuccess)
         socket.on('createChannelSuccess', onCreateChannelSuccess)
@@ -200,7 +187,6 @@ export function SocketProvider({ children }: { children: ReactNode }) {
 
         return () => {
             socket.off('userServersSuccess', onUserServersSuccess)
-            socket.off('createServerSuccess', onCreateServerSuccess)
             socket.off('joinServerSuccess', onJoinServerSuccess)
             socket.off('memberJoined', onMemberJoinSuccess)
             socket.off('createChannelSuccess', onCreateChannelSuccess)
@@ -213,7 +199,6 @@ export function SocketProvider({ children }: { children: ReactNode }) {
     return (
         <SocketContext.Provider
             value={{
-                createServer,
                 joinServer,
                 createChannel,
                 messageServer,

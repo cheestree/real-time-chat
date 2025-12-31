@@ -8,12 +8,15 @@ class ServerController {
     }
     listServers: RequestHandler = (req, res) =>
         res.status(501).send('Not implemented')
-    getServer: RequestHandler = (req, res) =>
+    getServerDetails: RequestHandler = (req, res) => {
         res.status(501).send('Not implemented')
+    }
     createServer: RequestHandler = (req, res) =>
         res.status(501).send('Not implemented')
-    deleteServer: RequestHandler = (req, res) =>
+    joinServer: RequestHandler = async (req, res, next) => {
         res.status(501).send('Not implemented')
+    }
+    deleteServer: RequestHandler = (req, res) => {}
 }
 
 export default ServerController

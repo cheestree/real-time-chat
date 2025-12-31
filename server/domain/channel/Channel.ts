@@ -1,5 +1,11 @@
+import { ChannelSummary } from '../../http/model/output/server/ChannelSummary'
 import { Message } from '../message/Message'
 import { UserProfile } from '../user/UserProfile'
+
+export enum ChannelType {
+    SERVER = 'SERVER',
+    DM = 'DM',
+}
 
 export class Channel {
     id: number
@@ -8,12 +14,31 @@ export class Channel {
     messages: Message[]
     blacklist: UserProfile[]
     whitelist: UserProfile[]
-    constructor(id: number, channelName: string, description: string) {
+    type: ChannelType
+    constructor(
+        id: number,
+        name: string,
+        description: string,
+        messages: Message[] = [],
+        blacklist: UserProfile[] = [],
+        whitelist: UserProfile[] = [],
+        type: ChannelType = ChannelType.SERVER
+    ) {
         this.id = id
-        this.name = channelName
+        this.name = name
         this.description = description
-        this.messages = []
-        this.blacklist = []
-        this.whitelist = []
+        this.messages = messages
+        this.blacklist = blacklist
+        this.whitelist = whitelist
+        this.type = type
+    }
+
+    toSummary(): ChannelSummary {
+        return {
+            id: this.id,
+            name: this.name,
+            description: this.description,
+            serverId: this.id,
+        }
     }
 }

@@ -23,8 +23,15 @@ class ServerRoutes {
 
     private initRoutes() {
         this.router.get(Path.SERVERS, this.serverController.listServers)
-        this.router.get(`${Path.SERVERS}/:id`, this.serverController.getServer)
+        this.router.get(
+            `${Path.SERVERS}/:id`,
+            this.serverController.getServerDetails
+        )
         this.router.post(Path.SERVERS, this.serverController.createServer)
+        this.router.post(
+            `${Path.SERVERS}/:id/join`,
+            this.serverController.joinServer
+        )
         this.router.delete(
             `${Path.SERVERS}/:id`,
             this.serverController.deleteServer

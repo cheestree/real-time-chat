@@ -8,6 +8,7 @@ const Path = {
         LOGOUT: '/logout',
         PROFILE: '/profile',
         AUTH: '/auth',
+        INIT: '/init',
     },
     SERVERS: '/servers',
 } as const

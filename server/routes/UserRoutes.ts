@@ -1,9 +1,9 @@
 import { Router } from 'express'
 import UserController from '../controller/UserController'
 import authenticatorWithServices from '../http/middleware/Authenticator'
-import { ValidateInput } from '../http/middleware/ValidateInput'
-import { UserLoginValidation } from '../http/model/input/user/UserLogin'
-import { UserRegisterValidation } from '../http/model/input/user/UserRegister'
+import { validateZod } from '../http/middleware/ValidateZod'
+import { UserLoginSchema } from '../http/model/input/user/UserLoginInput'
+import { UserRegisterSchema } from '../http/model/input/user/UserRegisterInput'
 import { Path } from '../http/path/Path'
 import { createUserRepository } from '../repository/user/createUserRepository'
 import UserServices from '../services/UserServices'
@@ -23,15 +23,17 @@ class UserRoutes {
     private initRoutes() {
         this.router.post(
             Path.USERS.LOGIN,
-            UserLoginValidation,
-            ValidateInput,
+            validateZod(UserLoginSchema),
             this.userController.login
         )
-        this.router.post(Path.USERS.LOGOUT, this.userController.logout)
+        this.router.post(
+            Path.USERS.LOGOUT,
+            authenticatorWithServices(this.userServices),
+            this.userController.logout
+        )
         this.router.post(
             Path.USERS.REGISTER,
-            UserRegisterValidation,
-            ValidateInput,
+            validateZod(UserRegisterSchema),
             this.userController.register
         )
         this.router.get(

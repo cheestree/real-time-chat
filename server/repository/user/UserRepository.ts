@@ -1,7 +1,7 @@
 import { Kysely, PostgresDialect } from 'kysely'
 import { Pool } from 'pg'
-import { IUserRepository } from '../../repository/interfaces/IUserRepository'
 import { Database, UserInsertable, UserSelectable } from '../Database'
+import { IUserRepository } from '../interfaces/IUserRepository'
 
 class UserRepository implements IUserRepository {
     private db: Kysely<Database>
@@ -23,12 +23,11 @@ class UserRepository implements IUserRepository {
     }
     async getUserByUUID(uuid: string): Promise<UserSelectable | undefined> {
         try {
-            const user = await this.db
+            return await this.db
                 .selectFrom('rtchat.users')
                 .selectAll()
                 .where('id', '=', uuid)
                 .executeTakeFirst()
-            return user
         } catch (error) {
             console.error(error)
             return undefined
@@ -53,12 +52,11 @@ class UserRepository implements IUserRepository {
         username: string
     ): Promise<UserSelectable | undefined> {
         try {
-            const user = await this.db
+            return await this.db
                 .selectFrom('rtchat.users')
                 .selectAll()
                 .where('username', '=', username)
                 .executeTakeFirst()
-            return user
         } catch (error) {
             console.error(error)
             return undefined
@@ -67,12 +65,11 @@ class UserRepository implements IUserRepository {
 
     async getUserById(id: number): Promise<UserSelectable | undefined> {
         try {
-            const user = await this.db
+            return await this.db
                 .selectFrom('rtchat.users')
                 .selectAll()
-                .where('internalId', '=', id)
+                .where('internal_id', '=', id)
                 .executeTakeFirst()
-            return user
         } catch (error) {
             console.error(error)
             return undefined

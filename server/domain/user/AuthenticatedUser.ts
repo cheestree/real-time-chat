@@ -1,5 +1,5 @@
 export type AuthenticatedUser = {
     internalId: number
-    id: string
+    publicId: string
     username: string
 }

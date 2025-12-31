@@ -1,7 +1,7 @@
 import { Generated, Insertable, Selectable } from 'kysely'
 
 export interface UsersTable {
-    internalId: Generated<number>
+    internal_id: Generated<number>
     id: Generated<string>
     username: string
     email: string

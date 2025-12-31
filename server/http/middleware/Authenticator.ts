@@ -1,10 +1,15 @@
-import { RequestHandler } from 'express'
+import { Request, RequestHandler } from 'express'
+import { AuthenticatedUser } from '../../domain/user/AuthenticatedUser'
 import UserServices from '../../services/UserServices'
+
+export interface AuthenticatedRequest extends Request {
+    authenticatedUser: AuthenticatedUser
+}
 
 const authenticatorWithServices = (
     userService: UserServices
 ): RequestHandler => {
-    return async (req, res, next) => {
+    return async (req: Request, res, next) => {
         if (!req.cookies.token) {
             return res.status(401).send('No token!')
         }
@@ -14,7 +19,8 @@ const authenticatorWithServices = (
         try {
             const authenticatedUser = await userService.checkAuth(token)
             if (authenticatedUser) {
-                ;(req as any).authenticatedUser = authenticatedUser
+                ;(req as AuthenticatedRequest).authenticatedUser =
+                    authenticatedUser
                 return next()
             }
             return res.status(401).send('Token invalid')

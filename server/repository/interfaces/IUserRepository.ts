@@ -1,5 +1,4 @@
-import { UserInsertable } from '../Database'
-import { UserSelectable } from '../selectables/UserSelectable'
+import { UserInsertable, UserSelectable } from '../Database'
 
 export interface IUserRepository {
     getUserByUsername: (username: string) => Promise<UserSelectable | undefined>
