@@ -1,25 +1,20 @@
 import * as Cassandra from 'cassandra-driver'
-import dotenv from 'dotenv'
 import { MongoClient } from 'mongodb'
 import { ChannelType } from '../../domain/channel/Channel'
 import { Message } from '../../domain/message/Message'
 import IMessageRepository from '../interfaces/IMessageRepository'
+import {
+    createCassandraClient,
+    createMongoClient,
+} from '../utils/databaseClients'
 
 class MessageRepository implements IMessageRepository {
     private mdb: MongoClient
     private cdb: Cassandra.Client
 
     constructor() {
-        dotenv.config()
-
-        this.mdb = new MongoClient(process.env.MONGODB_URI!)
-        this.cdb = new Cassandra.Client({
-            contactPoints: process.env
-                .CASSANDRA_CONTACT_POINTS!.split(',')
-                .map((cp) => cp.trim()),
-            localDataCenter: process.env.CASSANDRA_LOCAL_DATACENTER!,
-            keyspace: process.env.CASSANDRA_KEYSPACE!,
-        })
+        this.mdb = createMongoClient()
+        this.cdb = createCassandraClient()
     }
 
     async messageChannel(

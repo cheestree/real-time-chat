@@ -1,5 +1,6 @@
 import { compare, hash } from 'bcrypt'
 import { sign, verify } from 'jsonwebtoken'
+import { logger } from '../../utils/logger'
 import { Credentials } from './Credentials'
 
 export class UserDomain {
@@ -31,7 +32,7 @@ export class UserDomain {
             const secretKey: string = process.env.JWT_SECRET || 'my-secret'
             return verify(token, secretKey) as Credentials
         } catch (err: unknown) {
-            console.error('Token validation error:', err)
+            logger.error({ err }, 'Token validation error')
             return undefined
         }
     }

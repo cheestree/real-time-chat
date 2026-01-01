@@ -1,6 +1,5 @@
 import bodyParser from 'body-parser'
 import cookieParser from 'cookie-parser'
-import dotenv from 'dotenv'
 import express from 'express'
 import session from 'express-session'
 import { createServer } from 'http'
@@ -11,13 +10,14 @@ import {
 } from './controller/ws/events'
 import SocketHandlers from './controller/ws/SocketHandlers'
 import { Credentials } from './domain/user/Credentials'
+import './env'
 import ErrorHandler from './http/middleware/ErrorHandler'
 import { messageRoutes } from './routes/MessageRoutes'
 import { serverRoutes } from './routes/ServerRoutes'
 import { userRoutes } from './routes/UserRoutes'
+import { getCookie } from './utils/cookieParser'
 import { envCheck } from './utils/envCheck'
-
-dotenv.config()
+import { logger } from './utils/logger'
 
 envCheck()
 
@@ -54,20 +54,15 @@ io.use(async (socket, next) => {
     const cookies = socket.request.headers.cookie
     let authenticated = false
 
-    if (cookies) {
-        const cookieArray = cookies.split(';')
-        for (const cookie of cookieArray) {
-            const [name, value] = cookie.trim().split('=')
-            if (name === 'token') {
-                const user = await userRoutes.userServices.checkAuth(value)
-                if (user) {
-                    socket.data.user = user
-                    authenticated = true
-                }
-                break
-            }
+    const token = getCookie(cookies, 'token')
+    if (token) {
+        const user = await userRoutes.userServices.checkAuth(token)
+        if (user) {
+            socket.data.user = user
+            authenticated = true
         }
     }
+
     if (!authenticated) {
         return next(new Error('Authentication error'))
     }
@@ -99,6 +94,6 @@ app.use(ErrorHandler)
 
 // Start the server
 httpServer.listen(Number(process.env.SERVER_PORT), process.env.SERVER_HOST)
-console.log(
+logger.info(
     `Server is running on http://${process.env.SERVER_HOST}:${process.env.SERVER_PORT}`
 )

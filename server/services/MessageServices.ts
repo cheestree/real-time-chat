@@ -6,8 +6,9 @@ import { MessageCreateInput } from '../http/model/input/message/MessageCreateInp
 import { MessageSummary } from '../http/model/output/server/MessageSummary'
 import IMessageRepository from '../repository/interfaces/IMessageRepository'
 import { IServerRepository } from '../repository/interfaces/IServerRepository'
-import { requireOrThrow } from './utils/requireOrThrow'
+import { isNotEmptyString } from '../utils/stringValidation'
 import { IMessageServices } from './interfaces/IMessageServices'
+import { requireOrThrow } from './utils/requireOrThrow'
 
 class MessageServices implements IMessageServices {
     servers: IServerRepository
@@ -26,7 +27,7 @@ class MessageServices implements IMessageServices {
     ): Promise<MessageSummary> => {
         requireOrThrow(
             BadRequestError,
-            input.content.trim() !== '',
+            isNotEmptyString(input.content),
             "Content can't be an empty string."
         )
         if (input.serverId === undefined) {

@@ -1,8 +1,4 @@
-import dotenv from 'dotenv'
-
 export function envCheck(): void {
-    dotenv.config()
-
     const requiredEnvVars = [
         'JWT_SECRET',
         'CORS_ORIGIN',

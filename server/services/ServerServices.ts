@@ -3,12 +3,18 @@ import { BadRequestError } from '../domain/error/Error'
 import { Server } from '../domain/server/Server'
 import { AuthenticatedUser } from '../domain/user/AuthenticatedUser'
 import { ServerCreateInput } from '../http/model/input/server/ServerCreateInput'
+import { ServerDeleteInput } from '../http/model/input/server/ServerDeleteInput'
+import { ServerDetailsInput } from '../http/model/input/server/ServerDetailsInput'
+import { ServerExistsInput } from '../http/model/input/server/ServerExistsInput'
+import { ServerJoinInput } from '../http/model/input/server/ServerJoinInput'
 import { ServerLeaveInput } from '../http/model/input/server/ServerLeaveInput'
+import { UserServersInput } from '../http/model/input/server/UserServersInput'
 import { ChannelSummary } from '../http/model/output/server/ChannelSummary'
 import { ServerDetail } from '../http/model/output/server/ServerDetail'
 import { ServerSummary } from '../http/model/output/server/ServerSummary'
 import { IServerRepository } from '../repository/interfaces/IServerRepository'
 import { IUserRepository } from '../repository/interfaces/IUserRepository'
+import { allNotEmpty } from '../utils/stringValidation'
 import IServerServices from './interfaces/IServerServices'
 import { requireOrThrow } from './utils/requireOrThrow'
 
@@ -19,13 +25,15 @@ class ServerServices implements IServerServices {
         this.servers = serverRepo
         this.users = userRepo
     }
-    getUserServers = async (userId: string): Promise<ServerSummary[]> => {
+    getUserServers = async (
+        input: UserServersInput
+    ): Promise<ServerSummary[]> => {
         requireOrThrow(
             BadRequestError,
-            await this.users.userExists(userId),
+            await this.users.userExists(input.userId),
             'User does not exist.'
         )
-        const user = await this.users.getUserByUUID(userId)
+        const user = await this.users.getUserByUUID(input.userId)
         return await this.servers
             .getUserServers(user!.internal_id)
             .then((servers) => {
@@ -34,8 +42,8 @@ class ServerServices implements IServerServices {
                 })
             })
     }
-    getServerById = async (serverId: number): Promise<Server> => {
-        const server = await this.servers.getServerById(serverId)
+    getServerById = async (input: ServerDetailsInput): Promise<Server> => {
+        const server = await this.servers.getServerById(input.id)
         requireOrThrow(
             BadRequestError,
             server !== undefined,
@@ -43,8 +51,8 @@ class ServerServices implements IServerServices {
         )
         return server
     }
-    serverExists = async (serverId: number) => {
-        return await this.servers.serverExists(serverId)
+    serverExists = async (input: ServerExistsInput) => {
+        return await this.servers.serverExists(input.id)
     }
     createServer = async (
         user: AuthenticatedUser,
@@ -74,8 +82,8 @@ class ServerServices implements IServerServices {
         requireOrThrow(BadRequestError, serverExists, "Server doesn't exist.")
         requireOrThrow(
             BadRequestError,
-            !(!nameTrimmed || !trimmedDescription),
-            "Server name/description can't be an empty string."
+            allNotEmpty(nameTrimmed, trimmedDescription),
+            "Channel name/description can't be an empty string."
         )
         return await this.servers
             .createChannel(input.serverId, nameTrimmed, trimmedDescription)
@@ -83,19 +91,19 @@ class ServerServices implements IServerServices {
     }
     addUserToServer = async (
         user: AuthenticatedUser,
-        serverId: number
+        input: ServerJoinInput
     ): Promise<Server> => {
         requireOrThrow(
             BadRequestError,
-            await this.servers.serverExists(serverId),
+            await this.servers.serverExists(input.id),
             "Server doesn't exist."
         )
         requireOrThrow(
             BadRequestError,
-            !(await this.servers.containsUser(serverId, user.internalId)),
+            !(await this.servers.containsUser(input.id, user.internalId)),
             'User is already a member of the server.'
         )
-        return await this.servers.addUserToServer(serverId, user.internalId)
+        return await this.servers.addUserToServer(input.id, user.internalId)
     }
     leaveServer = async (
         user: AuthenticatedUser,
@@ -110,7 +118,7 @@ class ServerServices implements IServerServices {
     }
     deleteServer = async (
         user: AuthenticatedUser,
-        input: { id: number }
+        input: ServerDeleteInput
     ): Promise<boolean> => {
         requireOrThrow(
             BadRequestError,
@@ -124,15 +132,17 @@ class ServerServices implements IServerServices {
         )
         return await this.servers.deleteServer(input.id, user.internalId)
     }
-    getServerDetails = async (serverId: number): Promise<ServerDetail> => {
-        const server = await this.servers.getServerById(serverId)
+    getServerDetails = async (
+        input: ServerDetailsInput
+    ): Promise<ServerDetail> => {
+        const server = await this.servers.getServerById(input.id)
         requireOrThrow(
             BadRequestError,
             server !== undefined,
             "Server doesn't exist."
         )
-        const channelIds = await this.servers.getChannelIdsByServerId(serverId)
-        const userIds = await this.servers.getUserIdsByServerId(serverId)
+        const channelIds = await this.servers.getChannelIdsByServerId(input.id)
+        const userIds = await this.servers.getUserIdsByServerId(input.id)
         return {
             id: server.id,
             name: server.name,

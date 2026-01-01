@@ -1,10 +1,14 @@
 import { UUID } from 'bson'
 import * as Cassandra from 'cassandra-driver'
-import dotenv from 'dotenv'
 import { MongoClient } from 'mongodb'
 import { Channel, ChannelType } from '../../domain/channel/Channel'
 import { Server } from '../../domain/server/Server'
+import { logger } from '../../utils/logger'
 import { IServerRepository } from '../interfaces/IServerRepository'
+import {
+    createCassandraClient,
+    createMongoClient,
+} from '../utils/databaseClients'
 
 interface ServerDocument {
     id: number
@@ -21,16 +25,8 @@ class ServerRepository implements IServerRepository {
     private cdb: Cassandra.Client
 
     constructor() {
-        dotenv.config()
-
-        this.mdb = new MongoClient(process.env.MONGODB_URI!)
-        this.cdb = new Cassandra.Client({
-            contactPoints: process.env
-                .CASSANDRA_CONTACT_POINTS!.split(',')
-                .map((cp) => cp.trim()),
-            localDataCenter: process.env.CASSANDRA_LOCAL_DATACENTER!,
-            keyspace: process.env.CASSANDRA_KEYSPACE!,
-        })
+        this.mdb = createMongoClient()
+        this.cdb = createCassandraClient()
     }
 
     async getChannelIdsByServerId(serverId: number): Promise<number[]> {
@@ -155,12 +151,12 @@ class ServerRepository implements IServerRepository {
             .db('rtchat')
             .collection('servers')
             .insertOne(doc)
-        console.log('ServerRepository: Insert result:', result.insertedId)
+        logger.debug({ insertedId: result.insertedId }, 'Server insert result')
         const server = (await this.mdb
             .db('rtchat')
             .collection('servers')
             .findOne({ _id: result.insertedId })) as unknown as Server
-        console.log('ServerRepository: Created server:', server)
+        logger.debug({ server }, 'Created server')
         return server
     }
 
