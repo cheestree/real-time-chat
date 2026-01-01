@@ -1,9 +1,8 @@
-import { UUID } from 'bson'
-
 export type User = {
     internalId: number
-    id: UUID
+    id: string
     username: string
     email: string
     password: string
+    createdAt: Date
 }

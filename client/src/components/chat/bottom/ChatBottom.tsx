@@ -4,7 +4,7 @@ import { useSocket } from '@/components/context/SocketContext'
 import Member from '@/components/members/Member'
 import { Fragment, useState } from 'react'
 
-import { CustomServer } from '@/domain/CustomServer'
+import { Server } from '@/domain/Server'
 import styled from 'styled-components'
 import styles from './bottom.module.css'
 
@@ -36,7 +36,7 @@ export default function ChatBottom({
     currentChannel,
     isShowMembers,
 }: {
-    currentServer: CustomServer
+    currentServer: Server
     currentChannel: number
     isShowMembers: boolean
 }) {

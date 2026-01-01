@@ -33,4 +33,4 @@ class UserServices {
     }
 }
 
-export default UserServices
+export const userServices = new UserServices()

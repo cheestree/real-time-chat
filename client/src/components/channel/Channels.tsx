@@ -1,9 +1,8 @@
 'use client'
 
-import Channel from '@/components/channel/channel/Channel'
-
-import { CustomChannel } from '@/domain/CustomChannel'
-import { CustomServer } from '@/domain/CustomServer'
+import ChannelComponent from '@/components/channel/channel/Channel'
+import { Channel } from '@/domain/Channel'
+import { Server } from '@/domain/Server'
 import styles from './channels.module.css'
 
 export default function Channels({
@@ -12,7 +11,7 @@ export default function Channels({
     currentChannel,
     changeChannel,
 }: {
-    servers: CustomServer[]
+    servers: Server[]
     currentServer: number
     currentChannel: number
     changeChannel: (id: number) => void
@@ -22,8 +21,8 @@ export default function Channels({
             {servers[currentServer] &&
                 servers[currentServer].channels &&
                 servers[currentServer].channels.map(
-                    (channel: CustomChannel, index: number) => (
-                        <Channel
+                    (channel: Channel, index: number) => (
+                        <ChannelComponent
                             key={index}
                             channel={channel}
                             currentlySelected={currentChannel}

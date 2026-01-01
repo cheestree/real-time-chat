@@ -1,4 +1,5 @@
 import { RequestHandler } from 'express'
+import { asyncHandler } from '../http/middleware/asyncHandler'
 import ServerServices from '../services/ServerServices'
 
 class ServerController {
@@ -6,17 +7,21 @@ class ServerController {
     constructor(services: ServerServices) {
         this.services = services
     }
-    listServers: RequestHandler = (req, res) =>
+    listServers: RequestHandler = asyncHandler(async (req, res) => {
         res.status(501).send('Not implemented')
-    getServerDetails: RequestHandler = (req, res) => {
+    })
+    getServerDetails: RequestHandler = asyncHandler(async (req, res) => {
         res.status(501).send('Not implemented')
-    }
-    createServer: RequestHandler = (req, res) =>
+    })
+    createServer: RequestHandler = asyncHandler(async (req, res) => {
         res.status(501).send('Not implemented')
-    joinServer: RequestHandler = async (req, res, next) => {
+    })
+    joinServer: RequestHandler = asyncHandler(async (req, res) => {
         res.status(501).send('Not implemented')
-    }
-    deleteServer: RequestHandler = (req, res) => {}
+    })
+    deleteServer: RequestHandler = asyncHandler(async (req, res) => {
+        res.status(501).send('Not implemented')
+    })
 }
 
 export default ServerController

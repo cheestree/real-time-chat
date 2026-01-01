@@ -1,7 +1,8 @@
 'use client'
 
 import { UserProfile } from '@/domain/UserProfile'
-import UserServices from '@/services/UserServices'
+import { userServices } from '@/services/UserServices'
+import { AuthActionResult, AuthContextType } from '@/types/auth.types'
 import {
     createContext,
     ReactNode,
@@ -10,25 +11,6 @@ import {
     useState,
 } from 'react'
 
-interface AuthActionResult {
-    success: boolean
-    message?: string
-}
-
-interface AuthContextType {
-    login: (username: string, password: string) => Promise<AuthActionResult>
-    register: (
-        username: string,
-        email: string,
-        password: string
-    ) => Promise<AuthActionResult>
-    logout: () => Promise<void>
-    checkAuth: () => Promise<void>
-    loggedUser: UserProfile | undefined
-    isLoggedIn: boolean
-    isLoading: boolean
-    error: string | null
-}
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined)
 
@@ -39,7 +21,6 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         undefined
     )
     const [error, setError] = useState<string | null>(null)
-    const userServices = new UserServices()
 
     async function login(
         username: string,
@@ -50,7 +31,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         try {
             const r = await userServices.login(username, password)
             if (r.ok) {
-                const { token, user } = await r.json()
+                const { user } = await r.json()
                 setLoggedUser(user)
                 setIsLoggedIn(true)
                 setIsLoading(false)
@@ -128,7 +109,6 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 
     useEffect(() => {
         checkAuth()
-        // eslint-disable-next-line react-hooks/exhaustive-deps
     }, [])
 
     const contextValue = {

@@ -3,4 +3,5 @@ export enum Path {
     REGISTER = '/register',
     LOGOUT = '/logout',
     AUTH_CHECK = '/auth',
+    SERVERS = '/servers',
 }

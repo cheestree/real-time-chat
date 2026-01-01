@@ -1,6 +1,6 @@
 'use client'
 
-import { CustomChannel } from '@/domain/CustomChannel'
+import { Channel } from '@/domain/Channel'
 import { HorizontalRule } from '@mui/icons-material'
 
 import styles from './channelDescription.module.css'
@@ -8,7 +8,7 @@ import styles from './channelDescription.module.css'
 export default function ChannelDescription({
     channel,
 }: {
-    channel: CustomChannel
+    channel: Channel
 }) {
     return (
         <div className={styles.channel}>

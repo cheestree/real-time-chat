@@ -1,4 +1,5 @@
-import { RequestHandler } from 'express'
+import { Request, RequestHandler, Response } from 'express'
+import { asyncHandler } from '../http/middleware/asyncHandler'
 import MessageServices from '../services/MessageServices'
 import IMessageController from './interfaces/IMessageController'
 
@@ -8,9 +9,11 @@ class MessageController implements IMessageController {
     constructor(messageServices: MessageServices) {
         this.messageServices = messageServices
     }
-    messageServer: RequestHandler = async (req, res) => {
-        res.status(501).send('Not implemented')
-    }
+    messageServer: RequestHandler = asyncHandler(
+        async (req: Request, res: Response) => {
+            res.status(501).send('Not implemented')
+        }
+    )
 }
 
 export default MessageController

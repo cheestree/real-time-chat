@@ -3,16 +3,16 @@
 import TagIcon from '@mui/icons-material/Tag'
 import { Button } from '@mui/material'
 
-import { CustomChannel } from '@/domain/CustomChannel'
+import { Channel } from '@/domain/Channel'
 import styles from './channel.module.css'
 
-export default function Channel({
+export default function ChannelSlot({
     channel,
     currentlySelected,
     index,
     changeChannel,
 }: {
-    channel: CustomChannel
+    channel: Channel
     currentlySelected: number
     index: number
     changeChannel: (id: number) => void

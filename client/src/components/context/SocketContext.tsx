@@ -1,9 +1,11 @@
 'use client'
 
-import { CustomChannel } from '@/domain/CustomChannel'
-import { CustomServer } from '@/domain/CustomServer'
+import { Channel } from '@/domain/Channel'
+import { Server } from '@/domain/Server'
 import { Message } from '@/domain/Message'
 import { UserProfile } from '@/domain/UserProfile'
+import { socketService } from '@/services/SocketService'
+import { SocketContextType } from '@/types/socket.types'
 import {
     createContext,
     ReactNode,
@@ -11,67 +13,48 @@ import {
     useEffect,
     useState,
 } from 'react'
-import { io } from 'socket.io-client'
 
-interface SocketContextType {
-    createServer: (
-        serverName: string,
-        serverDescription: string,
-        serverIcon: string
-    ) => void
-    joinServer: (serverId: number) => void
-    createChannel: (channelName: string, channelDescription: string) => void
-    messageServer: (message: string) => void
-    leaveServer: (serverId: number) => void
-    deleteServer: (serverId: number) => void
-    changeServer: (serverId: number) => void
-    changeChannel: (channelId: number) => void
-    currentServer: number
-    currentChannel: number
-    servers: CustomServer[]
-}
 
 const SocketContext = createContext<SocketContextType | undefined>(undefined)
 
-const socket = io(process.env.NEXT_PUBLIC_SOCKET_URL, {
-    withCredentials: true,
-})
-
 export function SocketProvider({ children }: { children: ReactNode }) {
-    const [servers, setServers] = useState<CustomServer[]>([])
+    const [servers, setServers] = useState<Server[]>([])
     const [currentServer, setCurrentServer] = useState(0)
     const [currentChannel, setCurrentChannel] = useState(0)
 
     function getUserServers() {
-        socket.emit('userServers')
+        socketService.getUserServers()
     }
 
     function joinServer(serverId: number) {
-        socket.emit('joinServer', { serverId: serverId })
+        socketService.joinServer(serverId)
+    }
+
+    function createServer(serverName: string, serverDescription: string, serverIcon: string) {
+        socketService.createServer(serverName, serverDescription, serverIcon)
     }
 
     function createChannel(channelName: string, channelDescription: string) {
-        socket.emit('createChannel', {
-            serverId: servers[currentServer].id,
-            channelName: channelName,
-            channelDescription: channelDescription,
-        })
+        const server = servers[currentServer]
+        if (!server) return
+
+        socketService.createChannel(server.id, channelName, channelDescription)
     }
 
     function messageServer(message: string) {
-        socket.emit('messageServer', {
-            serverId: servers[currentServer].id,
-            channelId: servers[currentServer].channels[currentChannel].id,
-            message: message,
-        })
+        const server = servers[currentServer]
+        const channel = server?.channels[currentChannel]
+        if (!server || !channel) return
+
+        socketService.messageServer(server.id, channel.id, message)
     }
 
     function leaveServer(serverId: number) {
-        socket.emit('leaveServer', { serverId: serverId })
+        socketService.leaveServer(serverId)
     }
 
     function deleteServer(serverId: number) {
-        socket.emit('deleteServer', { serverId: serverId })
+        socketService.deleteServer(serverId)
     }
 
     function changeServer(serverId: number) {
@@ -80,30 +63,31 @@ export function SocketProvider({ children }: { children: ReactNode }) {
     }
 
     function changeChannel(channelId: number) {
-        const channel = servers[currentServer].channels.findIndex(
-            (s) => s.id == channelId
-        )
+        const server = servers[currentServer]
+        if (!server) return
+
+        const channel = server.channels.findIndex((s) => s.id == channelId)
         setCurrentChannel(channel)
     }
 
     useEffect(() => {
-        function onUserServersSuccess(servers: CustomServer[]) {
+        function onUserServersSuccess(servers: Server[]) {
             setServers(servers)
         }
 
-        function onCreateServerSuccess(server: CustomServer) {
+        function onCreateServerSuccess(server: Server) {
             setServers((prev) => [...prev, server])
             setCurrentServer(servers.length - 1)
         }
 
-        function onJoinServerSuccess(server: CustomServer) {
+        function onJoinServerSuccess(server: Server) {
             setServers((prev) => [...prev, server])
             setCurrentServer(servers.length - 1)
         }
 
         function onCreateChannelSuccess(data: {
             serverId: number
-            channel: CustomChannel
+            channel: Channel
         }) {
             const { serverId, channel } = data
 
@@ -177,28 +161,31 @@ export function SocketProvider({ children }: { children: ReactNode }) {
 
         getUserServers()
 
-        socket.on('userServersSuccess', onUserServersSuccess)
-        socket.on('joinServerSuccess', onJoinServerSuccess)
-        socket.on('memberJoined', onMemberJoinSuccess)
-        socket.on('createChannelSuccess', onCreateChannelSuccess)
-        socket.on('messageServerSuccess', onMessageServerSuccess)
-        socket.on('leaveServerSuccess', onLeaveServerSuccess)
-        socket.on('deleteServerSuccess', onDeleteServerSuccess)
+        socketService.on('userServersSuccess', onUserServersSuccess)
+        socketService.on('joinServerSuccess', onJoinServerSuccess)
+        socketService.on('createServerSuccess', onCreateServerSuccess)
+        socketService.on('memberJoined', onMemberJoinSuccess)
+        socketService.on('createChannelSuccess', onCreateChannelSuccess)
+        socketService.on('messageServerSuccess', onMessageServerSuccess)
+        socketService.on('leaveServerSuccess', onLeaveServerSuccess)
+        socketService.on('deleteServerSuccess', onDeleteServerSuccess)
 
         return () => {
-            socket.off('userServersSuccess', onUserServersSuccess)
-            socket.off('joinServerSuccess', onJoinServerSuccess)
-            socket.off('memberJoined', onMemberJoinSuccess)
-            socket.off('createChannelSuccess', onCreateChannelSuccess)
-            socket.off('messageServerSuccess', onMessageServerSuccess)
-            socket.off('leaveServerSuccess', onLeaveServerSuccess)
-            socket.off('deleteServerSuccess', onDeleteServerSuccess)
+            socketService.off('userServersSuccess', onUserServersSuccess)
+            socketService.off('joinServerSuccess', onJoinServerSuccess)
+            socketService.off('createServerSuccess', onCreateServerSuccess)
+            socketService.off('memberJoined', onMemberJoinSuccess)
+            socketService.off('createChannelSuccess', onCreateChannelSuccess)
+            socketService.off('messageServerSuccess', onMessageServerSuccess)
+            socketService.off('leaveServerSuccess', onLeaveServerSuccess)
+            socketService.off('deleteServerSuccess', onDeleteServerSuccess)
         }
     }, [])
 
     return (
         <SocketContext.Provider
             value={{
+                createServer,
                 joinServer,
                 createChannel,
                 messageServer,

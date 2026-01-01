@@ -1,13 +1,13 @@
 'use client'
 
-import { CustomServer } from '@/domain/CustomServer'
+import { Server } from '@/domain/Server'
 
 import styles from './server.module.css'
 
 export default function ServerDescription({
     server,
 }: {
-    server: CustomServer
+    server: Server
 }) {
     return (
         <div className={styles.serverCard}>

@@ -1,27 +1,16 @@
 'use client'
 
 import { Menu, MenuItem } from '@mui/material'
+import { ContextMenuContextType, ContextMenuOption } from '@/types/contextMenu.types'
 import React, {
-    Component,
     createContext,
-    MouseEvent,
     ReactNode,
     useContext,
     useState,
 } from 'react'
 
-interface ContextMenuContextType {
-    openContextMenu: (
-        event: MouseEvent<HTMLDivElement>,
-        options: ContextMenuOption[]
-    ) => void
-    closeContextMenu: () => void
-}
-
-export type ContextMenuOption = {
-    label: string
-    action: (...args: Component[]) => void
-}
+// Re-export for backward compatibility
+export type { ContextMenuOption }
 
 const ContextMenuContext = createContext<ContextMenuContextType | undefined>(
     undefined
@@ -72,14 +61,10 @@ export function ContextMenuContextProvider({
                 open={contextMenuOpen}
                 onClose={closeContextMenu}
                 anchorReference="anchorPosition"
-                anchorPosition={
-                    contextMenuPosition.y !== 0 && contextMenuPosition.x !== 0
-                        ? {
-                              top: contextMenuPosition.y,
-                              left: contextMenuPosition.x,
-                          }
-                        : undefined
-                }
+                anchorPosition={{
+                    top: contextMenuPosition.y,
+                    left: contextMenuPosition.x,
+                }}
             >
                 {contextMenuOptions &&
                     contextMenuOptions.map((option, index) => (

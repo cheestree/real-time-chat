@@ -2,14 +2,14 @@
 
 import ChannelDescription from '@/components/channel/channel/ChannelDescription'
 import CustomToolBar from '@/components/chat/top/customtoolbar/CustomToolBar'
-import { CustomChannel } from '@/domain/CustomChannel'
+import { Channel } from '@/domain/Channel'
 import styles from './top.module.css'
 
 export default function ChatTop({
     channel,
     showMembersToggle,
 }: {
-    channel: CustomChannel
+    channel: Channel
     showMembersToggle: () => void
 }) {
     return (

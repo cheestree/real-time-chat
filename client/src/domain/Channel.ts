@@ -1,7 +1,7 @@
 import { Message } from './Message'
 import { UserProfile } from './UserProfile'
 
-export class CustomChannel {
+export class Channel {
     id: number = -1
     name: string
     description: string

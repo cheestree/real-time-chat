@@ -2,7 +2,7 @@
 
 import { ContextMenuOption } from '@/components/context/ContextMenuContext'
 import styles from '@/components/servers/server.module.css'
-import { CustomServer } from '@/domain/CustomServer'
+import { Server as ServerType } from '@/domain/Server'
 import { UserProfile } from '@/domain/UserProfile'
 import Image from 'next/image'
 import React from 'react'
@@ -15,7 +15,7 @@ export default function Server({
     leaveServer,
     changeServer,
 }: {
-    server: CustomServer
+    server: ServerType
     user: UserProfile
     deleteServer: (serverId: number) => void
     openContextMenu: (

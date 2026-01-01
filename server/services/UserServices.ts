@@ -6,6 +6,7 @@ import { UserLoginInput } from '../http/model/input/user/UserLoginInput'
 import { UserRegisterInput } from '../http/model/input/user/UserRegisterInput'
 import { LoginResult } from '../http/model/output/user/LoginResult'
 import { IUserRepository } from '../repository/interfaces/IUserRepository'
+import { logger } from '../utils/logger'
 import IUserServices from './interfaces/IUserServices'
 import { requireOrThrow } from './utils/requireOrThrow'
 
@@ -18,26 +19,18 @@ class UserServices implements IUserServices {
     }
     async login(input: UserLoginInput): Promise<LoginResult> {
         const user = await this.repo.getUserByUsername(input.username)
-        requireOrThrow(
-            BadRequestError,
-            user !== undefined,
-            'Something happened while fetching user'
-        )
+        requireOrThrow(BadRequestError, user !== undefined, 'User not found')
 
-        const verifiyPassword = await this.domain.verifyPassword(
+        const verifyPassword = await this.domain.verifyPassword(
             input.password,
-            user!.password
+            user.password
         )
 
-        requireOrThrow(
-            BadRequestError,
-            verifiyPassword,
-            'Password doesnt match'
-        )
+        requireOrThrow(BadRequestError, verifyPassword, 'Password doesnt match')
 
         const tokenPromise = await this.domain.createToken(
-            user!.internal_id,
-            user!.id,
+            user.internal_id,
+            user.id,
             input.username,
             input.password,
             this.domain.getExpireTime()
@@ -49,16 +42,16 @@ class UserServices implements IUserServices {
             maxAge: expireTime,
         }
         const authUser: AuthenticatedUser = {
-            internalId: user!.internal_id,
-            publicId: user!.id,
-            username: user!.username,
+            internalId: user.internal_id,
+            publicId: user.id,
+            username: user.username,
         }
         return { token: tokenPromise, options, user: authUser }
     }
     async logout(user: AuthenticatedUser): Promise<boolean> {
         return true
     }
-    async register(register: UserRegisterInput): Promise<{ id: string }> {
+    async register(register: UserRegisterInput): Promise<UserProfile> {
         const hashedPassword = await this.domain.hashPassword(register.password)
         const id = await this.repo.createUser({
             username: register.username,
@@ -68,27 +61,30 @@ class UserServices implements IUserServices {
         requireOrThrow(
             BadRequestError,
             id !== undefined,
-            'Something happened while registering'
+            'ID generation failed'
         )
-        return { id: id! }
+        return {
+            id: id,
+            username: register.username,
+        }
     }
     async checkAuth(token: string): Promise<AuthenticatedUser | undefined> {
         const credentials = await this.domain.validateToken(token)
         requireOrThrow(
             BadRequestError,
-            token !== undefined,
+            credentials !== undefined,
             'Something happened while validating token'
         )
-        const user = await this.repo.getUserById(credentials!.internalId)
+        const user = await this.repo.getUserById(credentials.internalId)
         requireOrThrow(
             BadRequestError,
             user !== undefined,
             'Something happened while fetching user'
         )
         return {
-            internalId: user!.internal_id,
-            publicId: user!.id,
-            username: user!.username,
+            internalId: user.internal_id,
+            publicId: user.id,
+            username: user.username,
         }
     }
     async getUserById(id: number): Promise<UserProfile> {

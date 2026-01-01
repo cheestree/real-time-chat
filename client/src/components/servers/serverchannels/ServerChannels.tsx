@@ -3,7 +3,7 @@
 import AddChannelForm from '@/components/channel/AddChannelForm'
 import Channels from '@/components/channel/Channels'
 import CreateChannel from '@/components/channel/createchannel/CreateChannel'
-import { CustomServer } from '@/domain/CustomServer'
+import { Server } from '@/domain/Server'
 
 import styles from './serverChannels.module.css'
 
@@ -15,7 +15,7 @@ export default function ServerChannels({
 }: {
     currentServer: number
     currentChannel: number
-    servers: CustomServer[]
+    servers: Server[]
     changeChannel: (id: number) => void
 }) {
     return (
