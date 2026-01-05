@@ -6,8 +6,11 @@ import { LoginResult } from '../../http/model/output/user/LoginResult'
 interface IUserServices {
     login(input: UserLoginInput): Promise<LoginResult>
     logout(user: AuthenticatedUser): Promise<boolean>
-    register(input: UserRegisterInput): Promise<{ id: string }>
+    register(
+        input: UserRegisterInput
+    ): Promise<{ id: string; username: string }>
     checkAuth(token: string): Promise<AuthenticatedUser | undefined>
+    getUserById(id: number): Promise<{ id: string; username: string }>
 }
 
 export default IUserServices

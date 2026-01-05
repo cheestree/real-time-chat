@@ -1,6 +1,5 @@
 import { Kysely, PostgresDialect } from 'kysely'
 import { Pool } from 'pg'
-import { logger } from '../../utils/logger'
 import { Database, UserInsertable, UserSelectable } from '../Database'
 import { IUserRepository } from '../interfaces/IUserRepository'
 import {

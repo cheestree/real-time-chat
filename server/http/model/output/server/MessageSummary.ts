@@ -1,5 +1,5 @@
 export interface MessageSummary {
-    id: number
+    id: string
     authorId: number
     content: string
     timestamp: string

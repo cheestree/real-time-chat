@@ -1,21 +1,38 @@
 import { Socket } from 'socket.io'
 import { AuthenticatedUser } from '../../../domain/user/AuthenticatedUser'
+import {
+    ClientToServerEvents,
+    InterServerEvents,
+    ServerToClientEvents,
+    SocketData,
+} from '../events'
 
-export function getAuthenticatedSocketUser(socket: Socket): AuthenticatedUser {
+type AuthenticatedSocket = Socket<
+    ClientToServerEvents,
+    ServerToClientEvents,
+    InterServerEvents,
+    SocketData
+>
+
+export function getAuthenticatedSocketUser(
+    socket: AuthenticatedSocket
+): AuthenticatedUser {
     if (!socket.data.user) {
         throw new Error('Socket is not authenticated')
     }
 
-    const { internalId, publicId, username } = socket.data.user
+    const { internalId, publicId, profile } = socket.data.user
 
     return {
         internalId,
         publicId,
-        username,
+        profile,
     }
 }
 
-export function requireSocketAuthentication(socket: Socket): boolean {
+export function requireSocketAuthentication(
+    socket: AuthenticatedSocket
+): boolean {
     if (!socket.data.user) {
         socket.emit('error', { message: 'Not authenticated' })
         socket.disconnect()

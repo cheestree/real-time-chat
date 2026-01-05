@@ -1,29 +1,50 @@
 import { Server } from '../../domain/server/Server'
-import { UserProfile } from '../../domain/user/UserProfile'
-import { ChannelCreateInput } from '../../http/model/input/channel/ChannelCreateInput'
+import { AuthenticatedUser } from '../../domain/user/AuthenticatedUser'
 import { MessageCreateInput } from '../../http/model/input/message/MessageCreateInput'
-import { ServerCreateInput } from '../../http/model/input/server/ServerCreateInput'
-import { ServerDeleteInput } from '../../http/model/input/server/ServerDeleteInput'
 import { ServerLeaveInput } from '../../http/model/input/server/ServerLeaveInput'
 import { ChannelSummary } from '../../http/model/output/server/ChannelSummary'
 import { MessageSummary } from '../../http/model/output/server/MessageSummary'
+import { UserLeft } from '../../http/model/output/server/UserLeft'
+
+export interface InterServerEvents {
+    ping: () => void
+}
+
+export interface SocketData {
+    user: AuthenticatedUser
+}
 
 export interface ClientToServerEvents {
-    createServer: (data: ServerCreateInput) => void
-    createChannel: (data: ChannelCreateInput) => void
     messageServer: (data: MessageCreateInput) => void
     leaveServer: (data: ServerLeaveInput) => void
-    deleteServer: (data: ServerDeleteInput) => void
     disconnect: () => void
+    joinChannel: (data: { channelId: string }) => void
+    joinServer: (data: { serverId: string }) => void
+    leaveChannel: (data: { channelId: string }) => void
 }
 
 export interface ServerToClientEvents {
     serverCreated: (server: Server) => void
-    userJoinedServer: (data: { serverId: number; user: UserProfile }) => void
+    userJoinedServer: (data: {
+        serverId: string
+        user: { id: string; username: string }
+    }) => void
     channelCreated: (channel: ChannelSummary) => void
-    messageSent: (message: MessageSummary) => void
-    userLeftServer: (data: { serverId: number; userId: string }) => void
-    serverDeleted: (serverId: number) => void
+    channelDeleted: (data: { serverId: string; channelId: string }) => void
+    messageSent: (
+        message: MessageSummary & { serverId?: string; channelId: string }
+    ) => void
+    messagesPaged: (data: {
+        messages: MessageSummary[]
+        nextPageState?: string
+        channelId: string
+    }) => void
+    channelsPaged: (data: {
+        channels: ChannelSummary[]
+        serverId: string
+    }) => void
+    userLeftServer: (data: UserLeft) => void
+    serverDeleted: (serverId: string) => void
     error: (error: SocketError) => void
 }
 

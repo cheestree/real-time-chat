@@ -1,20 +1,18 @@
+import { Channel } from '../../domain/channel/Channel'
 import { Server } from '../../domain/server/Server'
 import { AuthenticatedUser } from '../../domain/user/AuthenticatedUser'
 import { ChannelCreateInput } from '../../http/model/input/channel/ChannelCreateInput'
 import { ServerCreateInput } from '../../http/model/input/server/ServerCreateInput'
 import { ServerDeleteInput } from '../../http/model/input/server/ServerDeleteInput'
-import { ServerDetailsInput } from '../../http/model/input/server/ServerDetailsInput'
 import { ServerExistsInput } from '../../http/model/input/server/ServerExistsInput'
 import { ServerJoinInput } from '../../http/model/input/server/ServerJoinInput'
 import { ServerLeaveInput } from '../../http/model/input/server/ServerLeaveInput'
 import { UserServersInput } from '../../http/model/input/server/UserServersInput'
-import { ChannelSummary } from '../../http/model/output/server/ChannelSummary'
 import { ServerDetail } from '../../http/model/output/server/ServerDetail'
-import { ServerSummary } from '../../http/model/output/server/ServerSummary'
 
 interface IServerServices {
-    getUserServers: (input: UserServersInput) => Promise<ServerSummary[]>
-    getServerById: (input: ServerDetailsInput) => Promise<Server>
+    getUserServers: (input: UserServersInput) => Promise<Server[]>
+    getServerById: (serverId: string) => Promise<Server>
     serverExists: (input: ServerExistsInput) => Promise<boolean>
     createServer: (
         user: AuthenticatedUser,
@@ -23,7 +21,7 @@ interface IServerServices {
     createChannel: (
         user: AuthenticatedUser,
         input: ChannelCreateInput
-    ) => Promise<ChannelSummary>
+    ) => Promise<Channel>
     addUserToServer: (
         user: AuthenticatedUser,
         input: ServerJoinInput
@@ -36,7 +34,18 @@ interface IServerServices {
         user: AuthenticatedUser,
         input: ServerDeleteInput
     ) => Promise<boolean>
-    getServerDetails: (input: ServerDetailsInput) => Promise<ServerDetail>
+    deleteChannel: (
+        user: AuthenticatedUser,
+        serverId: string,
+        channelId: string
+    ) => Promise<boolean>
+    getServerDetails: (serverId: string) => Promise<ServerDetail>
+    getPagedChannels: (
+        user: AuthenticatedUser,
+        serverId: string,
+        limit: number,
+        offset: number
+    ) => Promise<Channel[]>
 }
 
 export default IServerServices

@@ -6,10 +6,21 @@ import { createServer } from 'http'
 import { Server, Socket } from 'socket.io'
 import {
     ClientToServerEvents,
+    InterServerEvents,
     ServerToClientEvents,
+    SocketData,
 } from './controller/ws/events'
+
+interface SocketRequest extends express.Request {
+    io: Server<
+        ClientToServerEvents,
+        ServerToClientEvents,
+        InterServerEvents,
+        SocketData
+    >
+}
+
 import SocketHandlers from './controller/ws/SocketHandlers'
-import { Credentials } from './domain/user/Credentials'
 import './env'
 import ErrorHandler from './http/middleware/ErrorHandler'
 import { messageRoutes } from './routes/MessageRoutes'
@@ -21,10 +32,6 @@ import { logger } from './utils/logger'
 
 envCheck()
 
-interface SocketData {
-    user: Credentials
-}
-
 const app = express()
 const httpServer = createServer(app)
 
@@ -32,7 +39,7 @@ const sessionMiddleware = session({
     secret: process.env.JWT_SECRET!,
     resave: false,
     saveUninitialized: true,
-    cookie: { secure: true },
+    cookie: { secure: process.env.NODE_ENV === 'production' },
 })
 
 const config = {
@@ -43,10 +50,12 @@ const config = {
     },
 }
 
-const io = new Server<ClientToServerEvents, ServerToClientEvents, SocketData>(
-    httpServer,
-    config
-)
+const io = new Server<
+    ClientToServerEvents,
+    ServerToClientEvents,
+    InterServerEvents,
+    SocketData
+>(httpServer, config)
 
 io.engine.use(sessionMiddleware)
 
@@ -69,8 +78,14 @@ io.use(async (socket, next) => {
     next()
 })
 
+// Handle socket connections and register handlers
 const onConnection = (
-    socket: Socket<ClientToServerEvents, ServerToClientEvents>
+    socket: Socket<
+        ClientToServerEvents,
+        ServerToClientEvents,
+        InterServerEvents,
+        SocketData
+    >
 ) => {
     SocketHandlers(
         io,
@@ -87,9 +102,30 @@ app.use(sessionMiddleware)
 app.use(bodyParser.json())
 app.use(cookieParser())
 
-app.use('/api', userRoutes.router)
-app.use('/api', serverRoutes.router)
-app.use('/api', messageRoutes.router)
+app.use(
+    '/api',
+    (req, res, next) => {
+        ;(req as unknown as SocketRequest).io = io
+        next()
+    },
+    userRoutes.router
+)
+app.use(
+    '/api',
+    (req, res, next) => {
+        ;(req as unknown as SocketRequest).io = io
+        next()
+    },
+    serverRoutes.router
+)
+app.use(
+    '/api',
+    (req, res, next) => {
+        ;(req as unknown as SocketRequest).io = io
+        next()
+    },
+    messageRoutes.router
+)
 app.use(ErrorHandler)
 
 // Start the server

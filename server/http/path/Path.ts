@@ -11,6 +11,8 @@ const Path = {
         INIT: '/init',
     },
     SERVERS: '/servers',
+    CHANNELS: '/channels',
+    MESSAGES: '/messages',
 } as const
 
 export { Path }

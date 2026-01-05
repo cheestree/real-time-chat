@@ -2,22 +2,22 @@ import { MessageSummary } from '../../http/model/output/server/MessageSummary'
 import { ChannelType } from '../channel/Channel'
 
 export class Message {
-    id: number
+    id: string
     type: ChannelType
-    serverId?: number
-    channelId: number
+    serverId?: string
+    channelId: string
     authorId: number
     content: string
     timestamp: Date
 
     constructor(
-        id: number,
+        id: string,
         type: ChannelType,
-        channelId: number,
+        channelId: string,
         authorId: number,
         content: string,
         timestamp: Date,
-        serverId?: number
+        serverId?: string
     ) {
         this.id = id
         this.type = type

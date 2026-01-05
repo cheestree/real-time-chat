@@ -1,114 +1,60 @@
-import type { Request } from 'express'
 import { Server, Socket } from 'socket.io'
-import { NotFoundError } from '../../domain/error/Error'
-import { ChannelCreateInput } from '../../http/model/input/channel/ChannelCreateInput'
-import { MessageCreateInput } from '../../http/model/input/message/MessageCreateInput'
-import { ServerCreateInput } from '../../http/model/input/server/ServerCreateInput'
-import { ServerDeleteInput } from '../../http/model/input/server/ServerDeleteInput'
-import { ServerLeaveInput } from '../../http/model/input/server/ServerLeaveInput'
-import { UserLeft } from '../../http/model/output/server/UserLeft'
 import MessageServices from '../../services/MessageServices'
 import ServerServices from '../../services/ServerServices'
 import UserServices from '../../services/UserServices'
-import { requireOrThrow } from '../../services/utils/requireOrThrow'
 import { logger } from '../../utils/logger'
-import { ClientToServerEvents, ServerToClientEvents } from './events'
-import { asyncSocketHandler } from './utils/asyncSocketHandler'
+import {
+    ClientToServerEvents,
+    InterServerEvents,
+    ServerToClientEvents,
+    SocketData,
+} from './events'
+import { SocketManager } from './SocketManager'
 import {
     getAuthenticatedSocketUser,
     requireSocketAuthentication,
 } from './utils/socketAuth'
 
 function registerSocketHandlers(
-    io: Server<ClientToServerEvents, ServerToClientEvents>,
-    socket: Socket<ClientToServerEvents, ServerToClientEvents>,
+    io: Server<
+        ClientToServerEvents,
+        ServerToClientEvents,
+        InterServerEvents,
+        SocketData
+    >,
+    socket: Socket<
+        ClientToServerEvents,
+        ServerToClientEvents,
+        InterServerEvents,
+        SocketData
+    >,
     userServices: UserServices,
     serverServices: ServerServices,
     messageServices: MessageServices
 ) {
-    console.log(`Client connected to main`)
-
-    const req = socket.request as Request
-    socket.join(req.session.id)
-
     if (!requireSocketAuthentication(socket)) {
         return
     }
 
+    logger.info(`Client ${socket.id} connected to main`)
+
     const authenticatedUser = getAuthenticatedSocketUser(socket)
+    socket.join(`user_${authenticatedUser.internalId}`)
 
-    const createServer = asyncSocketHandler<ServerCreateInput>(async (data) => {
-        const server = await serverServices.createServer(
-            authenticatedUser,
-            data
-        )
-        socket.join(`${server.id}`)
-        socket.emit('serverCreated', server)
-    }, socket)
-
-    const createChannel = asyncSocketHandler<ChannelCreateInput>(
-        async (data) => {
-            const channel = await serverServices.createChannel(
-                authenticatedUser,
-                data
-            )
-            io.to(`${data.serverId}`).emit('channelCreated', channel)
-        },
-        socket
+    const manager = new SocketManager(
+        io,
+        socket,
+        serverServices,
+        messageServices,
+        authenticatedUser
     )
 
-    const messageServer = asyncSocketHandler<MessageCreateInput>(
-        async (data) => {
-            const message = await messageServices.sendMessage(
-                authenticatedUser,
-                data
-            )
-
-            io.to(`${data.serverId}`).emit('messageSent', message)
-        },
-        socket
-    )
-
-    const leaveServer = asyncSocketHandler<ServerLeaveInput>(async (data) => {
-        const server = await serverServices.leaveServer(authenticatedUser, data)
-        const left: UserLeft = {
-            serverId: data.id,
-            userId: authenticatedUser.publicId,
-            username: authenticatedUser.username,
-        }
-
-        socket.leave(`${server}`)
-        io.to(`${data.id}`).emit('userLeftServer', left)
-    }, socket)
-
-    const deleteServer = asyncSocketHandler<ServerDeleteInput>(async (data) => {
-        requireOrThrow(
-            NotFoundError,
-            await serverServices.serverExists({ id: data.id }),
-            "Server doesn't exist."
-        )
-        const usersToNotify = await serverServices.getServerById({
-            id: data.id,
-        })
-        await serverServices.deleteServer(authenticatedUser, data)
-        usersToNotify!.users.forEach((u) =>
-            io.to(`${u}`).emit('serverDeleted', data.id)
-        )
-        socket.leave(`${data.id}`)
-        io.to(`${data.id}`).emit('serverDeleted', data.id)
-    }, socket)
-
-    const disconnect = asyncSocketHandler(async () => {
-        logger.info(`Client disconnected from main`)
-        socket.disconnect()
-    }, socket)
-
-    socket.on('createServer', createServer)
-    socket.on('createChannel', createChannel)
-    socket.on('messageServer', messageServer)
-    socket.on('leaveServer', leaveServer)
-    socket.on('deleteServer', deleteServer)
-    socket.on('disconnect', disconnect)
+    socket.on('messageServer', manager.messageServer)
+    socket.on('leaveServer', manager.leaveServer)
+    socket.on('disconnect', manager.disconnect)
+    socket.on('joinChannel', manager.joinChannel)
+    socket.on('joinServer', manager.joinServer)
+    socket.on('leaveChannel', manager.leaveChannel)
 }
 
 export default registerSocketHandlers

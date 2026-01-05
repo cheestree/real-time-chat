@@ -1,9 +1,9 @@
 export interface ServerDetail {
-    id: number
+    id: string
     name: string
     description: string
     icon: string
     ownerIds: number[]
-    channelIds: number[]
+    channelIds: string[]
     userIds: number[]
 }

@@ -1,8 +1,8 @@
 export interface ChannelSummary {
     messageCount?: number
-    lastMessageId?: number
-    serverId: number
+    lastMessageId?: string
+    serverId: string
     description: string
     name: string
-    id: number
+    id: string
 }

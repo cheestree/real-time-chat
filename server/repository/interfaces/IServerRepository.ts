@@ -5,7 +5,7 @@ import { Server } from '../../domain/server/Server'
 export interface IServerRepository {
     getUserServers(userId: number): Promise<Server[]>
     userExists(userId: UUID): Promise<boolean>
-    getServerById(serverId: number): Promise<Server | undefined>
+    getServerById(serverId: string): Promise<Server | undefined>
     createServer(
         name: string,
         userId: number,
@@ -13,19 +13,25 @@ export interface IServerRepository {
         icon?: string
     ): Promise<Server>
     createChannel(
-        serverId: number,
+        serverId: string,
         channelName: string,
         channelDescription: string,
         type?: ChannelType
     ): Promise<Channel>
     getServerByName(serverName: string): Promise<Server | undefined>
-    serverExists(serverId: number): Promise<boolean>
-    channelExists(serverId: number, channelId: number): Promise<boolean>
-    addUserToServer(serverId: number, userId: number): Promise<Server>
-    leaveServer(serverId: number, userId: number): Promise<boolean>
-    deleteServer(serverId: number, userId: number): Promise<boolean>
-    isServerOwner(serverId: number, userId: number): Promise<boolean>
-    containsUser(serverId: number, userId: number): Promise<boolean>
-    getChannelIdsByServerId(serverId: number): Promise<number[]>
-    getUserIdsByServerId(serverId: number): Promise<number[]>
+    serverExists(serverId: string): Promise<boolean>
+    channelExists(serverId: string, channelId: string): Promise<boolean>
+    addUserToServer(serverId: string, userId: number): Promise<Server>
+    leaveServer(serverId: string, userId: number): Promise<boolean>
+    deleteServer(serverId: string, userId: number): Promise<boolean>
+    deleteChannel(serverId: string, channelId: string): Promise<boolean>
+    isServerOwner(serverId: string, userId: number): Promise<boolean>
+    containsUser(serverId: string, userId: number): Promise<boolean>
+    getChannelIdsByServerId(serverId: string): Promise<string[]>
+    getUserIdsByServerId(serverId: string): Promise<number[]>
+    getPagedChannels(
+        serverId: string,
+        limit: number,
+        offset: number
+    ): Promise<Channel[]>
 }

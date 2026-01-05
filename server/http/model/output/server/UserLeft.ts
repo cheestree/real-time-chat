@@ -1,5 +1,7 @@
 export type UserLeft = {
-    userId: string
-    username: string
-    serverId: number
+    profile: {
+        id: string
+        username: string
+    }
+    serverId: string
 }

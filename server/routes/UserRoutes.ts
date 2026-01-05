@@ -1,22 +1,37 @@
 import { Router } from 'express'
+import HybridServerController from '../controller/HybridServerController'
 import UserController from '../controller/UserController'
 import authenticatorWithServices from '../http/middleware/Authenticator'
 import { validateZod } from '../http/middleware/ValidateZod'
 import { UserLoginSchema } from '../http/model/input/user/UserLoginInput'
 import { UserRegisterSchema } from '../http/model/input/user/UserRegisterInput'
 import { Path } from '../http/path/Path'
+import { createServerRepository } from '../repository/server/createServerRepository'
 import { createUserRepository } from '../repository/user/createUserRepository'
+import ServerServices from '../services/ServerServices'
 import UserServices from '../services/UserServices'
 
 class UserRoutes {
     public router = Router()
     public userServices: UserServices
     private userController: UserController
+    private hybridServerController: HybridServerController
 
     constructor() {
         const userRepository = createUserRepository()
         this.userServices = new UserServices(userRepository)
         this.userController = new UserController(this.userServices)
+
+        const serverRepository = createServerRepository()
+        const serverServices = new ServerServices(
+            serverRepository,
+            userRepository
+        )
+        this.hybridServerController = new HybridServerController(
+            serverServices,
+            this.userServices
+        )
+
         this.initRoutes()
     }
 
@@ -29,7 +44,7 @@ class UserRoutes {
         this.router.post(
             Path.USERS.LOGOUT,
             authenticatorWithServices(this.userServices),
-            this.userController.logout
+            this.hybridServerController.logout
         )
         this.router.post(
             Path.USERS.REGISTER,

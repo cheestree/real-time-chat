@@ -9,8 +9,16 @@ export interface UsersTable {
     created_at: Generated<Date>
 }
 
+export interface ServerMembersTable {
+    server_id: string
+    user_id: number
+    role: Generated<string>
+    joined_at: Generated<Date>
+}
+
 export interface Database {
     'rtchat.users': UsersTable
+    'rtchat.server_members': ServerMembersTable
 }
 
 export type UserInsertable = Insertable<Database['rtchat.users']>

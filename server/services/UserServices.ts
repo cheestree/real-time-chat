@@ -6,7 +6,6 @@ import { UserLoginInput } from '../http/model/input/user/UserLoginInput'
 import { UserRegisterInput } from '../http/model/input/user/UserRegisterInput'
 import { LoginResult } from '../http/model/output/user/LoginResult'
 import { IUserRepository } from '../repository/interfaces/IUserRepository'
-import { logger } from '../utils/logger'
 import IUserServices from './interfaces/IUserServices'
 import { requireOrThrow } from './utils/requireOrThrow'
 
@@ -44,7 +43,7 @@ class UserServices implements IUserServices {
         const authUser: AuthenticatedUser = {
             internalId: user.internal_id,
             publicId: user.id,
-            username: user.username,
+            profile: { id: user.id, username: user.username },
         }
         return { token: tokenPromise, options, user: authUser }
     }
@@ -63,10 +62,7 @@ class UserServices implements IUserServices {
             id !== undefined,
             'ID generation failed'
         )
-        return {
-            id: id,
-            username: register.username,
-        }
+        return new UserProfile(id, register.username)
     }
     async checkAuth(token: string): Promise<AuthenticatedUser | undefined> {
         const credentials = await this.domain.validateToken(token)
@@ -84,17 +80,17 @@ class UserServices implements IUserServices {
         return {
             internalId: user.internal_id,
             publicId: user.id,
-            username: user.username,
+            profile: { id: user.id, username: user.username },
         }
     }
-    async getUserById(id: number): Promise<UserProfile> {
+    async getUserById(id: number): Promise<{ id: string; username: string }> {
         const user = await this.repo.getUserById(id)
         requireOrThrow(
             BadRequestError,
-            id !== undefined,
+            user !== undefined,
             'Something happened while fetching user'
         )
-        return { id: user!.id, username: user!.username }
+        return new UserProfile(user.id, user.username)
     }
 }
 
