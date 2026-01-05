@@ -4,32 +4,9 @@ import { useSocket } from '@/components/context/SocketContext'
 import Member from '@/components/members/Member'
 import { Fragment, useState } from 'react'
 
+import { Channel } from '@/domain/Channel'
 import { Server } from '@/domain/Server'
-import styled from 'styled-components'
 import styles from './bottom.module.css'
-
-const Scrollbar = styled.div`
-    &::-webkit-scrollbar {
-        width: 4px;
-        background: transparent;
-    }
-
-    /* Track */
-    &::-webkit-scrollbar-track {
-        background: transparent;
-    }
-
-    /* Handle */
-    &::-webkit-scrollbar-thumb {
-        background: #888;
-        border-radius: 16px;
-    }
-
-    /* Handle on hover */
-    &::-webkit-scrollbar-thumb:hover {
-        background: #555;
-    }
-`
 
 export default function ChatBottom({
     currentServer,
@@ -37,7 +14,7 @@ export default function ChatBottom({
     isShowMembers,
 }: {
     currentServer: Server
-    currentChannel: number
+    currentChannel: Channel
     isShowMembers: boolean
 }) {
     const { messageServer } = useSocket()
@@ -82,25 +59,21 @@ export default function ChatBottom({
     return (
         <div className={styles.bottom}>
             <div className={styles.chatArea}>
-                <Scrollbar className={styles.messages}>
-                    {currentServer &&
-                        currentServer.channels[currentChannel] &&
-                        currentServer.channels[currentChannel].messages.map(
-                            (message, index) => (
-                                <div key={`${message.author}-${index}`}>
-                                    {message.author}:{' '}
-                                    {extractURLs(message.message).map(
-                                        (element, i) => (
-                                            <Fragment key={i}>
-                                                {element}
-                                            </Fragment>
-                                        )
-                                    )}
-                                </div>
-                            )
-                        )}
-                </Scrollbar>
-                {currentServer && (
+                <div className={styles.messages}>
+                    {currentChannel &&
+                        currentChannel.messages &&
+                        currentChannel.messages.map((message, index) => (
+                            <div key={`${message.authorId}-${index}`}>
+                                {message.authorId}:{' '}
+                                {extractURLs(message.content).map(
+                                    (element, i) => (
+                                        <Fragment key={i}>{element}</Fragment>
+                                    )
+                                )}
+                            </div>
+                        ))}
+                </div>
+                {currentChannel && (
                     <div className={styles.sendMessage}>
                         <input
                             onChange={(e) => setChatMessage(e.target.value)}
@@ -108,9 +81,7 @@ export default function ChatBottom({
                             type="text"
                             className={styles.sendMessageInput}
                             placeholder={
-                                'Send message to ' +
-                                (currentServer.channels[currentChannel]?.name ||
-                                    '')
+                                'Send message to ' + currentChannel.name
                             }
                             onKeyDown={handleKeyDown}
                         />
@@ -118,17 +89,19 @@ export default function ChatBottom({
                 )}
             </div>
             {isShowMembers && (
-                <Scrollbar className={styles.memberArea}>
+                <div className={styles.memberArea}>
                     {currentServer &&
-                        currentServer.users.map((user, key) => (
+                        currentServer.users &&
+                        currentServer.users.map((user) => (
                             <Member
+                                key={user.id}
+                                id={user.id}
                                 name={user.username}
                                 icon={''}
                                 status={true}
-                                key={key}
                             />
                         ))}
-                </Scrollbar>
+                </div>
             )}
         </div>
     )

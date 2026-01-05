@@ -1,13 +1,10 @@
 'use client'
 
-import { Menu, MenuItem } from '@mui/material'
-import { ContextMenuContextType, ContextMenuOption } from '@/types/contextMenu.types'
-import React, {
-    createContext,
-    ReactNode,
-    useContext,
-    useState,
-} from 'react'
+import {
+    ContextMenuContextType,
+    ContextMenuOption,
+} from '@/types/contextMenu.types'
+import React, { createContext, ReactNode, useContext, useState } from 'react'
 
 // Re-export for backward compatibility
 export type { ContextMenuOption }
@@ -57,25 +54,54 @@ export function ContextMenuContextProvider({
                 closeContextMenu,
             }}
         >
-            <Menu
-                open={contextMenuOpen}
-                onClose={closeContextMenu}
-                anchorReference="anchorPosition"
-                anchorPosition={{
-                    top: contextMenuPosition.y,
-                    left: contextMenuPosition.x,
-                }}
-            >
-                {contextMenuOptions &&
-                    contextMenuOptions.map((option, index) => (
-                        <MenuItem
-                            key={index}
-                            onClick={() => handleOptionClick(option.action)}
-                        >
-                            {option.label}
-                        </MenuItem>
-                    ))}
-            </Menu>
+            {contextMenuOpen && (
+                <div
+                    style={{
+                        position: 'fixed',
+                        top: 0,
+                        left: 0,
+                        width: '100vw',
+                        height: '100vh',
+                        zIndex: 2000,
+                    }}
+                    onClick={closeContextMenu}
+                >
+                    <ul
+                        style={{
+                            position: 'absolute',
+                            top: contextMenuPosition.y,
+                            left: contextMenuPosition.x,
+                            background: '#222',
+                            color: '#fff',
+                            borderRadius: 4,
+                            boxShadow: '0 2px 8px rgba(0,0,0,0.15)',
+                            padding: 0,
+                            margin: 0,
+                            minWidth: 160,
+                            listStyle: 'none',
+                            zIndex: 2001,
+                        }}
+                        onClick={(e) => e.stopPropagation()}
+                    >
+                        {contextMenuOptions.map((option, idx) => (
+                            <li
+                                key={idx}
+                                style={{
+                                    padding: '8px 16px',
+                                    cursor: 'pointer',
+                                    borderBottom:
+                                        idx !== contextMenuOptions.length - 1
+                                            ? '1px solid #333'
+                                            : 'none',
+                                }}
+                                onClick={() => handleOptionClick(option.action)}
+                            >
+                                {option.label}
+                            </li>
+                        ))}
+                    </ul>
+                </div>
+            )}
             {children}
         </ContextMenuContext.Provider>
     )

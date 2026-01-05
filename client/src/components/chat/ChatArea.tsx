@@ -8,20 +8,20 @@ import { useState } from 'react'
 import styles from './chat.module.css'
 
 export default function ChatArea() {
-    const { servers, currentServer, currentChannel } = useSocket()
+    const { currentServer, currentChannel } = useSocket()
     const [showMembers, setShowMembers] = useState(false)
 
     return (
         <div className={styles.mainWindow}>
-            {servers[currentServer] && servers[currentServer].channels[currentChannel] && (
+            {currentServer && currentChannel && (
                 <ChatTop
-                    channel={servers[currentServer].channels[currentChannel]!}
+                    channel={currentChannel}
                     showMembersToggle={() => setShowMembers(!showMembers)}
                 />
             )}
-            {servers[currentServer] && servers[currentServer].channels[currentChannel] && (
+            {currentServer && currentChannel && (
                 <ChatBottom
-                    currentServer={servers[currentServer]}
+                    currentServer={currentServer}
                     currentChannel={currentChannel}
                     isShowMembers={showMembers}
                 />

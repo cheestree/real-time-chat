@@ -4,4 +4,3 @@ export interface OverlayContextType {
     handleClose: () => void
     handleShow: (modal: ReactElement) => void
 }
-

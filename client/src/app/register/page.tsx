@@ -1,10 +1,8 @@
 'use client'
 
 import { useAuth } from '@/components/context/AuthContext'
-import { Button, FormGroup, TextField } from '@mui/material'
 import { useRouter } from 'next/navigation'
 import { FormEvent, useEffect, useState } from 'react'
-import styles from './register.module.css'
 
 function RegisterPage() {
     const { register, isLoggedIn } = useAuth()
@@ -38,60 +36,41 @@ function RegisterPage() {
     }
 
     return (
-        <div className={styles.container}>
-            <div className={styles.register}>
-                <form onSubmit={handleSubmit}>
-                    <FormGroup>
-                        <TextField
-                            type="text"
-                            label="Username"
-                            placeholder="Enter username"
-                            value={username}
-                            onChange={(e) => setUsername(e.target.value)}
-                            required
-                            fullWidth
-                        />
-                    </FormGroup>
-                    <FormGroup>
-                        <TextField
-                            type="email"
-                            label="Email"
-                            placeholder="Email"
-                            value={email}
-                            onChange={(e) => setEmail(e.target.value)}
-                            required
-                            fullWidth
-                        />
-                    </FormGroup>
-                    <FormGroup>
-                        <TextField
-                            type="password"
-                            label="Password"
-                            placeholder="Password"
-                            value={password}
-                            onChange={(e) => setPassword(e.target.value)}
-                            required
-                            fullWidth
-                        />
-                    </FormGroup>
+        <section className="formContainer">
+            <form onSubmit={handleSubmit} className="formInput">
+                <input
+                    type="text"
+                    placeholder="Username"
+                    value={username}
+                    onChange={(e) => setUsername(e.target.value)}
+                    required
+                />
+                <input
+                    type="email"
+                    placeholder="Email"
+                    value={email}
+                    onChange={(e) => setEmail(e.target.value)}
+                    required
+                />
+                <input
+                    type="password"
+                    placeholder="Password"
+                    value={password}
+                    onChange={(e) => setPassword(e.target.value)}
+                    required
+                />
+                {error && (
+                    <div style={{ color: 'red', marginBottom: 8 }}>{error}</div>
+                )}
+                {success && (
+                    <div style={{ color: 'green', marginBottom: 8 }}>
+                        Registration successful! Redirecting...
+                    </div>
+                )}
 
-                    {error && (
-                        <div style={{ color: 'red', marginBottom: 8 }}>
-                            {error}
-                        </div>
-                    )}
-                    {success && (
-                        <div style={{ color: 'green', marginBottom: 8 }}>
-                            Registration successful! Redirecting...
-                        </div>
-                    )}
-
-                    <Button variant="contained" color="primary" type="submit">
-                        Submit
-                    </Button>
-                </form>
-            </div>
-        </div>
+                <button type="submit">Submit</button>
+            </form>
+        </section>
     )
 }
 

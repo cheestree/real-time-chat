@@ -1,12 +1,12 @@
-.channel {
+.container {
     display: flex;
     flex-direction: row;
     align-items: center;
     margin: 1rem;
 }
 
-.channelName {
+.name {
 }
 
-.channelDescription {
+.description {
 }

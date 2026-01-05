@@ -19,4 +19,3 @@ export interface AuthContextType {
     isLoading: boolean
     error: string | null
 }
-

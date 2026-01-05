@@ -1,14 +1,21 @@
 import { Message } from './Message'
-import { UserProfile } from './UserProfile'
 
 export class Channel {
-    id: number = -1
+    id: string
+    serverId: string
     name: string
     description: string
     messages: Message[]
-    blacklist: UserProfile[]
-    whitelist: UserProfile[]
-    constructor(channelName: string, description: string) {
+    blacklist: string[]
+    whitelist: string[]
+    constructor(
+        id: string,
+        serverId: string,
+        channelName: string,
+        description: string
+    ) {
+        this.id = id
+        this.serverId = serverId
         this.name = channelName
         this.description = description
         this.messages = []

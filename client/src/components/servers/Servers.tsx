@@ -5,34 +5,9 @@ import { useContextMenu } from '@/components/context/ContextMenuContext'
 import { useOverlay } from '@/components/context/overlay/OverlayContext'
 import { useSocket } from '@/components/context/SocketContext'
 import ServerCreateForm from '@/components/servers/ServerCreateForm'
-import { Add } from '@mui/icons-material'
-import styled from 'styled-components'
 
 import Server from '@/components/servers/server/Server'
 import styles from './server.module.css'
-
-const Scrollbar = styled.div`
-    &::-webkit-scrollbar {
-        width: 4px;
-        background: transparent;
-    }
-
-    /* Track */
-    &::-webkit-scrollbar-track {
-        background: transparent;
-    }
-
-    /* Handle */
-    &::-webkit-scrollbar-thumb {
-        background: transparent;
-        border-radius: 16px;
-    }
-
-    /* Handle on hover */
-    &::-webkit-scrollbar-thumb:hover {
-        background: #555;
-    }
-`
 
 export default function Servers() {
     const { servers, changeServer, deleteServer, leaveServer } = useSocket()
@@ -41,7 +16,7 @@ export default function Servers() {
     const { loggedUser } = useAuth()
 
     return (
-        <Scrollbar className={styles.servers}>
+        <div className={styles.servers}>
             {servers &&
                 servers.map((server) => (
                     <Server
@@ -49,7 +24,7 @@ export default function Servers() {
                         server={server}
                         user={loggedUser!}
                         openContextMenu={openContextMenu}
-                        deleteServer={deleteServer}
+                        deleteServer={() => deleteServer(server.id)}
                         leaveServer={leaveServer}
                         changeServer={changeServer}
                     />
@@ -58,8 +33,8 @@ export default function Servers() {
                 className={styles.server}
                 onClick={() => handleShow(<ServerCreateForm />)}
             >
-                <Add />
+                <span className={styles.addServer}>+</span>
             </button>
-        </Scrollbar>
+        </div>
     )
 }

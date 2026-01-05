@@ -1,10 +1,8 @@
 'use client'
 
 import { useAuth } from '@/components/context/AuthContext'
-import { Button, FormGroup, TextField } from '@mui/material'
 import { useRouter } from 'next/navigation'
 import { FormEvent, useEffect, useState } from 'react'
-import styles from './login.module.css'
 
 function LoginPage() {
     const { login, isLoggedIn } = useAuth()
@@ -33,43 +31,31 @@ function LoginPage() {
     }
 
     return (
-        <div className={styles.container}>
-            <div className={styles.login}>
-                <form onSubmit={handleSubmit}>
-                    <FormGroup className="mb-3">
-                        <TextField
-                            type="text"
-                            label="Username"
-                            value={username}
-                            onChange={(e) => setUsername(e.target.value)}
-                            required
-                            fullWidth
-                        />
-                    </FormGroup>
+        <section className="formContainer">
+            <form onSubmit={handleSubmit} className="formInput">
+                <input
+                    type="text"
+                    placeholder="Username"
+                    value={username}
+                    onChange={(e) => setUsername(e.target.value)}
+                    required
+                />
 
-                    <FormGroup className="mb-3">
-                        <TextField
-                            type="password"
-                            label="Password"
-                            value={password}
-                            onChange={(e) => setPassword(e.target.value)}
-                            required
-                            fullWidth
-                        />
-                    </FormGroup>
+                <input
+                    type="password"
+                    placeholder="Password"
+                    value={password}
+                    onChange={(e) => setPassword(e.target.value)}
+                    required
+                />
 
-                    {error && (
-                        <div style={{ color: 'red', marginBottom: 8 }}>
-                            {error}
-                        </div>
-                    )}
+                {error && (
+                    <div style={{ color: 'red', marginBottom: 8 }}>{error}</div>
+                )}
 
-                    <Button variant="contained" color="primary" type="submit">
-                        Login
-                    </Button>
-                </form>
-            </div>
-        </div>
+                <button type="submit">Login</button>
+            </form>
+        </section>
     )
 }
 

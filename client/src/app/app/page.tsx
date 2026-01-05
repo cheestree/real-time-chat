@@ -5,7 +5,7 @@ import { useAuth } from '@/components/context/AuthContext'
 import Servers from '@/components/servers/Servers'
 import TaskBar from '@/components/taskbar/TaskBar'
 import { useRouter } from 'next/navigation'
-import { useEffect } from 'react'
+import React, { useEffect } from 'react'
 import styles from './app.module.css'
 
 function AuthGuard({ children }: { children: React.ReactNode }) {

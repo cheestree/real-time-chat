@@ -2,24 +2,32 @@ import { Channel } from './Channel'
 import { UserProfile } from './UserProfile'
 
 export class Server {
-    id: number = -1
+    id: string
     name: string
-    owner: UserProfile[]
-    channels: Channel[]
-    users: UserProfile[]
-    icon: string = ''
     description: string
+    icon: string = ''
+    ownerIds: string[] = []
+    channelIds: string[] = []
+    userIds: string[] = []
+    // Populated from separate calls or socket events
+    channels: Channel[] = []
+    users: UserProfile[] = []
+
     constructor(
+        id: string,
         serverName: string,
         description: string,
-        owner: UserProfile,
-        icon: string
+        ownerIds: string[] = [],
+        channelIds: string[] = [],
+        userIds: string[] = [],
+        icon: string = ''
     ) {
+        this.id = id
         this.name = serverName
-        this.owner = [owner]
-        this.channels = [new Channel('general', 'First channel')]
-        this.users = [owner]
         this.description = description
-        if (icon) this.icon = icon
+        this.ownerIds = ownerIds
+        this.channelIds = channelIds
+        this.userIds = userIds
+        this.icon = icon
     }
 }

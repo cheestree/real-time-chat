@@ -17,19 +17,20 @@ export default function Server({
 }: {
     server: ServerType
     user: UserProfile
-    deleteServer: (serverId: number) => void
+    deleteServer: (serverId: string) => void
     openContextMenu: (
         event: React.MouseEvent<HTMLDivElement, MouseEvent>,
         options: ContextMenuOption[]
     ) => void
-    leaveServer: (serverId: number) => void
-    changeServer: (serverId: number) => void
+    leaveServer: (serverId: string) => void
+    changeServer: (serverId: string) => void
 }) {
     const handleContextMenu = (
         e: React.MouseEvent<HTMLDivElement, MouseEvent>
     ) => {
-        const isOwner = server.owner.some((u) => u.id === user.id)
         const isMember = server.users.some((u) => u.id === user.id)
+        const isOwner = server.ownerIds.length > 0
+
         const options = isOwner
             ? [
                   {

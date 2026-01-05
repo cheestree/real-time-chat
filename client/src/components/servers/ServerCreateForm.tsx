@@ -3,14 +3,13 @@
 import { useOverlay } from '@/components/context/overlay/OverlayContext'
 import { useSocket } from '@/components/context/SocketContext'
 import ImageCropper from '@/components/image/ImageCropper'
-import { Button, Container, TextField } from '@mui/material'
 import { useRef, useState } from 'react'
 import { CropperRef } from 'react-advanced-cropper'
 
 export default function ServerCreateForm() {
     const { handleClose } = useOverlay()
     const { createServer, joinServer } = useSocket()
-    const [serverId, setServerId] = useState(-1)
+    const [serverId, setServerId] = useState('')
     const [serverName, setServerName] = useState('')
     const [serverDescription, setServerDescription] = useState('')
     const cropperRef = useRef<CropperRef>(null)
@@ -39,61 +38,54 @@ export default function ServerCreateForm() {
         handleClose()
     }
 
+    const handleJoinServer = () => {
+        const trimmedId = serverId.trim()
+        if (!trimmedId) return
+        joinServer(trimmedId)
+        handleClose()
+    }
+
     return (
-        <Container maxWidth="sm">
+        <div>
             <div>
                 <div>
                     <h2>Create server</h2>
-                    <Button onClick={handleClose}>Close</Button>
+                    <button onClick={handleClose}>Close</button>
                 </div>
                 <div>
                     <form>
-                        <TextField
-                            type="number"
-                            label="ID"
+                        <input
+                            type="string"
                             placeholder="Enter ID to join"
                             value={serverId}
-                            onChange={(e) =>
-                                setServerId(parseInt(e.target.value))
-                            }
-                            fullWidth
+                            onChange={(e) => {
+                                setServerId(e.target.value)
+                            }}
                         />
-                        <TextField
+                        <input
                             type="text"
-                            label="Name"
                             placeholder="Enter name"
                             value={serverName}
                             onChange={(e) => setServerName(e.target.value)}
-                            fullWidth
                         />
-                        <TextField
+                        <input
                             type="text"
-                            label="Description"
                             placeholder="Enter description"
                             value={serverDescription}
                             onChange={(e) =>
                                 setServerDescription(e.target.value)
                             }
-                            fullWidth
                         />
                         <ImageCropper cropperRef={cropperRef} />
-                        <Button
-                            variant="contained"
-                            color="primary"
-                            onClick={handleCreateServer}
-                        >
+                        <button color="primary" onClick={handleCreateServer}>
                             Create
-                        </Button>
-                        <Button
-                            variant="contained"
-                            color="primary"
-                            onClick={() => joinServer(serverId)}
-                        >
+                        </button>
+                        <button color="primary" onClick={handleJoinServer}>
                             Join
-                        </Button>
+                        </button>
                     </form>
                 </div>
             </div>
-        </Container>
+        </div>
     )
 }

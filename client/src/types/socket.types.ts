@@ -1,20 +1,31 @@
+import { Channel } from '@/domain/Channel'
 import { Server } from '@/domain/Server'
 
 export interface SocketContextType {
     createServer: (
         serverName: string,
-        serverDescription: string,
-        serverIcon: string
+        serverDescription?: string,
+        serverIcon?: string
     ) => void
-    joinServer: (serverId: number) => void
+    joinServer: (serverId: string) => void
     createChannel: (channelName: string, channelDescription: string) => void
+    deleteChannel: (serverId: string, channelId: string) => void
     messageServer: (message: string) => void
-    leaveServer: (serverId: number) => void
-    deleteServer: (serverId: number) => void
-    changeServer: (serverId: number) => void
-    changeChannel: (channelId: number) => void
-    currentServer: number
-    currentChannel: number
+    leaveServer: (serverId: string) => void
+    deleteServer: (serverId: string) => void
+    changeServer: (serverId: string) => void
+    changeChannel: (channelId: string) => void
+    getPagedChannels: (serverId: string, limit: number, offset: number) => void
+    getPagedMessages: (
+        serverId: string,
+        channelId: string,
+        limit: number,
+        nextPageState?: string
+    ) => void
+    getServerUsers: (serverId: string) => void
+    currentServerId: string | null
+    currentChannelId: string | null
+    currentServer: Server | null
+    currentChannel: Channel | null
     servers: Server[]
 }
-

@@ -2,29 +2,31 @@
 
 import { useAuth } from '@/components/context/AuthContext'
 import { useSocket } from '@/components/context/SocketContext'
+import Description from '@/components/description/Description'
 import ServerChannels from '@/components/servers/serverchannels/ServerChannels'
-import ServerDescription from '@/components/taskbar/server/ServerDescription'
 import UserBar from '@/components/user/UserBar'
 
 import ThemeSwitch from '@/components/context/ThemeSwitchContext'
 import styles from './taskbar.module.css'
 
 export default function TaskBar() {
-    const { servers, currentServer, currentChannel, changeChannel } =
-        useSocket()
+    const { currentServer, changeChannel } = useSocket()
     const { loggedUser } = useAuth()
 
     return (
         <div className={styles.taskbar}>
-            {servers[currentServer] && (
-                <ServerDescription server={servers[currentServer]} />
+            {currentServer && (
+                <Description
+                    name={currentServer.name}
+                    description={currentServer.description}
+                />
             )}
-            <ServerChannels
-                currentServer={currentServer}
-                currentChannel={currentChannel}
-                changeChannel={changeChannel}
-                servers={servers}
-            />
+            {currentServer && (
+                <ServerChannels
+                    currentServer={currentServer}
+                    onChangeChannel={changeChannel}
+                />
+            )}
             <ThemeSwitch />
             {<UserBar user={loggedUser!} />}
         </div>

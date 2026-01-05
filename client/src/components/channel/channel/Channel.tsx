@@ -1,38 +1,33 @@
 'use client'
 
-import TagIcon from '@mui/icons-material/Tag'
-import { Button } from '@mui/material'
-
 import { Channel } from '@/domain/Channel'
 import styles from './channel.module.css'
+
+type ChannelSlotProps = {
+    channel: Channel
+    currentlySelected: boolean
+    onChangeChannel: () => void
+}
 
 export default function ChannelSlot({
     channel,
     currentlySelected,
-    index,
-    changeChannel,
-}: {
-    channel: Channel
-    currentlySelected: number
-    index: number
-    changeChannel: (id: number) => void
-}) {
+    onChangeChannel,
+}: ChannelSlotProps) {
     return (
         <div className={styles.channel}>
-            <Button
-                key={`${channel.name}-${channel.id.toString(10)}`}
-                id={channel.id.toString(10)}
-                onClick={() => changeChannel(channel.id)}
+            <button
+                key={`${channel.name}-${channel.id}`}
+                id={`${channel.id}`}
+                onClick={onChangeChannel}
                 style={{
-                    backgroundColor:
-                        currentlySelected == index
-                            ? 'rgba(128, 128, 128, .5)'
-                            : 'transparent',
+                    backgroundColor: currentlySelected
+                        ? 'rgba(128, 128, 128, .5)'
+                        : 'transparent',
                 }}
             >
-                <TagIcon />
                 <span className={styles.channelName}>{channel.name}</span>
-            </Button>
+            </button>
         </div>
     )
 }

@@ -1,6 +1,5 @@
 'use client'
 
-import { Dialog } from '@mui/material'
 import { OverlayContextType } from '@/types/overlay.types'
 import {
     createContext,
@@ -9,9 +8,7 @@ import {
     useContext,
     useState,
 } from 'react'
-
-import styles from '@/components/context/overlay/overlay.module.css'
-
+import styles from './overlay.module.css'
 
 const OverlayContext = createContext<OverlayContextType | undefined>(undefined)
 
@@ -32,13 +29,16 @@ export function OverlayProvider({ children }: { children: ReactNode }) {
                 handleShow,
             }}
         >
-            <Dialog
-                className={styles.dialog || ''}
-                open={show}
-                onClose={handleClose}
-            >
-                {modal}
-            </Dialog>
+            {show && (
+                <div className={styles.dialogContent} onClick={handleClose}>
+                    <div
+                        className={styles.dialogInner}
+                        onClick={(e) => e.stopPropagation()}
+                    >
+                        {modal}
+                    </div>
+                </div>
+            )}
             {children}
         </OverlayContext.Provider>
     )

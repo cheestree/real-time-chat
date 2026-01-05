@@ -1,7 +1,5 @@
 'use client'
 
-import { Person2 } from '@mui/icons-material'
-
 import styles from './customtoolbar.module.css'
 
 export default function CustomToolBar({
@@ -11,9 +9,7 @@ export default function CustomToolBar({
 }) {
     return (
         <div className={styles.customtoolbar}>
-            <button onClick={() => showMembersToggle()}>
-                <Person2 />
-            </button>
+            <button onClick={() => showMembersToggle()}>Show Members</button>
         </div>
     )
 }

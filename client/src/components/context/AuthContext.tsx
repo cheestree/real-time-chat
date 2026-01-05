@@ -11,7 +11,6 @@ import {
     useState,
 } from 'react'
 
-
 const AuthContext = createContext<AuthContextType | undefined>(undefined)
 
 export function AuthProvider({ children }: { children: ReactNode }) {

@@ -2,7 +2,6 @@
 
 import { useOverlay } from '@/components/context/overlay/OverlayContext'
 import { useSocket } from '@/components/context/SocketContext'
-import { Button, Container, TextField } from '@mui/material'
 import { useState } from 'react'
 
 export default function AddChannelForm() {
@@ -17,42 +16,34 @@ export default function AddChannelForm() {
     }
 
     return (
-        <Container maxWidth="sm">
+        <div>
             <div>
                 <div>
                     <h2>Create channel</h2>
-                    <Button onClick={handleClose}>Close</Button>
+                    <button onClick={handleClose}>Close</button>
                 </div>
                 <div>
                     <form>
-                        <TextField
+                        <input
                             type="text"
-                            label="Name"
                             placeholder="Enter name of the channel"
                             value={channelName}
                             onChange={(e) => setChannelName(e.target.value)}
-                            fullWidth
                         />
-                        <TextField
+                        <input
                             type="text"
-                            label="Description"
                             placeholder="Enter description of the channel"
                             value={channelDescription}
                             onChange={(e) =>
                                 setChannelDescription(e.target.value)
                             }
-                            fullWidth
                         />
-                        <Button
-                            variant="contained"
-                            color="primary"
-                            onClick={handleCreateChannel}
-                        >
+                        <button color="primary" onClick={handleCreateChannel}>
                             Create
-                        </Button>
+                        </button>
                     </form>
                 </div>
             </div>
-        </Container>
+        </div>
     )
 }
