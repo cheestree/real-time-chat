@@ -4,10 +4,12 @@ import { Message } from '../../domain/message/Message'
 interface IMessageRepository {
     messageChannel(
         channelId: string,
-        authorId: number,
+        authorId: string,
         type: ChannelType,
         message: string,
-        serverId?: string
+        serverId?: string,
+        authorUsername?: string,
+        authorIcon?: string
     ): Promise<Message>
 
     getPagedMessages(

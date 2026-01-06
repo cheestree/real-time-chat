@@ -1,5 +1,6 @@
 import { Channel } from '@/domain/Channel'
 import { Server } from '@/domain/Server'
+import { UserProfile } from '@/domain/UserProfile'
 
 export interface SocketContextType {
     createServer: (
@@ -23,6 +24,7 @@ export interface SocketContextType {
         nextPageState?: string
     ) => void
     getServerUsers: (serverId: string) => void
+    getUserById: (serverId: string, userId: string) => UserProfile | undefined
     currentServerId: string | null
     currentChannelId: string | null
     currentServer: Server | null

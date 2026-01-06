@@ -1,6 +1,6 @@
 'use client'
 
-import { UserProfile } from '@/domain/UserProfile'
+import { User } from '@/domain/User'
 import { userServices } from '@/services/UserServices'
 import { AuthActionResult, AuthContextType } from '@/types/auth.types'
 import {
@@ -16,9 +16,7 @@ const AuthContext = createContext<AuthContextType | undefined>(undefined)
 export function AuthProvider({ children }: { children: ReactNode }) {
     const [isLoading, setIsLoading] = useState(true)
     const [isLoggedIn, setIsLoggedIn] = useState<boolean>(false)
-    const [loggedUser, setLoggedUser] = useState<UserProfile | undefined>(
-        undefined
-    )
+    const [loggedUser, setLoggedUser] = useState<User | undefined>(undefined)
     const [error, setError] = useState<string | null>(null)
 
     async function login(
@@ -92,8 +90,8 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         try {
             const r = await userServices.checkAuth()
             if (r.ok) {
-                const userProfile: UserProfile = await r.json()
-                setLoggedUser(userProfile)
+                const user: User = await r.json()
+                setLoggedUser(user)
                 setIsLoggedIn(true)
             } else {
                 setLoggedUser(undefined)

@@ -31,6 +31,8 @@ export function useSocketHandlers({
         }
 
         function onCreateChannelSuccess(channel: Channel) {
+            if (!channel.messages) channel.messages = []
+
             setServers((prev) => {
                 return prev.map((server) => {
                     if (server.id !== channel.serverId) return server
@@ -81,6 +83,7 @@ export function useSocketHandlers({
             serverId: string
         }) {
             const { user, serverId } = data
+
             setServers((prev) => {
                 return prev.map((server) => {
                     if (server.id !== serverId) return server
@@ -105,9 +108,16 @@ export function useSocketHandlers({
                         ...server,
                         channels: server.channels.map((channel) => {
                             if (channel.id === message.channelId) {
+                                const currentMessages = channel.messages || []
+                                // Avoid duplicates
+                                const messageExists = currentMessages.some(
+                                    (m) => m.id === message.id
+                                )
+                                if (messageExists) return channel
+
                                 return {
                                     ...channel,
-                                    messages: [...channel.messages, message],
+                                    messages: [...currentMessages, message],
                                 }
                             }
                             return channel
@@ -149,10 +159,16 @@ export function useSocketHandlers({
                 return prev.map((server) => {
                     if (server.id !== data.serverId) return server
 
+                    // Ensure all channels have messages array initialized
+                    const channelsWithMessages = data.channels.map((ch) => ({
+                        ...ch,
+                        messages: ch.messages || [],
+                    }))
+
                     const existingChannelIds = new Set(
                         server.channels.map((c) => c.id)
                     )
-                    const newChannels = data.channels.filter(
+                    const newChannels = channelsWithMessages.filter(
                         (c) => !existingChannelIds.has(c.id)
                     )
 
@@ -176,8 +192,9 @@ export function useSocketHandlers({
                         channels: server.channels.map((channel) => {
                             if (channel.id !== data.channelId) return channel
 
+                            const currentMessages = channel.messages || []
                             const existingMessageIds = new Set(
-                                channel.messages.map((m) => m.id)
+                                currentMessages.map((m) => m.id)
                             )
                             const newMessages = data.messages.filter(
                                 (m) => !existingMessageIds.has(m.id)
@@ -186,7 +203,7 @@ export function useSocketHandlers({
                             return {
                                 ...channel,
                                 messages: [
-                                    ...channel.messages,
+                                    ...currentMessages,
                                     ...newMessages,
                                 ].sort(
                                     (a, b) =>

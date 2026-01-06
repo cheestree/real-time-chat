@@ -1,8 +1,14 @@
-.top {
-    flex: 1;
-    background: var(--tertiary);
+.container {
     display: flex;
     flex-direction: row;
     align-items: center;
     justify-content: space-between;
+    background: var(--secondary);
+    padding: var(--padding-sm);
+    border-radius: var(--border-radius-lg);
+}
+
+.container > div {
+    margin-right: var(--margin-sm);
+    margin-left: var(--margin-sm);
 }

@@ -71,6 +71,8 @@ export class SocketManager {
             timestamp: message.timestamp.toISOString(),
             serverId: validatedData.serverId,
             channelId: validatedData.channelId,
+            authorUsername: message.authorUsername,
+            authorIcon: message.authorIcon,
         })
     }, this.socket)
 

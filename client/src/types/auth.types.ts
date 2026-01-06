@@ -1,4 +1,4 @@
-import { UserProfile } from '@/domain/UserProfile'
+import { User } from '@/domain/User'
 
 export interface AuthActionResult {
     success: boolean
@@ -14,7 +14,7 @@ export interface AuthContextType {
     ) => Promise<AuthActionResult>
     logout: () => Promise<void>
     checkAuth: () => Promise<void>
-    loggedUser: UserProfile | undefined
+    loggedUser: User | undefined
     isLoggedIn: boolean
     isLoading: boolean
     error: string | null

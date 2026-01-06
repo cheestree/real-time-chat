@@ -1,23 +1,25 @@
-.channel {
+.channelItem {
     border: none;
-    border-radius: 4px;
-    margin: 1px;
+    border-radius: var(--border-radius-lg);
+    margin: 0;
     background: transparent;
-    white-space: nowrap;
+    padding: 0;
 }
 
-.channel button {
+.channelItem:hover {
+    background: rgba(147, 80, 254, 0.1);
+    transition: background ease-in-out 0.2s;
+    border-radius: var(--border-radius-lg);
+}
+
+.channelButton {
     width: 100%;
-    color: white;
-}
-
-.channel:hover {
-    background-color: black;
+    text-align: left;
 }
 
 .channelName {
     width: 100%;
-    margin-left: 4px;
+    margin-left: 0;
     overflow: hidden;
     text-align: left;
     text-overflow: ellipsis;

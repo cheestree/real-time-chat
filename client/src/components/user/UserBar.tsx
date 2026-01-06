@@ -1,15 +1,30 @@
 'use client'
 
-import { UserProfile } from '@/domain/UserProfile'
-import { useAuth } from '../context/AuthContext'
+import { User } from '@/domain/User'
 import styles from './userBar.module.css'
 
-export default function UserBar({ user }: { user: UserProfile }) {
-    const { logout } = useAuth()
+type UserBarProps = {
+    user: User
+    logout: () => void
+}
+
+export default function UserBar({ user, logout }: UserBarProps) {
     return (
-        <div className={styles.userbar}>
-            <div className={styles.user}>{user.username}</div>
-            <button onClick={logout}>Logout</button>
+        <div className={styles.container}>
+            <div className={styles.userIcon}>
+                {user.profile.icon ? (
+                    <img
+                        alt="icon"
+                        src={user.profile.icon}
+                        className={styles.userImage}
+                    />
+                ) : (
+                    user.profile.username[0]
+                )}
+            </div>
+            <button className={styles.logout} onClick={logout}>
+                Logout
+            </button>
         </div>
     )
 }

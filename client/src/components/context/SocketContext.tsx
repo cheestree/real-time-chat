@@ -56,6 +56,7 @@ export function SocketProvider({ children }: { children: ReactNode }) {
         getPagedChannels,
         getPagedMessages,
         getServerUsers,
+        getUserById,
     } = useSocketActions({
         servers,
         currentServerId,
@@ -90,6 +91,7 @@ export function SocketProvider({ children }: { children: ReactNode }) {
             }
 
             const server = servers.find((s) => s.id === currentServerId)
+
             if (!server) {
                 return
             }
@@ -113,23 +115,22 @@ export function SocketProvider({ children }: { children: ReactNode }) {
                     const firstChannel = updatedServer.channels[0]
                     setCurrentChannelId(firstChannel ? firstChannel.id : null)
                 }
-                return
             }
 
             if (
-                server.users.length === 0 &&
+                (server.users.length === 0 ||
+                    server.users.length < (server.userIds?.length || 0)) &&
                 server.userIds &&
                 server.userIds.length > 0 &&
                 !fetchedDataRef.current.users.has(currentServerId)
             ) {
                 fetchedDataRef.current.users.add(currentServerId)
                 await getServerUsers(server.id)
-                return
             }
         }
 
         fetchDataForCurrentSelection()
-    }, [currentServerId, currentChannelId])
+    }, [currentServerId])
 
     return (
         <SocketContext.Provider
@@ -146,6 +147,7 @@ export function SocketProvider({ children }: { children: ReactNode }) {
                 getPagedChannels,
                 getPagedMessages,
                 getServerUsers,
+                getUserById,
                 currentServerId,
                 currentChannelId,
                 currentServer,

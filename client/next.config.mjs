@@ -1,5 +1,6 @@
 /** @type {import('next').NextConfig} */
 const nextConfig = {
+    reactStrictMode: false, // Change to false in development to avoid useEffect double calls, however in general it's good to keep it true
     typescript: {
         ignoreBuildErrors: true,
     },

@@ -3,20 +3,21 @@
 import { Channel } from '@/domain/Channel'
 import styles from './channel.module.css'
 
-type ChannelSlotProps = {
+type ChannelItemProps = {
     channel: Channel
     currentlySelected: boolean
     onChangeChannel: () => void
 }
 
-export default function ChannelSlot({
+export default function ChannelItem({
     channel,
     currentlySelected,
     onChangeChannel,
-}: ChannelSlotProps) {
+}: ChannelItemProps) {
     return (
-        <div className={styles.channel}>
+        <div className={styles.channelItem}>
             <button
+                className={styles.channelButton}
                 key={`${channel.name}-${channel.id}`}
                 id={`${channel.id}`}
                 onClick={onChangeChannel}

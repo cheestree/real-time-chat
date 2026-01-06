@@ -1,0 +1,36 @@
+.container {
+    display: flex;
+    flex-direction: column;
+    flex-wrap: nowrap;
+    overflow-y: hidden;
+    overflow-x: hidden;
+    background: var(--primary);
+    padding: var(--padding-sm);
+    border-radius: var(--border-radius-lg);
+    margin: var(--margin-sm);
+    gap: var(--gap-sm);
+}
+
+.server {
+    height: 4rem;
+    width: 4rem;
+    border-radius: 32px;
+}
+
+.server:hover,
+.server:hover img,
+.server:hover a {
+    border-radius: 20px;
+}
+
+.actions {
+    display: flex;
+    justify-content: flex-end;
+    gap: var(--gap-sm);
+}
+
+.actions > button {
+    flex: 1;
+    height: 4rem;
+    width: 4rem;
+}

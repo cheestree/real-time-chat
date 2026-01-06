@@ -1,11 +1,24 @@
 'use client'
 
 import { ContextMenuOption } from '@/components/context/ContextMenuContext'
-import styles from '@/components/servers/server.module.css'
 import { Server as ServerType } from '@/domain/Server'
-import { UserProfile } from '@/domain/UserProfile'
 import Image from 'next/image'
 import React from 'react'
+
+import { User } from '@/domain/User'
+import styles from './server.module.css'
+
+type ServerProps = {
+    server: ServerType
+    user: User
+    deleteServer: (serverId: string) => void
+    openContextMenu: (
+        event: React.MouseEvent<HTMLDivElement, MouseEvent>,
+        options: ContextMenuOption[]
+    ) => void
+    leaveServer: (serverId: string) => void
+    changeServer: (serverId: string) => void
+}
 
 export default function Server({
     server,
@@ -14,21 +27,11 @@ export default function Server({
     openContextMenu,
     leaveServer,
     changeServer,
-}: {
-    server: ServerType
-    user: UserProfile
-    deleteServer: (serverId: string) => void
-    openContextMenu: (
-        event: React.MouseEvent<HTMLDivElement, MouseEvent>,
-        options: ContextMenuOption[]
-    ) => void
-    leaveServer: (serverId: string) => void
-    changeServer: (serverId: string) => void
-}) {
+}: ServerProps) {
     const handleContextMenu = (
         e: React.MouseEvent<HTMLDivElement, MouseEvent>
     ) => {
-        const isMember = server.users.some((u) => u.id === user.id)
+        const isMember = server.users.some((u) => u.id === user.publicId)
         const isOwner = server.ownerIds.length > 0
 
         const options = isOwner
@@ -50,17 +53,19 @@ export default function Server({
     }
 
     return (
-        <div onContextMenu={handleContextMenu}>
-            <button
-                className={styles.server}
-                onClick={() => changeServer(server.id)}
-            >
-                {server.icon ? (
-                    <Image src={server.icon} alt={server.name} />
-                ) : (
-                    server.name[0]
-                )}
-            </button>
-        </div>
+        <>
+            <div onContextMenu={handleContextMenu}>
+                <button
+                    className={styles.server}
+                    onClick={() => changeServer(server.id)}
+                >
+                    {server.icon ? (
+                        <Image src={server.icon} alt={server.name} />
+                    ) : (
+                        server.name[0]
+                    )}
+                </button>
+            </div>
+        </>
     )
 }

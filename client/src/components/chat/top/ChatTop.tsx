@@ -1,6 +1,6 @@
 'use client'
 
-import CustomToolBar from '@/components/chat/top/customtoolbar/CustomToolBar'
+import ToolBar from '@/components/chat/top/toolbar/ToolBar'
 import Description from '@/components/description/Description'
 import { Channel } from '@/domain/Channel'
 import styles from './top.module.css'
@@ -12,12 +12,12 @@ type ChatTopProps = {
 
 export default function ChatTop({ channel, showMembersToggle }: ChatTopProps) {
     return (
-        <div className={styles.top}>
+        <div className={styles.container}>
             <Description
                 name={channel.name}
                 description={channel.description}
-            ></Description>
-            <CustomToolBar showMembersToggle={showMembersToggle} />
+            />
+            <ToolBar showMembersToggle={showMembersToggle} />
         </div>
     )
 }

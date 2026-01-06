@@ -2,21 +2,21 @@
 
 import { useAuth } from '@/components/context/AuthContext'
 import { useContextMenu } from '@/components/context/ContextMenuContext'
-import { useOverlay } from '@/components/context/overlay/OverlayContext'
 import { useSocket } from '@/components/context/SocketContext'
-import ServerCreateForm from '@/components/servers/ServerCreateForm'
-
 import Server from '@/components/servers/server/Server'
-import styles from './server.module.css'
+
+import { useOverlay } from '@/components/context/overlay/OverlayContext'
+import ServerCreateForm from '@/components/servers/ServerCreateForm'
+import styles from './servers.module.css'
 
 export default function Servers() {
     const { servers, changeServer, deleteServer, leaveServer } = useSocket()
-    const { handleShow } = useOverlay()
     const { openContextMenu } = useContextMenu()
     const { loggedUser } = useAuth()
+    const { handleShow } = useOverlay()
 
     return (
-        <div className={styles.servers}>
+        <div className={styles.container}>
             {servers &&
                 servers.map((server) => (
                     <Server
@@ -29,12 +29,11 @@ export default function Servers() {
                         changeServer={changeServer}
                     />
                 ))}
-            <button
-                className={styles.server}
-                onClick={() => handleShow(<ServerCreateForm />)}
-            >
-                <span className={styles.addServer}>+</span>
-            </button>
+            <div className={styles.actions}>
+                <button onClick={() => handleShow(<ServerCreateForm />)}>
+                    +
+                </button>
+            </div>
         </div>
     )
 }

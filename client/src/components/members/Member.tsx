@@ -3,16 +3,14 @@
 import Image from 'next/image'
 import styles from './member.module.css'
 
-export default function Member({
-    id,
-    name,
-    icon,
-}: {
+type MemberProps = {
     id: string
     name: string
     status: boolean
     icon: string
-}) {
+}
+
+export default function Member({ id, name, status, icon }: MemberProps) {
     return (
         <div className={styles.member} key={id}>
             <div className={styles.memberIcon}>

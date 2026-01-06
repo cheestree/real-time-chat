@@ -1,5 +1,4 @@
 import { ChannelSummary } from '../../http/model/output/server/ChannelSummary'
-import { Message } from '../message/Message'
 
 export enum ChannelType {
     SERVER = 'SERVER',
@@ -11,7 +10,6 @@ export class Channel {
     serverId: string
     name: string
     description: string
-    messages: Message[]
     blacklist: string[]
     whitelist: string[]
     type: ChannelType
@@ -20,7 +18,6 @@ export class Channel {
         serverId: string,
         name: string,
         description: string,
-        messages: Message[] = [],
         blacklist: string[] = [],
         whitelist: string[] = [],
         type: ChannelType = ChannelType.SERVER
@@ -29,7 +26,6 @@ export class Channel {
         this.serverId = serverId
         this.name = name
         this.description = description || ''
-        this.messages = messages
         this.blacklist = blacklist
         this.whitelist = whitelist
         this.type = type

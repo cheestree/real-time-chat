@@ -4,4 +4,6 @@ export type Message = {
     channelId: string
     content: string
     timestamp: string
+    authorUsername: string
+    authorIcon?: string
 }

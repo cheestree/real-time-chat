@@ -6,7 +6,7 @@ import Servers from '@/components/servers/Servers'
 import TaskBar from '@/components/taskbar/TaskBar'
 import { useRouter } from 'next/navigation'
 import React, { useEffect } from 'react'
-import styles from './app.module.css'
+import styles from './page.module.css'
 
 function AuthGuard({ children }: { children: React.ReactNode }) {
     const { isLoggedIn, isLoading } = useAuth()
@@ -29,7 +29,7 @@ function AuthGuard({ children }: { children: React.ReactNode }) {
 
 export default function App() {
     return (
-        <div className={styles.app}>
+        <div className={styles.container}>
             <AuthGuard>
                 <Servers />
                 <TaskBar />

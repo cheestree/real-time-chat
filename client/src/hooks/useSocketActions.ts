@@ -51,10 +51,10 @@ export function useSocketActions({
             setCurrentServerId(initializedServers[0].id)
             if (
                 initializedServers[0].channels &&
-                initializedServers[0].channels.length > 0
+                initializedServers[0].channels.length > 0 &&
+                initializedServers[0].channels[0]
             ) {
-                if (initializedServers[0].channels[0])
-                    setCurrentChannelId(initializedServers[0].channels[0].id)
+                setCurrentChannelId(initializedServers[0].channels[0].id)
             }
         }
     }
@@ -150,6 +150,19 @@ export function useSocketActions({
             if (!socketService.getJoinedServerRooms().has(room)) {
                 socketService.joinServer(serverId)
             }
+            // Fetch channels if not loaded
+            if (!server.channels || server.channels.length === 0) {
+                getPagedChannels(serverId, 50, 0).then(() => {
+                    const updatedServer = servers.find((s) => s.id === serverId)
+                    if (
+                        updatedServer &&
+                        updatedServer.channels.length > 0 &&
+                        updatedServer.channels[0]
+                    ) {
+                        setCurrentChannelId(updatedServer.channels[0].id)
+                    }
+                })
+            }
         }
     }
 
@@ -185,7 +198,6 @@ export function useSocketActions({
                 const newChannels = channels.filter(
                     (c) => !existingChannelIds.has(c.id)
                 )
-
                 return {
                     ...server,
                     channels: [...(server.channels || []), ...newChannels],
@@ -219,17 +231,17 @@ export function useSocketActions({
                         const newMessages = data.messages.filter(
                             (m) => !existingMessageIds.has(m.id)
                         )
-
+                        const mergedMessages = [
+                            ...(channel.messages || []),
+                            ...newMessages,
+                        ].sort(
+                            (a, b) =>
+                                new Date(a.timestamp).getTime() -
+                                new Date(b.timestamp).getTime()
+                        )
                         return {
                             ...channel,
-                            messages: [
-                                ...(channel.messages || []),
-                                ...newMessages,
-                            ].sort(
-                                (a, b) =>
-                                    new Date(a.timestamp).getTime() -
-                                    new Date(b.timestamp).getTime()
-                            ),
+                            messages: mergedMessages,
                         }
                     }),
                 }
@@ -238,7 +250,11 @@ export function useSocketActions({
     }
 
     async function getServerUsers(serverId: string) {
-        const users = await serverServices.getServerUsers(serverId)
+        let users = await serverServices.getServerUsers(serverId)
+        users = users.map((u) => ({
+            id: u.id,
+            username: u.username,
+        }))
         setServers((prev) => {
             return prev.map((s) => {
                 if (s.id === serverId) {
@@ -260,6 +276,14 @@ export function useSocketActions({
         return socketService.getJoinedServerRooms()
     }
 
+    function getUserById(
+        serverId: string,
+        userId: string
+    ): UserProfile | undefined {
+        const server = servers.find((s) => s.id === serverId)
+        return server?.users?.find((u) => u.id === userId)
+    }
+
     return {
         getUserServers,
         createServer,
@@ -276,5 +300,6 @@ export function useSocketActions({
         getServerUsers,
         getJoinedChannelRooms,
         getJoinedServerRooms,
+        getUserById,
     }
 }

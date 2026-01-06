@@ -3,7 +3,6 @@ import { Kysely, PostgresDialect } from 'kysely'
 import { MongoClient } from 'mongodb'
 import { Pool } from 'pg'
 import { Channel, ChannelType } from '../../domain/channel/Channel'
-import { Message } from '../../domain/message/Message'
 import { Server } from '../../domain/server/Server'
 import { logger } from '../../utils/logger'
 
@@ -22,7 +21,6 @@ interface ChannelDocument {
     name: string
     description: string
     type: ChannelType
-    messages: unknown[]
     blacklist: string[]
     whitelist: string[]
 }
@@ -107,7 +105,6 @@ class ServerRepository implements IServerRepository {
             .collection('servers')
             .updateOne({ id: serverId }, { $addToSet: { users: userId } })
 
-        // Also add to PostgreSQL for relational queries
         await this.db
             .insertInto('rtchat.server_members')
             .values({
@@ -162,7 +159,6 @@ class ServerRepository implements IServerRepository {
             serverId,
             channelName,
             channelDescription,
-            [], // messages
             [], // blacklist
             [], // whitelist
             type
@@ -189,7 +185,6 @@ class ServerRepository implements IServerRepository {
         const result = await serversCol.insertOne(doc)
         logger.debug({ insertedId: result.insertedId }, 'Server insert result')
 
-        // Add owner to PostgreSQL as well
         await this.db
             .insertInto('rtchat.server_members')
             .values({
@@ -296,7 +291,6 @@ class ServerRepository implements IServerRepository {
                     serverId,
                     doc.name,
                     doc.description,
-                    (doc.messages as Message[]) || [],
                     (doc.blacklist as string[]) || [],
                     (doc.whitelist as string[]) || [],
                     doc.type

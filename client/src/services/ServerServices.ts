@@ -11,7 +11,19 @@ class ServerServices {
             true
         ).then(async (response) => {
             if (response.ok) {
-                return await response.json()
+                const serverData = await response.json()
+                return serverData.map(
+                    (s: any) =>
+                        new Server(
+                            s.id,
+                            s.name,
+                            s.description,
+                            s.owner,
+                            s.channels,
+                            s.users,
+                            s.icon
+                        )
+                )
             } else {
                 return []
             }
@@ -57,7 +69,7 @@ class ServerServices {
         return await post(
             process.env.NEXT_PUBLIC_API_URL + Path.SERVERS + '/join',
             true,
-            { id: serverId }
+            { serverId: serverId }
         ).then(async (response) => {
             if (response.ok) {
                 return (await response.json()) as Server
@@ -146,7 +158,12 @@ class ServerServices {
             true
         ).then(async (response) => {
             if (response.ok) {
-                return (await response.json()) as UserProfile[]
+                const userSummaries = (await response.json()) as UserProfile[]
+                const users: UserProfile[] = userSummaries.map((u) => ({
+                    id: u.id,
+                    username: u.username,
+                }))
+                return users
             } else {
                 return []
             }

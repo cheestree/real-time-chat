@@ -1,5 +1,8 @@
-.mainWindow {
+.container {
     display: flex;
     flex-direction: column;
+    justify-content: space-between;
     flex: 1;
+    gap: var(--gap-sm);
+    margin: var(--margin-sm);
 }

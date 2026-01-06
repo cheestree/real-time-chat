@@ -1,6 +1,8 @@
 export interface MessageSummary {
     id: string
-    authorId: number
+    authorId: string
+    authorUsername: string
+    authorIcon?: string
     content: string
     timestamp: string
 }

@@ -1,6 +1,5 @@
 import '@/app/globals.css'
 import AppProviders from '@/components/AppProviders'
-import CustomLayout from '@/components/CustomLayout'
 import React from 'react'
 
 export default function RootLayout({
@@ -20,9 +19,7 @@ export default function RootLayout({
                 <meta property="og:description" content="RealTimeChat" />
             </head>
             <body>
-                <AppProviders>
-                    <CustomLayout>{children}</CustomLayout>
-                </AppProviders>
+                <AppProviders>{children}</AppProviders>
             </body>
         </html>
     )

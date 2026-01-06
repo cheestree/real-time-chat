@@ -32,7 +32,10 @@ export interface ServerToClientEvents {
     channelCreated: (channel: ChannelSummary) => void
     channelDeleted: (data: { serverId: string; channelId: string }) => void
     messageSent: (
-        message: MessageSummary & { serverId?: string; channelId: string }
+        message: MessageSummary & {
+            serverId?: string
+            channelId: string
+        }
     ) => void
     messagesPaged: (data: {
         messages: MessageSummary[]

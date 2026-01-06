@@ -1,14 +1,4 @@
-.servers {
-    background: var(--primary);
-    display: flex;
-    flex-direction: column;
-    flex-wrap: nowrap;
-    overflow-y: scroll;
-    padding-left: 4px;
-}
-
 .server {
-    margin: 0.4rem;
     transition: ease-in-out 0.2s;
     border-radius: 32px;
     background: var(--tertiary);
@@ -31,8 +21,4 @@
     transition: ease-in-out 0.2s;
     border-radius: 20px;
     background: rgba(64, 64, 64, 1);
-}
-
-.serverContextMenu:last-child {
-    color: red;
 }

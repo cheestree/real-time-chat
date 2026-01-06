@@ -12,7 +12,7 @@ export default function ChatArea() {
     const [showMembers, setShowMembers] = useState(false)
 
     return (
-        <div className={styles.mainWindow}>
+        <div className={styles.container}>
             {currentServer && currentChannel && (
                 <ChatTop
                     channel={currentChannel}

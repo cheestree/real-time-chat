@@ -32,9 +32,11 @@ class MessageServices implements IMessageServices {
         if (input.serverId === undefined) {
             return await this.messages.messageChannel(
                 input.channelId,
-                user.internalId,
+                user.publicId,
                 ChannelType.DM,
-                input.content
+                input.content,
+                undefined,
+                user.profile.username
             )
         } else {
             requireOrThrow(
@@ -60,10 +62,11 @@ class MessageServices implements IMessageServices {
             )
             return await this.messages.messageChannel(
                 input.channelId,
-                user.internalId,
+                user.publicId,
                 ChannelType.SERVER,
                 input.content,
-                input.serverId
+                input.serverId,
+                user.profile.username
             )
         }
     }

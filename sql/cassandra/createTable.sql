@@ -3,7 +3,9 @@ CREATE KEYSPACE rtchat WITH replication = {'class': 'SimpleStrategy', 'replicati
 CREATE TABLE rtchat.messages (
     channel_id UUID,
     id UUID,
-    sender_id BIGINT,
+    author_id UUID,
+    author_username TEXT,
+    author_icon TEXT,
     content TEXT,
     created_at TIMESTAMP,
     PRIMARY KEY (channel_id, created_at, id)

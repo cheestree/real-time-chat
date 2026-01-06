@@ -11,11 +11,11 @@ import 'react-advanced-cropper/dist/style.css'
 
 import styles from './image.module.css'
 
-export default function ImageCropper({
-    cropperRef,
-}: {
+type ImageCropperProps = {
     cropperRef: RefObject<CropperRef>
-}) {
+}
+
+export default function ImageCropper({ cropperRef }: ImageCropperProps) {
     const previewRef = useRef<CropperPreviewRef>(null)
     const [src, setSrc] = useState('')
 
