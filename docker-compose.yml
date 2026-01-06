@@ -1,6 +1,6 @@
 services:
     client:
-        build: ./client
+        build: ./src/client
         container_name: chat-client
         ports:
             - "3000:3000"
@@ -11,7 +11,7 @@ services:
             - CORS_ORIGIN=${CORS_ORIGIN}
 
     server:
-        build: ./server
+        build: ./src/server
         container_name: chat-server
         depends_on:
             - mongo
@@ -63,6 +63,28 @@ services:
             CASSANDRA_ENDPOINT_SNITCH: "GossipingPropertyFileSnitch"
         volumes:
             - cassandra-data:/var/lib/cassandra
+        healthcheck:
+            test: ["CMD", "cqlsh", "-e", "describe cluster"]
+            interval: 10s
+            timeout: 10s
+            retries: 10
+            start_period: 40s
+
+    cassandra-init:
+        image: cassandra:latest
+        container_name: chat-cassandra-init
+        depends_on:
+            cassandra:
+                condition: service_healthy
+        volumes:
+            - ./sql/cassandra/:/cql/
+        entrypoint: ["/bin/bash", "-c"]
+        command:
+            - |
+                for file in /cql/*.cql; do
+                  echo "Executing $$file";
+                  cqlsh cassandra -f "$$file";
+                done
 
     postgres:
         image: postgres:latest
@@ -75,6 +97,7 @@ services:
             - "${POSTGRES_PORT}:5432"
         volumes:
             - postgres-data:/var/lib/postgresql
+            - ./sql/pg/:/docker-entrypoint-initdb.d/
 
     redis:
         image: redis:latest
