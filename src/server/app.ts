@@ -1,5 +1,6 @@
 import bodyParser from 'body-parser'
 import cookieParser from 'cookie-parser'
+import cors from 'cors'
 import express from 'express'
 import session from 'express-session'
 import { createServer } from 'http'
@@ -10,6 +11,7 @@ import {
     ServerToClientEvents,
     SocketData,
 } from './controller/ws/events'
+import './env'
 
 interface SocketRequest extends express.Request {
     io: Server<
@@ -21,7 +23,6 @@ interface SocketRequest extends express.Request {
 }
 
 import SocketHandlers from './controller/ws/SocketHandlers'
-import './env'
 import ErrorHandler from './http/middleware/ErrorHandler'
 import { messageRoutes } from './routes/MessageRoutes'
 import { serverRoutes } from './routes/ServerRoutes'
@@ -39,7 +40,7 @@ const sessionMiddleware = session({
     secret: process.env.JWT_SECRET!,
     resave: false,
     saveUninitialized: true,
-    cookie: { secure: process.env.NODE_ENV === 'production' },
+    cookie: { secure: process.env.SERVER_PROFILE === 'prod' },
 })
 
 const config = {
@@ -97,6 +98,15 @@ const onConnection = (
 }
 
 io.on('connection', onConnection)
+
+app.use(
+    cors({
+        origin: process.env.CORS_ORIGIN || 'http://localhost:3000',
+        credentials: true,
+        methods: ['GET', 'POST', 'PUT', 'DELETE', 'PATCH', 'OPTIONS'],
+        allowedHeaders: ['Content-Type', 'Authorization', 'Cookie'],
+    })
+)
 
 app.use(sessionMiddleware)
 app.use(bodyParser.json())

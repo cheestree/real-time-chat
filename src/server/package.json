@@ -7,7 +7,9 @@
         "format": "npx prettier . --write",
         "lint": "npx eslint . --ext .js,.jsx,.ts,.tsx --ignore-pattern .next",
         "start": "npx ts-node app.ts",
+        "start:demo": "npx ts-node -r dotenv/config app.ts dotenv_config_path=.env.demo",
         "dev": "npm run format && npm run lint && npm run start",
+        "dev:demo": "npm run format && npm run lint && npm run start:demo",
         "test": "jest"
     },
     "author": "",
@@ -15,6 +17,7 @@
     "dependencies": {
         "@types/bcrypt": "^5.0.2",
         "@types/cookie-parser": "^1.4.10",
+        "@types/cors": "^2.8.19",
         "@types/express-session": "^1.18.2",
         "@types/jsonwebtoken": "^9.0.10",
         "@types/pg": "^8.16.0",
@@ -22,6 +25,7 @@
         "body-parser": "^1.20.4",
         "cassandra-driver": "^4.8.0",
         "cookie-parser": "^1.4.7",
+        "cors": "^2.8.6",
         "dotenv": "^17.2.3",
         "express": "^4.22.1",
         "express-session": "^1.18.2",

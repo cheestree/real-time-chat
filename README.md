@@ -2,6 +2,16 @@
 
 A web application for real-time messaging in servers and channels. Users can join servers, create channels, send messages, and interact live with others. Built for scalability and responsiveness.
 
+## 🚀 Quick Start (Demo)
+
+Want to try it immediately? Run with Docker:
+
+```bash
+docker-compose --env-file .env.docker.demo up --build
+```
+
+Then visit <http://localhost:3000>
+
 ## ✨ Features
 
 - User authentication and profiles
@@ -38,44 +48,114 @@ sql/              # SQL and CQL bootstrapping
 
 ## :gear: Configuration
 
-Copy and fill env vars (see [server/env.ts](server/env.ts)).
+### Three Ways to Run
 
-Notes:
-- The server reads env in [server/env.ts](server/env.ts).
-- TTL is parsed and passed to Redis cache.
+**1. Docker (Demo) - Easiest:**
+
+- Uses `.env.docker.demo` at project root
+- All services in containers with Docker networking
+- No manual database setup required
+
+**2. Local Development (Demo) - No Config Needed:**
+
+- Uses `src/server/.env.demo` and `src/client/.env.demo`
+- Requires local PostgreSQL, MongoDB, Cassandra, Redis
+- Services on localhost
+
+**3. Production or Custom Setup:**
+
+- Copy `.env.example` files and customize
+- See [src/server/env.ts](src/server/env.ts) for all variables
+
+### Environment File Guide
+
+| File                      | Purpose             | Service Names                     |
+| ------------------------- | ------------------- | --------------------------------- |
+| `.env.docker.demo` (root) | Docker Compose demo | postgres, mongo, redis, cassandra |
+| `src/server/.env.demo`    | Local dev demo      | localhost                         |
+| `src/server/.env.example` | Local dev template  | localhost                         |
+| `.env.example` (root)     | Docker template     | Empty (fill in)                   |
+
+**Important variables for production:**
+
+- `JWT_SECRET` - Strong random secret for authentication (min 32 chars)
+- `DEMO_MODE` - Set to `false` for production
+- Database credentials (PostgreSQL, MongoDB, Cassandra, Redis)
+- `CORS_ORIGIN` - Your frontend URL
+- `SERVER_PROFILE` - Set to `production` for production use
 
 ## :bank: Database setup
 
 - PostgreSQL:
-    - Create schema/tables from [sql/pg/createTable.cql](sql/pg/createTable.sql).
+  - Create schema/tables from [sql/pg/createTable.cql](sql/pg/createTable.sql).
 - Cassandra:
-    - Create keyspace/tables from [sql/cassandra/createTable.cql](sql/cassandra/createTable.cql).
+  - Create keyspace/tables from [sql/cassandra/createTable.cql](sql/cassandra/createTable.cql).
 
-## :minidisc: Running locally
+## :minidisc: Running the Application
 
-Backend:
+### Option 1: Docker Compose (Recommended for Testing)
 
-```bash
-cd server
-npm install
-npm run dev
-```
-
-Frontend:
+**Quick demo:**
 
 ```bash
-cd client
-npm install
-npm run dev
+docker-compose --env-file .env.docker.demo up --build
 ```
 
-Client dev scripts:
-- Lint: ```bash npm run lint```
-- Format: ```npm run format```
-- Build: ```npm run build```
-- Preview: ```npm run preview```
+Visit <http://localhost:3000>
+
+### Option 2: Local Development (Without Docker)
+
+**Quick demo mode** (no .env file needed):
+
+```bash
+# Terminal 1 - Backend with demo config
+cd src/server
+npm install
+npm run dev:demo
+
+# Terminal 2 - Frontend with demo config
+cd src/client
+npm install
+npm run dev:demo
+```
+
+**With your own config:**
+
+```bash
+# First time: create your .env files
+cd src/server
+cp .env.example .env
+# Edit .env with your values
+
+cd ../client
+cp .env.example .env.local
+# Edit .env.local with your values
+
+# Then run normally
+cd src/server && npm run dev
+cd src/client && npm run dev
+```
+
+### Available Scripts
+
+**Server:**
+
+- `npm run dev` - Run with `.env` file (required)
+- `npm run dev:demo` - Run with `.env.demo` (no setup needed)
+- `npm start` - Production start
+- `npm run lint` - Lint code
+- `npm run format` - Format code
+
+**Client:**
+
+- `npm run dev` - Run with `.env.local` file (required)
+- `npm run dev:demo` - Run with `.env.demo` (no setup needed)
+- `npm run build` - Build for production
+- `npm run lint` - Lint code
+- `npm run format` - Format code
 
 Docker Compose:
+
 - See [docker-compose.yml](docker-compose.yml) for multi-service setup.
 
 ## :pencil: License

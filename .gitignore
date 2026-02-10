@@ -27,4 +27,12 @@ node_modules
 
 # IDE
 .idea
+
+# Environment files (keep only examples and demo files)
 .env
+.env.local
+.env.*.local
+
+# Exception: Demo and example files are tracked
+!.env.example
+!.env.docker.demo
