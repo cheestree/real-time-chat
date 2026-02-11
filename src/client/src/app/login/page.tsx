@@ -2,12 +2,10 @@
 
 import { useAuth } from '@/components/context/AuthContext'
 import { useRouter } from 'next/navigation'
-import { FormEvent, useEffect, useState } from 'react'
+import { useEffect, useState } from 'react'
 
 function LoginPage() {
-    const { login, isLoggedIn } = useAuth()
-    const [username, setUsername] = useState('')
-    const [password, setPassword] = useState('')
+    const { login, isLoggedIn, isLoading } = useAuth()
     const [error, setError] = useState<string | null>(null)
     const router = useRouter()
 
@@ -17,43 +15,45 @@ function LoginPage() {
         }
     }, [isLoggedIn, router])
 
-    const handleSubmit = async (event: FormEvent<HTMLFormElement>) => {
-        event.preventDefault()
+    const handleSubmit = async (formData: FormData) => {
         setError(null)
+        const username = formData.get('username') as string
+        const password = formData.get('password') as string
+
         const result = await login(username, password)
         if (result.success) {
             router.replace('/app')
         } else {
             setError(result.message || 'Login failed')
         }
-        setUsername('')
-        setPassword('')
     }
 
     return (
         <section className="formContainer">
-            <form onSubmit={handleSubmit} className="formInput">
+            <form action={handleSubmit} className="formInput">
                 <input
                     type="text"
+                    name="username"
                     placeholder="Username"
-                    value={username}
-                    onChange={(e) => setUsername(e.target.value)}
                     required
+                    disabled={isLoading}
                 />
 
                 <input
                     type="password"
+                    name="password"
                     placeholder="Password"
-                    value={password}
-                    onChange={(e) => setPassword(e.target.value)}
                     required
+                    disabled={isLoading}
                 />
 
                 {error && (
                     <div style={{ color: 'red', marginBottom: 8 }}>{error}</div>
                 )}
 
-                <button type="submit">Login</button>
+                <button type="submit" disabled={isLoading}>
+                    {isLoading ? 'Logging in...' : 'Login'}
+                </button>
             </form>
         </section>
     )

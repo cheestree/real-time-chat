@@ -3,19 +3,19 @@
 import { useOverlay } from '@/components/context/overlay/OverlayContext'
 import { useSocket } from '@/components/context/SocketContext'
 import ImageCropper from '@/components/image/ImageCropper'
-import { useRef, useState } from 'react'
+import { useRef } from 'react'
 import { CropperRef } from 'react-advanced-cropper'
 import styles from './serverCreateForm.module.css'
 
 export default function ServerCreateForm() {
     const { handleClose } = useOverlay()
     const { createServer, joinServer } = useSocket()
-    const [serverId, setServerId] = useState('')
-    const [serverName, setServerName] = useState('')
-    const [serverDescription, setServerDescription] = useState('')
     const cropperRef = useRef<CropperRef>(null)
 
-    const handleCreateServer = () => {
+    const handleCreateServer = (formData: FormData) => {
+        const serverName = formData.get('serverName') as string
+        const serverDescription = formData.get('serverDescription') as string
+
         let iconDataUrl = ''
         const canvas = cropperRef.current?.getCanvas()
         if (canvas) {
@@ -39,41 +39,44 @@ export default function ServerCreateForm() {
         handleClose()
     }
 
-    const handleJoinServer = () => {
-        const trimmedId = serverId.trim()
-        if (!trimmedId) return
-        joinServer(trimmedId)
+    const handleJoinServer = (formData: FormData) => {
+        const serverId = (formData.get('serverId') as string)?.trim()
+        if (!serverId) return
+        joinServer(serverId)
         handleClose()
     }
 
     return (
         <div className={styles.container}>
-            <form className={styles.form}>
-                <input
-                    type="string"
-                    placeholder="Enter ID to join"
-                    value={serverId}
-                    onChange={(e) => {
-                        setServerId(e.target.value)
-                    }}
-                />
+            <form action={handleCreateServer} className={styles.form}>
                 <input
                     type="text"
+                    name="serverName"
                     placeholder="Enter name"
-                    value={serverName}
-                    onChange={(e) => setServerName(e.target.value)}
+                    required
                 />
                 <input
                     type="text"
+                    name="serverDescription"
                     placeholder="Enter description"
-                    value={serverDescription}
-                    onChange={(e) => setServerDescription(e.target.value)}
                 />
                 <ImageCropper cropperRef={cropperRef} />
                 <div className={styles.actions}>
-                    <button onClick={handleCreateServer}>Create</button>
-                    <button onClick={handleJoinServer}>Join</button>
-                    <button onClick={handleClose}>Close</button>
+                    <button type="submit">Create</button>
+                    <button type="button" onClick={handleClose}>
+                        Close
+                    </button>
+                </div>
+            </form>
+            <form action={handleJoinServer} className={styles.form}>
+                <input
+                    type="text"
+                    name="serverId"
+                    placeholder="Enter ID to join"
+                    required
+                />
+                <div className={styles.actions}>
+                    <button type="submit">Join</button>
                 </div>
             </form>
         </div>

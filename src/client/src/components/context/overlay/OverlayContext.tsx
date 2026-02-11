@@ -5,7 +5,9 @@ import {
     createContext,
     ReactElement,
     ReactNode,
+    useCallback,
     useContext,
+    useMemo,
     useState,
 } from 'react'
 import styles from './overlay.module.css'
@@ -16,19 +18,23 @@ export function OverlayProvider({ children }: { children: ReactNode }) {
     const [show, setShow] = useState(false)
     const [modal, setModal] = useState<ReactElement>()
 
-    const handleClose = () => setShow(false)
-    const handleShow = (modal: ReactElement) => {
+    const handleClose = useCallback(() => setShow(false), [])
+    
+    const handleShow = useCallback((modal: ReactElement) => {
         setModal(modal)
         setShow(true)
-    }
+    }, [])
+
+    const contextValue = useMemo(
+        () => ({
+            handleClose,
+            handleShow,
+        }),
+        [handleClose, handleShow]
+    )
 
     return (
-        <OverlayContext.Provider
-            value={{
-                handleClose,
-                handleShow,
-            }}
-        >
+        <OverlayContext.Provider value={contextValue}>
             {show && (
                 <div className={styles.dialogContent} onClick={handleClose}>
                     <div

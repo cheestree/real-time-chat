@@ -4,7 +4,7 @@ import { UserProfile } from '@/domain/UserProfile'
 import { messageServices } from '@/services/MessageServices'
 import { serverServices } from '@/services/ServerServices'
 import { socketService } from '@/services/SocketService'
-import React from 'react'
+import React, { useCallback } from 'react'
 
 interface UseSocketActionsProps {
     servers: Server[]
@@ -23,7 +23,27 @@ export function useSocketActions({
     setCurrentServerId,
     setCurrentChannelId,
 }: UseSocketActionsProps) {
-    async function getUserServers() {
+    const getJoinedChannelRooms = useCallback(async (): Promise<
+        ReadonlySet<string>
+    > => {
+        return socketService.getJoinedChannelRooms()
+    }, [])
+
+    const getJoinedServerRooms = useCallback(async (): Promise<
+        ReadonlySet<string>
+    > => {
+        return socketService.getJoinedServerRooms()
+    }, [])
+
+    const getUserById = useCallback(
+        (serverId: string, userId: string): UserProfile | undefined => {
+            const server = servers.find((s) => s.id === serverId)
+            return server?.users?.find((u) => u.id === userId)
+        },
+        [servers]
+    )
+
+    const getUserServers = useCallback(async () => {
         const userServers = await serverServices.listServers()
         const initializedServers = userServers.map((s) => {
             return {
@@ -57,232 +77,248 @@ export function useSocketActions({
                 setCurrentChannelId(initializedServers[0].channels[0].id)
             }
         }
-    }
+    }, [currentServerId, setServers, setCurrentServerId, setCurrentChannelId])
 
-    async function createServer(
-        serverName: string,
-        serverDescription?: string,
-        serverIcon?: string
-    ) {
-        const server = await serverServices.createServer(
-            serverName,
-            serverDescription,
-            serverIcon
-        )
-        const initializedServer = {
-            ...server,
-            channels: [],
-            users: [],
-            channelIds: server.channelIds || [],
-            userIds: server.userIds || [],
-            ownerIds: server.ownerIds || [],
-        }
-        setServers((prev) => [...prev, initializedServer])
-        setCurrentServerId(server.id)
-        setCurrentChannelId(null)
-    }
-
-    async function joinServer(serverId: string) {
-        const server = await serverServices.joinServer(serverId)
-        if (await getJoinedServerRooms().then((rooms) => rooms.has(serverId))) {
-            return
-        }
-        const initializedServer = {
-            ...server,
-            channels: [] as Channel[],
-            users: [] as UserProfile[],
-            channelIds: server.channelIds || [],
-            userIds: server.userIds || [],
-            ownerIds: server.ownerIds || [],
-        }
-        setServers((prev) => [...prev, initializedServer])
-        setCurrentServerId(server.id)
-        setCurrentChannelId(null) // Will be set when channels are fetched
-    }
-
-    async function createChannel(
-        channelName: string,
-        channelDescription: string
-    ) {
-        if (!currentServerId) return
-
-        const channel = await serverServices.createChannel(
-            currentServerId,
-            channelName,
-            channelDescription
-        )
-        setServers((prev) => {
-            return prev.map((s) => {
-                if (s.id !== currentServerId) return s
-                return {
-                    ...s,
-                    channels: [...(s.channels || []), channel],
-                }
-            })
-        })
-    }
-
-    function messageServer(message: string) {
-        if (!currentServerId || !currentChannelId) return
-
-        socketService.messageServer(currentServerId, currentChannelId, message)
-    }
-
-    function leaveServer(serverId: string) {
-        socketService.leaveServer(serverId)
-    }
-
-    async function deleteServer(serverId: string) {
-        await serverServices.deleteServer(serverId)
-    }
-
-    async function deleteChannel(serverId: string, channelId: string) {
-        await serverServices.deleteChannel(serverId, channelId)
-    }
-
-    function changeServer(serverId: string) {
-        const server = servers.find((s) => s.id === serverId)
-        if (server) {
-            setCurrentServerId(serverId)
-            const firstChannel = server.channels?.[0]
-            setCurrentChannelId(firstChannel?.id || null)
-            const room = `server_${serverId}`
-            if (!socketService.getJoinedServerRooms().has(room)) {
-                socketService.joinServer(serverId)
+    const createServer = useCallback(
+        async (
+            serverName: string,
+            serverDescription?: string,
+            serverIcon?: string
+        ) => {
+            const server = await serverServices.createServer(
+                serverName,
+                serverDescription,
+                serverIcon
+            )
+            const initializedServer = {
+                ...server,
+                channels: [],
+                users: [],
+                channelIds: server.channelIds || [],
+                userIds: server.userIds || [],
+                ownerIds: server.ownerIds || [],
             }
-            // Fetch channels if not loaded
-            if (!server.channels || server.channels.length === 0) {
-                getPagedChannels(serverId, 50, 0).then(() => {
-                    const updatedServer = servers.find((s) => s.id === serverId)
-                    if (
-                        updatedServer &&
-                        updatedServer.channels.length > 0 &&
-                        updatedServer.channels[0]
-                    ) {
-                        setCurrentChannelId(updatedServer.channels[0].id)
-                    }
-                })
+            setServers((prev) => [...prev, initializedServer])
+            setCurrentServerId(server.id)
+            setCurrentChannelId(null)
+        },
+        [setServers, setCurrentServerId, setCurrentChannelId]
+    )
+
+    const joinServer = useCallback(
+        async (serverId: string) => {
+            const server = await serverServices.joinServer(serverId)
+            const rooms = await getJoinedServerRooms()
+            if (rooms.has(serverId)) {
+                return
             }
-        }
-    }
-
-    async function changeChannel(channelId: string) {
-        setCurrentChannelId(channelId)
-        const room = `channel_${channelId}`
-        if (!socketService.getJoinedChannelRooms().has(room)) {
-            // Fetch messages before joining the room
-            if (currentServerId) {
-                await getPagedMessages(currentServerId, channelId, 50)
+            const initializedServer = {
+                ...server,
+                channels: [] as Channel[],
+                users: [] as UserProfile[],
+                channelIds: server.channelIds || [],
+                userIds: server.userIds || [],
+                ownerIds: server.ownerIds || [],
             }
-            socketService.joinChannel(channelId)
-        }
-    }
+            setServers((prev) => [...prev, initializedServer])
+            setCurrentServerId(server.id)
+            setCurrentChannelId(null)
+        },
+        [
+            setServers,
+            setCurrentServerId,
+            setCurrentChannelId,
+            getJoinedServerRooms,
+        ]
+    )
 
-    async function getPagedChannels(
-        serverId: string,
-        limit: number,
-        offset: number
-    ) {
-        const channels = await serverServices.getPagedChannels(
-            serverId,
-            limit,
-            offset
-        )
-        setServers((prev) => {
-            return prev.map((server) => {
-                if (server.id !== serverId) return server
+    const createChannel = useCallback(
+        async (channelName: string, channelDescription: string) => {
+            if (!currentServerId) return
 
-                const existingChannelIds = new Set(
-                    (server.channels || []).map((c) => c.id)
-                )
-                const newChannels = channels.filter(
-                    (c) => !existingChannelIds.has(c.id)
-                )
-                return {
-                    ...server,
-                    channels: [...(server.channels || []), ...newChannels],
-                }
-            })
-        })
-    }
-
-    async function getPagedMessages(
-        serverId: string,
-        channelId: string,
-        limit: number,
-        nextPageState?: string
-    ) {
-        const data = await messageServices.getPagedMessages(
-            serverId,
-            channelId,
-            limit,
-            nextPageState
-        )
-        setServers((prev) => {
-            return prev.map((server) => {
-                return {
-                    ...server,
-                    channels: server.channels.map((channel) => {
-                        if (channel.id !== data.channelId) return channel
-
-                        const existingMessageIds = new Set(
-                            (channel.messages || []).map((m) => m.id)
-                        )
-                        const newMessages = data.messages.filter(
-                            (m) => !existingMessageIds.has(m.id)
-                        )
-                        const mergedMessages = [
-                            ...(channel.messages || []),
-                            ...newMessages,
-                        ].sort(
-                            (a, b) =>
-                                new Date(a.timestamp).getTime() -
-                                new Date(b.timestamp).getTime()
-                        )
-                        return {
-                            ...channel,
-                            messages: mergedMessages,
-                        }
-                    }),
-                }
-            })
-        })
-    }
-
-    async function getServerUsers(serverId: string) {
-        let users = await serverServices.getServerUsers(serverId)
-        users = users.map((u) => ({
-            id: u.id,
-            username: u.username,
-        }))
-        setServers((prev) => {
-            return prev.map((s) => {
-                if (s.id === serverId) {
+            const channel = await serverServices.createChannel(
+                currentServerId,
+                channelName,
+                channelDescription
+            )
+            setServers((prev) => {
+                return prev.map((s) => {
+                    if (s.id !== currentServerId) return s
                     return {
                         ...s,
-                        users: users,
+                        channels: [...(s.channels || []), channel],
                     }
-                }
-                return s
+                })
             })
-        })
-    }
+        },
+        [currentServerId, setServers]
+    )
 
-    async function getJoinedChannelRooms(): Promise<ReadonlySet<string>> {
-        return socketService.getJoinedChannelRooms()
-    }
+    const messageServer = useCallback(
+        (message: string) => {
+            if (!currentServerId || !currentChannelId) return
+            socketService.messageServer(
+                currentServerId,
+                currentChannelId,
+                message
+            )
+        },
+        [currentServerId, currentChannelId]
+    )
 
-    async function getJoinedServerRooms(): Promise<ReadonlySet<string>> {
-        return socketService.getJoinedServerRooms()
-    }
+    const leaveServer = useCallback((serverId: string) => {
+        socketService.leaveServer(serverId)
+    }, [])
 
-    function getUserById(
-        serverId: string,
-        userId: string
-    ): UserProfile | undefined {
-        const server = servers.find((s) => s.id === serverId)
-        return server?.users?.find((u) => u.id === userId)
-    }
+    const deleteServer = useCallback(async (serverId: string) => {
+        await serverServices.deleteServer(serverId)
+    }, [])
+
+    const deleteChannel = useCallback(
+        async (serverId: string, channelId: string) => {
+            await serverServices.deleteChannel(serverId, channelId)
+        },
+        []
+    )
+
+    const getPagedChannels = useCallback(
+        async (serverId: string, limit: number, offset: number) => {
+            const channels = await serverServices.getPagedChannels(
+                serverId,
+                limit,
+                offset
+            )
+            setServers((prev) => {
+                return prev.map((server) => {
+                    if (server.id !== serverId) return server
+
+                    const existingChannelIds = new Set(
+                        (server.channels || []).map((c) => c.id)
+                    )
+                    const newChannels = channels.filter(
+                        (c) => !existingChannelIds.has(c.id)
+                    )
+                    return {
+                        ...server,
+                        channels: [...(server.channels || []), ...newChannels],
+                    }
+                })
+            })
+        },
+        [setServers]
+    )
+
+    const getPagedMessages = useCallback(
+        async (
+            serverId: string,
+            channelId: string,
+            limit: number,
+            nextPageState?: string
+        ) => {
+            const data = await messageServices.getPagedMessages(
+                serverId,
+                channelId,
+                limit,
+                nextPageState
+            )
+            setServers((prev) => {
+                return prev.map((server) => {
+                    return {
+                        ...server,
+                        channels: server.channels.map((channel) => {
+                            if (channel.id !== data.channelId) return channel
+
+                            const existingMessageIds = new Set(
+                                (channel.messages || []).map((m) => m.id)
+                            )
+                            const newMessages = data.messages.filter(
+                                (m) => !existingMessageIds.has(m.id)
+                            )
+                            const mergedMessages = [
+                                ...(channel.messages || []),
+                                ...newMessages,
+                            ].sort(
+                                (a, b) =>
+                                    new Date(a.timestamp).getTime() -
+                                    new Date(b.timestamp).getTime()
+                            )
+                            return {
+                                ...channel,
+                                messages: mergedMessages,
+                            }
+                        }),
+                    }
+                })
+            })
+        },
+        [setServers]
+    )
+
+    const getServerUsers = useCallback(
+        async (serverId: string) => {
+            let users = await serverServices.getServerUsers(serverId)
+            users = users.map((u) => ({
+                id: u.id,
+                username: u.username,
+            }))
+            setServers((prev) => {
+                return prev.map((s) => {
+                    if (s.id === serverId) {
+                        return {
+                            ...s,
+                            users: users,
+                        }
+                    }
+                    return s
+                })
+            })
+        },
+        [setServers]
+    )
+
+    const changeServer = useCallback(
+        (serverId: string) => {
+            const server = servers.find((s) => s.id === serverId)
+            if (server) {
+                setCurrentServerId(serverId)
+                const firstChannel = server.channels?.[0]
+                setCurrentChannelId(firstChannel?.id || null)
+                const room = `server_${serverId}`
+                if (!socketService.getJoinedServerRooms().has(room)) {
+                    socketService.joinServer(serverId)
+                }
+                if (!server.channels || server.channels.length === 0) {
+                    getPagedChannels(serverId, 50, 0).then(() => {
+                        const updatedServer = servers.find(
+                            (s) => s.id === serverId
+                        )
+                        if (
+                            updatedServer &&
+                            updatedServer.channels.length > 0 &&
+                            updatedServer.channels[0]
+                        ) {
+                            setCurrentChannelId(updatedServer.channels[0].id)
+                        }
+                    })
+                }
+            }
+        },
+        [servers, setCurrentServerId, setCurrentChannelId, getPagedChannels]
+    )
+
+    const changeChannel = useCallback(
+        async (channelId: string) => {
+            setCurrentChannelId(channelId)
+            const room = `channel_${channelId}`
+            if (!socketService.getJoinedChannelRooms().has(room)) {
+                if (currentServerId) {
+                    await getPagedMessages(currentServerId, channelId, 50)
+                }
+                socketService.joinChannel(channelId)
+            }
+        },
+        [currentServerId, setCurrentChannelId, getPagedMessages]
+    )
 
     return {
         getUserServers,

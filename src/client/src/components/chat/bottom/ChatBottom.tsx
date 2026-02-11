@@ -2,7 +2,7 @@
 
 import { useSocket } from '@/components/context/SocketContext'
 import Member from '@/components/members/Member'
-import { useState } from 'react'
+import { useCallback, useState } from 'react'
 
 import MessageItem from '@/components/chat/bottom/MessageItem'
 import { Channel } from '@/domain/Channel'
@@ -21,22 +21,25 @@ export default function ChatBottom({
     isShowMembers,
 }: ChatBottomProps) {
     const { messageServer } = useSocket()
-
-    function handleKeyDown(event: { key: string }) {
-        if (event.key === 'Enter' && chatMessage !== '') {
-            messageServer(chatMessage)
-            setChatMessage('')
-        }
-    }
     const [chatMessage, setChatMessage] = useState<string>('')
+
+    const handleKeyDown = useCallback(
+        (event: { key: string }) => {
+            if (event.key === 'Enter' && chatMessage !== '') {
+                messageServer(chatMessage)
+                setChatMessage('')
+            }
+        },
+        [chatMessage, messageServer]
+    )
 
     return (
         <div
             className={`${styles.container} ${isShowMembers ? styles.showMembers : ''}`}
         >
             <div className={styles.messages}>
-                {(currentChannel?.messages || []).map((message, index) => (
-                    <MessageItem key={index} message={message} />
+                {(currentChannel?.messages || []).map((message) => (
+                    <MessageItem key={message.id} message={message} />
                 ))}
             </div>
             {currentChannel && (

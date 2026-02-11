@@ -6,87 +6,101 @@ import { AuthActionResult, AuthContextType } from '@/types/auth.types'
 import {
     createContext,
     ReactNode,
+    useCallback,
     useContext,
     useEffect,
+    useMemo,
     useState,
 } from 'react'
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined)
 
 export function AuthProvider({ children }: { children: ReactNode }) {
-    const [isLoading, setIsLoading] = useState(true)
+    const [isLoading, setIsLoading] = useState<boolean>(false)
     const [isLoggedIn, setIsLoggedIn] = useState<boolean>(false)
     const [loggedUser, setLoggedUser] = useState<User | undefined>(undefined)
     const [error, setError] = useState<string | null>(null)
 
-    async function login(
-        username: string,
-        password: string
-    ): Promise<AuthActionResult> {
-        setIsLoading(true)
-        setError(null)
-        try {
-            const r = await userServices.login(username, password)
-            if (r.ok) {
-                const { user } = await r.json()
-                setLoggedUser(user)
-                setIsLoggedIn(true)
+    const login = useCallback(
+        async (
+            username: string,
+            password: string
+        ): Promise<AuthActionResult> => {
+            setError(null)
+            setIsLoading(true)
+
+            try {
+                const r = await userServices.login(username, password)
+                if (r.ok) {
+                    const { user } = await r.json()
+                    setLoggedUser(user)
+                    setIsLoggedIn(true)
+                    return { success: true }
+                } else {
+                    const { message } = await r.json()
+                    setLoggedUser(undefined)
+                    setIsLoggedIn(false)
+                    setError(message || 'Login failed')
+                    return { success: false, message }
+                }
+            } catch (e: unknown) {
+                const err = e as Error
+                const errorMsg = err?.message || 'Login error'
+                setError(errorMsg)
+                return { success: false, message: errorMsg }
+            } finally {
                 setIsLoading(false)
-                return { success: true }
-            } else {
-                const { message } = await r.json()
-                setLoggedUser(undefined)
-                setIsLoggedIn(false)
-                setError(message || 'Login failed')
+            }
+        },
+        []
+    )
+
+    const register = useCallback(
+        async (
+            username: string,
+            email: string,
+            password: string
+        ): Promise<AuthActionResult> => {
+            setError(null)
+            setIsLoading(true)
+
+            try {
+                const r = await userServices.register(username, email, password)
+                setIsLoggedIn(r.ok)
+                if (r.ok) {
+                    return { success: true }
+                } else {
+                    const { message } = await r.json()
+                    setError(message || 'Registration failed')
+                    return { success: false, message }
+                }
+            } catch (e: unknown) {
+                const err = e as Error
+                const errorMsg = err?.message || 'Registration error'
+                setError(errorMsg)
+                return { success: false, message: errorMsg }
+            } finally {
                 setIsLoading(false)
-                return { success: false, message }
             }
-        } catch (e: unknown) {
-            const err = e as Error
-            setError(err?.message || 'Login error')
-            setIsLoading(false)
-            return { success: false, message: err?.message }
-        }
-    }
+        },
+        []
+    )
 
-    async function register(
-        username: string,
-        email: string,
-        password: string
-    ): Promise<AuthActionResult> {
-        setIsLoading(true)
+    const logout = useCallback(async () => {
         setError(null)
+        setIsLoading(true)
         try {
-            const r = await userServices.register(username, email, password)
-            setIsLoggedIn(r.ok)
+            await userServices.logout()
+            setLoggedUser(undefined)
+            setIsLoggedIn(false)
+        } finally {
             setIsLoading(false)
-            if (r.ok) {
-                return { success: true }
-            } else {
-                const { message } = await r.json()
-                setError(message || 'Registration failed')
-                return { success: false, message }
-            }
-        } catch (e: unknown) {
-            const err = e as Error
-            setError(err?.message || 'Registration error')
-            setIsLoading(false)
-            return { success: false, message: err?.message }
         }
-    }
+    }, [])
 
-    async function logout() {
-        setIsLoading(true)
+    const checkAuth = useCallback(async () => {
         setError(null)
-        await userServices.logout()
-        setIsLoggedIn(false)
-        setLoggedUser(undefined)
-        setIsLoading(false)
-    }
-
-    async function checkAuth() {
         setIsLoading(true)
-        setError(null)
         try {
             const r = await userServices.checkAuth()
             if (r.ok) {
@@ -100,24 +114,37 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         } catch (e: unknown) {
             const err = e as Error
             setError(err?.message || 'Auth check error')
+        } finally {
+            setIsLoading(false)
         }
-        setIsLoading(false)
-    }
+    }, [])
 
     useEffect(() => {
         checkAuth()
-    }, [])
+    }, [checkAuth])
 
-    const contextValue = {
-        login,
-        register,
-        logout,
-        checkAuth,
-        loggedUser,
-        isLoggedIn,
-        isLoading,
-        error,
-    }
+    const contextValue = useMemo(
+        () => ({
+            login,
+            register,
+            logout,
+            checkAuth,
+            loggedUser,
+            isLoggedIn,
+            isLoading,
+            error,
+        }),
+        [
+            login,
+            register,
+            logout,
+            checkAuth,
+            loggedUser,
+            isLoggedIn,
+            isLoading,
+            error,
+        ]
+    )
 
     return (
         <AuthContext.Provider value={contextValue}>

@@ -2,13 +2,10 @@
 
 import { useAuth } from '@/components/context/AuthContext'
 import { useRouter } from 'next/navigation'
-import { FormEvent, useEffect, useState } from 'react'
+import { useEffect, useState } from 'react'
 
 function RegisterPage() {
-    const { register, isLoggedIn } = useAuth()
-    const [username, setUsername] = useState('')
-    const [email, setEmail] = useState('')
-    const [password, setPassword] = useState('')
+    const { register, isLoggedIn, isLoading } = useAuth()
     const [error, setError] = useState<string | null>(null)
     const [success, setSuccess] = useState(false)
     const router = useRouter()
@@ -19,10 +16,13 @@ function RegisterPage() {
         }
     }, [isLoggedIn, router])
 
-    const handleSubmit = async (event: FormEvent<HTMLFormElement>) => {
-        event.preventDefault()
+    const handleSubmit = async (formData: FormData) => {
         setError(null)
         setSuccess(false)
+        const username = formData.get('username') as string
+        const email = formData.get('email') as string
+        const password = formData.get('password') as string
+
         const result = await register(username, email, password)
         if (result.success) {
             setSuccess(true)
@@ -30,34 +30,31 @@ function RegisterPage() {
         } else {
             setError(result.message || 'Registration failed')
         }
-        setUsername('')
-        setEmail('')
-        setPassword('')
     }
 
     return (
         <section className="formContainer">
-            <form onSubmit={handleSubmit} className="formInput">
+            <form action={handleSubmit} className="formInput">
                 <input
                     type="text"
+                    name="username"
                     placeholder="Username"
-                    value={username}
-                    onChange={(e) => setUsername(e.target.value)}
                     required
+                    disabled={isLoading}
                 />
                 <input
                     type="email"
+                    name="email"
                     placeholder="Email"
-                    value={email}
-                    onChange={(e) => setEmail(e.target.value)}
                     required
+                    disabled={isLoading}
                 />
                 <input
                     type="password"
+                    name="password"
                     placeholder="Password"
-                    value={password}
-                    onChange={(e) => setPassword(e.target.value)}
                     required
+                    disabled={isLoading}
                 />
                 {error && (
                     <div style={{ color: 'red', marginBottom: 8 }}>{error}</div>
@@ -68,7 +65,9 @@ function RegisterPage() {
                     </div>
                 )}
 
-                <button type="submit">Submit</button>
+                <button type="submit" disabled={isLoading}>
+                    {isLoading ? 'Submitting...' : 'Submit'}
+                </button>
             </form>
         </section>
     )

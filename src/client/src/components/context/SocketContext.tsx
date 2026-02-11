@@ -10,6 +10,7 @@ import {
     ReactNode,
     useContext,
     useEffect,
+    useMemo,
     useRef,
     useState,
 } from 'react'
@@ -23,7 +24,10 @@ export function SocketProvider({ children }: { children: ReactNode }) {
         null
     )
 
-    socketService.init()
+    useEffect(() => {
+        socketService.init()
+        return () => socketService.disconnect()
+    }, [])
 
     const fetchedDataRef = useRef<{
         channels: Set<string>
@@ -67,22 +71,27 @@ export function SocketProvider({ children }: { children: ReactNode }) {
     })
 
     // Computed values for convenience
-    const currentServer = currentServerId
-        ? servers.find((s) => s.id === currentServerId) || null
-        : null
+    const currentServer = useMemo(
+        () =>
+            currentServerId
+                ? servers.find((s) => s.id === currentServerId) || null
+                : null,
+        [currentServerId, servers]
+    )
 
-    const currentChannel =
-        currentServer && currentChannelId
-            ? currentServer.channels.find((c) => c.id === currentChannelId) ||
-              null
-            : null
+    const currentChannel = useMemo(
+        () =>
+            currentServer && currentChannelId
+                ? currentServer.channels.find(
+                      (c) => c.id === currentChannelId
+                  ) || null
+                : null,
+        [currentServer, currentChannelId]
+    )
 
     useEffect(() => {
-        const fetchServers = async () => {
-            await getUserServers()
-        }
-        fetchServers()
-    }, []) // Only run once on mount
+        getUserServers()
+    }, [getUserServers])
 
     useEffect(() => {
         const fetchDataForCurrentSelection = async () => {
@@ -130,31 +139,59 @@ export function SocketProvider({ children }: { children: ReactNode }) {
         }
 
         fetchDataForCurrentSelection()
-    }, [currentServerId])
+    }, [
+        currentServerId,
+        currentChannelId,
+        servers,
+        getPagedChannels,
+        getServerUsers,
+    ])
+
+    const contextValue = useMemo(
+        () => ({
+            createServer,
+            joinServer,
+            createChannel,
+            deleteChannel,
+            messageServer,
+            leaveServer,
+            deleteServer,
+            changeServer,
+            changeChannel,
+            getPagedChannels,
+            getPagedMessages,
+            getServerUsers,
+            getUserById,
+            currentServerId,
+            currentChannelId,
+            currentServer,
+            currentChannel,
+            servers,
+        }),
+        [
+            createServer,
+            joinServer,
+            createChannel,
+            deleteChannel,
+            messageServer,
+            leaveServer,
+            deleteServer,
+            changeServer,
+            changeChannel,
+            getPagedChannels,
+            getPagedMessages,
+            getServerUsers,
+            getUserById,
+            currentServerId,
+            currentChannelId,
+            currentServer,
+            currentChannel,
+            servers,
+        ]
+    )
 
     return (
-        <SocketContext.Provider
-            value={{
-                createServer,
-                joinServer,
-                createChannel,
-                deleteChannel,
-                messageServer,
-                leaveServer,
-                deleteServer,
-                changeServer,
-                changeChannel,
-                getPagedChannels,
-                getPagedMessages,
-                getServerUsers,
-                getUserById,
-                currentServerId,
-                currentChannelId,
-                currentServer,
-                currentChannel,
-                servers,
-            }}
-        >
+        <SocketContext.Provider value={contextValue}>
             {children}
         </SocketContext.Provider>
     )

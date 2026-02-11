@@ -3,7 +3,7 @@ import { Message } from '@/domain/Message'
 import { Server } from '@/domain/Server'
 import { UserProfile } from '@/domain/UserProfile'
 import { socketService } from '@/services/SocketService'
-import React, { useEffect } from 'react'
+import React, { useCallback, useEffect } from 'react'
 
 interface UseSocketHandlersProps {
     setServers: React.Dispatch<React.SetStateAction<Server[]>>
@@ -18,8 +18,8 @@ export function useSocketHandlers({
     setCurrentChannelId,
     servers,
 }: UseSocketHandlersProps) {
-    useEffect(() => {
-        function onCreateServerSuccess(server: Server) {
+    const onCreateServerSuccess = useCallback(
+        (server: Server) => {
             if (!server.channels) server.channels = []
             if (!server.users) server.users = []
             if (!server.channelIds) server.channelIds = []
@@ -28,9 +28,12 @@ export function useSocketHandlers({
 
             setServers((prev) => [...prev, server])
             setCurrentServerId(server.id)
-        }
+        },
+        [setServers, setCurrentServerId]
+    )
 
-        function onCreateChannelSuccess(channel: Channel) {
+    const onCreateChannelSuccess = useCallback(
+        (channel: Channel) => {
             if (!channel.messages) channel.messages = []
 
             setServers((prev) => {
@@ -56,12 +59,12 @@ export function useSocketHandlers({
                     return server
                 })
             })
-        }
+        },
+        [setServers, setCurrentChannelId]
+    )
 
-        function onChannelDeleted(data: {
-            serverId: string
-            channelId: string
-        }) {
+    const onChannelDeleted = useCallback(
+        (data: { serverId: string; channelId: string }) => {
             setServers((prev) => {
                 return prev.map((server) => {
                     if (server.id !== data.serverId) return server
@@ -76,12 +79,12 @@ export function useSocketHandlers({
                     }
                 })
             })
-        }
+        },
+        [setServers]
+    )
 
-        function onUserJoinedServer(data: {
-            user: UserProfile
-            serverId: string
-        }) {
+    const onUserJoinedServer = useCallback(
+        (data: { user: UserProfile; serverId: string }) => {
             const { user, serverId } = data
 
             setServers((prev) => {
@@ -99,9 +102,12 @@ export function useSocketHandlers({
                     return server
                 })
             })
-        }
+        },
+        [setServers]
+    )
 
-        function onMessageServerSuccess(message: Message) {
+    const onMessageServerSuccess = useCallback(
+        (message: Message) => {
             setServers((prevState) => {
                 return prevState.map((server) => {
                     return {
@@ -109,7 +115,6 @@ export function useSocketHandlers({
                         channels: server.channels.map((channel) => {
                             if (channel.id === message.channelId) {
                                 const currentMessages = channel.messages || []
-                                // Avoid duplicates
                                 const messageExists = currentMessages.some(
                                     (m) => m.id === message.id
                                 )
@@ -125,12 +130,12 @@ export function useSocketHandlers({
                     }
                 })
             })
-        }
+        },
+        [setServers]
+    )
 
-        function onUserLeftServer(data: {
-            profile: UserProfile
-            serverId: string
-        }) {
+    const onUserLeftServer = useCallback(
+        (data: { profile: UserProfile; serverId: string }) => {
             setServers((prevState) => {
                 return prevState.map((server) => {
                     if (server.id !== data.serverId) return server
@@ -143,23 +148,25 @@ export function useSocketHandlers({
                     }
                 })
             })
-        }
+        },
+        [setServers]
+    )
 
-        function onDeleteServerSuccess(serverId: string) {
+    const onDeleteServerSuccess = useCallback(
+        (serverId: string) => {
             setServers((prevState) => {
                 return prevState.filter((s) => s.id !== serverId)
             })
-        }
+        },
+        [setServers]
+    )
 
-        function onChannelsPaged(data: {
-            channels: Channel[]
-            serverId: string
-        }) {
+    const onChannelsPaged = useCallback(
+        (data: { channels: Channel[]; serverId: string }) => {
             setServers((prev) => {
                 return prev.map((server) => {
                     if (server.id !== data.serverId) return server
 
-                    // Ensure all channels have messages array initialized
                     const channelsWithMessages = data.channels.map((ch) => ({
                         ...ch,
                         messages: ch.messages || [],
@@ -178,13 +185,16 @@ export function useSocketHandlers({
                     }
                 })
             })
-        }
+        },
+        [setServers]
+    )
 
-        function onMessagesPaged(data: {
+    const onMessagesPaged = useCallback(
+        (data: {
             messages: Message[]
             nextPageState?: string
             channelId: string
-        }) {
+        }) => {
             setServers((prev) => {
                 return prev.map((server) => {
                     return {
@@ -215,8 +225,11 @@ export function useSocketHandlers({
                     }
                 })
             })
-        }
+        },
+        [setServers]
+    )
 
+    useEffect(() => {
         socketService.on('serverCreated', onCreateServerSuccess)
         socketService.on('userJoinedServer', onUserJoinedServer)
         socketService.on('channelCreated', onCreateChannelSuccess)
@@ -238,5 +251,15 @@ export function useSocketHandlers({
             socketService.off('channelsPaged', onChannelsPaged)
             socketService.off('messagesPaged', onMessagesPaged)
         }
-    }, [setServers, setCurrentServerId, setCurrentChannelId, servers.length])
+    }, [
+        onCreateServerSuccess,
+        onUserJoinedServer,
+        onCreateChannelSuccess,
+        onChannelDeleted,
+        onMessageServerSuccess,
+        onUserLeftServer,
+        onDeleteServerSuccess,
+        onChannelsPaged,
+        onMessagesPaged,
+    ])
 }

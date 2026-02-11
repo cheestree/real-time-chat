@@ -4,7 +4,14 @@ import {
     ContextMenuContextType,
     ContextMenuOption,
 } from '@/types/contextMenu.types'
-import React, { createContext, ReactNode, useContext, useState } from 'react'
+import React, {
+    createContext,
+    ReactNode,
+    useCallback,
+    useContext,
+    useMemo,
+    useState,
+} from 'react'
 
 // Re-export for backward compatibility
 export type { ContextMenuOption }
@@ -27,33 +34,42 @@ export function ContextMenuContextProvider({
         ContextMenuOption[]
     >([])
 
-    const openContextMenu = (
-        event: React.MouseEvent<HTMLDivElement>,
-        options: ContextMenuOption[]
-    ) => {
-        event.preventDefault()
-        setContextMenuOptions(options)
-        setContextMenuPosition({ x: event.clientX, y: event.clientY })
-        setContextMenuOpen(true)
-    }
-
-    const closeContextMenu = () => {
+    const closeContextMenu = useCallback(() => {
         setContextMenuOptions([])
         setContextMenuOpen(false)
-    }
+    }, [])
 
-    const handleOptionClick = (action: () => void) => {
-        action()
-        closeContextMenu()
-    }
+    const openContextMenu = useCallback(
+        (
+            event: React.MouseEvent<HTMLElement>,
+            options: ContextMenuOption[]
+        ) => {
+            event.preventDefault()
+            setContextMenuOptions(options)
+            setContextMenuPosition({ x: event.clientX, y: event.clientY })
+            setContextMenuOpen(true)
+        },
+        []
+    )
+
+    const handleOptionClick = useCallback(
+        (action: () => void) => {
+            action()
+            closeContextMenu()
+        },
+        [closeContextMenu]
+    )
+
+    const contextValue = useMemo(
+        () => ({
+            openContextMenu,
+            closeContextMenu,
+        }),
+        [openContextMenu, closeContextMenu]
+    )
 
     return (
-        <ContextMenuContext.Provider
-            value={{
-                openContextMenu,
-                closeContextMenu,
-            }}
-        >
+        <ContextMenuContext.Provider value={contextValue}>
             {contextMenuOpen && (
                 <div
                     style={{

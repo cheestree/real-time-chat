@@ -1,6 +1,12 @@
 'use client'
 
-import React, { ChangeEvent, RefObject, useRef, useState } from 'react'
+import React, {
+    ChangeEvent,
+    RefObject,
+    useCallback,
+    useRef,
+    useState,
+} from 'react'
 import {
     CircleStencil,
     Cropper,
@@ -19,33 +25,39 @@ export default function ImageCropper({ cropperRef }: ImageCropperProps) {
     const previewRef = useRef<CropperPreviewRef>(null)
     const [src, setSrc] = useState('')
 
-    const handleFileChange = (e: ChangeEvent<HTMLInputElement>) => {
-        const file = e.target.files?.[0]
-        if (!file) {
-            alert('Please select an image file.')
-            return
-        }
-
-        const reader = new FileReader()
-        reader.onload = (event) => {
-            if (event.target && event.target.result) {
-                const newSrc = event.target.result.toString()
-                setSrc(newSrc)
-                cropperRef.current?.reset()
+    const handleFileChange = useCallback(
+        (e: ChangeEvent<HTMLInputElement>) => {
+            const file = e.target.files?.[0]
+            if (!file) {
+                alert('Please select an image file.')
+                return
             }
-        }
-        reader.readAsDataURL(file)
-    }
 
-    const onUpdate = () => {
+            const reader = new FileReader()
+            reader.onload = (event) => {
+                if (event.target && event.target.result) {
+                    const newSrc = event.target.result.toString()
+                    setSrc(newSrc)
+                    cropperRef.current?.reset()
+                }
+            }
+            reader.readAsDataURL(file)
+        },
+        [cropperRef]
+    )
+
+    const onUpdate = useCallback(() => {
         previewRef.current?.refresh()
-    }
+    }, [])
 
-    const onClear = (e: React.MouseEvent<HTMLButtonElement, MouseEvent>) => {
-        e.preventDefault()
-        cropperRef.current?.reset()
-        setSrc('')
-    }
+    const onClear = useCallback(
+        (e: React.MouseEvent<HTMLButtonElement, MouseEvent>) => {
+            e.preventDefault()
+            cropperRef.current?.reset()
+            setSrc('')
+        },
+        [cropperRef]
+    )
 
     return (
         <div className={styles.imageContainer}>

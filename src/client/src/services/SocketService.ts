@@ -20,6 +20,12 @@ class SocketService {
         return this.socket
     }
 
+    disconnect(): void {
+        if (this.socket) {
+            this.socket.disconnect()
+        }
+    }
+
     messageServer(
         serverId: string | undefined,
         channelId: string,
