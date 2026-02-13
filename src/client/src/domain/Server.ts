@@ -6,10 +6,7 @@ export class Server {
     name: string
     description: string
     icon: string = ''
-    ownerIds: string[] = []
-    channelIds: string[] = []
-    userIds: string[] = []
-    // Populated from separate calls or socket events
+    ownerIds: number[] = []
     channels: Channel[] = []
     users: UserProfile[] = []
 
@@ -17,17 +14,13 @@ export class Server {
         id: string,
         serverName: string,
         description: string,
-        ownerIds: string[] = [],
-        channelIds: string[] = [],
-        userIds: string[] = [],
+        ownerIds: number[] = [],
         icon: string = ''
     ) {
         this.id = id
         this.name = serverName
         this.description = description
         this.ownerIds = ownerIds
-        this.channelIds = channelIds
-        this.userIds = userIds
         this.icon = icon
     }
 }

@@ -1,7 +1,9 @@
 import { RequestHandler } from 'express'
 import { asyncHandler } from '../http/middleware/asyncHandler'
 import { AuthenticatedRequest } from '../http/middleware/Authenticator'
-import MessageServices from '../services/MessageServices'
+import { ApiResponse } from '../http/model/output/ApiResponse'
+import { GetPagedMessagesResponse } from '../http/model/output/server/GetPagedMessagesResponse'
+import MessageServices from '../services/MessageService'
 import IMessageController from './interfaces/IMessageController'
 
 class MessageController implements IMessageController {
@@ -29,12 +31,20 @@ class MessageController implements IMessageController {
             serverId
         )
 
-        res.status(200).json({
+        const responseData: GetPagedMessagesResponse = {
             messages: result.messages.map((m) => m.toSummary()),
             nextPageState: result.nextPageState,
             serverId,
             channelId,
-        })
+            hasMore: !!result.nextPageState,
+        }
+
+        const response: ApiResponse<GetPagedMessagesResponse> = {
+            success: true,
+            data: responseData,
+        }
+
+        res.status(200).json(response)
     })
 }
 

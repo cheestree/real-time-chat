@@ -1,4 +1,4 @@
-import { User } from '@/domain/User'
+import { AuthenticatedUser } from './api.types'
 
 export interface AuthActionResult {
     success: boolean
@@ -14,7 +14,7 @@ export interface AuthContextType {
     ) => Promise<AuthActionResult>
     logout: () => Promise<void>
     checkAuth: () => Promise<void>
-    loggedUser: User | undefined
+    loggedUser: AuthenticatedUser | undefined
     isLoggedIn: boolean
     isLoading: boolean
     error: string | null

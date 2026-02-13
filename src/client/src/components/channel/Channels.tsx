@@ -2,8 +2,8 @@
 
 import ChannelCreateForm from '@/components/channel/ChannelCreateForm'
 import ChannelItem from '@/components/channel/channel/Channel'
+import { useOverlay } from '@/components/context/OverlayContext'
 import { useSocket } from '@/components/context/SocketContext'
-import { useOverlay } from '@/components/context/overlay/OverlayContext'
 import { Channel } from '@/domain/Channel'
 import { Server } from '@/domain/Server'
 import styles from './channels.module.css'

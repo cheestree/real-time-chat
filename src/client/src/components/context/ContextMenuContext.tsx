@@ -4,8 +4,9 @@ import {
     ContextMenuContextType,
     ContextMenuOption,
 } from '@/types/contextMenu.types'
-import React, {
+import {
     createContext,
+    MouseEvent,
     ReactNode,
     useCallback,
     useContext,
@@ -40,10 +41,7 @@ export function ContextMenuContextProvider({
     }, [])
 
     const openContextMenu = useCallback(
-        (
-            event: React.MouseEvent<HTMLElement>,
-            options: ContextMenuOption[]
-        ) => {
+        (event: MouseEvent<HTMLElement>, options: ContextMenuOption[]) => {
             event.preventDefault()
             setContextMenuOptions(options)
             setContextMenuPosition({ x: event.clientX, y: event.clientY })

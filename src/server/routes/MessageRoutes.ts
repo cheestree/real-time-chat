@@ -5,8 +5,8 @@ import { Path } from '../http/path/Path'
 import { createMessageRepository } from '../repository/messages/createMessageRepository'
 import { createServerRepository } from '../repository/server/createServerRepository'
 import { createUserRepository } from '../repository/user/createUserRepository'
-import MessageServices from '../services/MessageServices'
-import UserServices from '../services/UserServices'
+import MessageServices from '../services/MessageService'
+import UserServices from '../services/UserService'
 
 class MessageRoutes {
     public router = Router()

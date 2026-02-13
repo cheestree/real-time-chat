@@ -1,10 +1,10 @@
-import { Message } from '@/domain/Message'
-import { Fragment } from 'react'
+import { Fragment, JSX } from 'react'
 
+import { MessageSummary } from '@/types/api.types'
 import styles from './message.module.css'
 
 type MessageItemProps = {
-    message: Message
+    message: MessageSummary
 }
 
 export default function MessageItem({ message }: MessageItemProps) {

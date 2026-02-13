@@ -1,5 +1,4 @@
-import { Channel } from '@/domain/Channel'
-import { Server } from '@/domain/Server'
+import { ChannelDetail, ServerDetail } from './api.types'
 import { UserProfile } from '@/domain/UserProfile'
 
 export interface SocketContextType {
@@ -27,7 +26,7 @@ export interface SocketContextType {
     getUserById: (serverId: string, userId: string) => UserProfile | undefined
     currentServerId: string | null
     currentChannelId: string | null
-    currentServer: Server | null
-    currentChannel: Channel | null
-    servers: Server[]
+    currentServer: ServerDetail | null
+    currentChannel: ChannelDetail | null
+    servers: ServerDetail[]
 }

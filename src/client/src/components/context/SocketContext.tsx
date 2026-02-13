@@ -1,9 +1,9 @@
 'use client'
 
-import { Server } from '@/domain/Server'
 import { useSocketActions } from '@/hooks/useSocketActions'
 import { useSocketHandlers } from '@/hooks/useSocketHandlers'
 import { socketService } from '@/services/SocketService'
+import { ServerDetail } from '@/types/api.types'
 import { SocketContextType } from '@/types/socket.types'
 import {
     createContext,
@@ -18,7 +18,7 @@ import {
 const SocketContext = createContext<SocketContextType | undefined>(undefined)
 
 export function SocketProvider({ children }: { children: ReactNode }) {
-    const [servers, setServers] = useState<Server[]>([])
+    const [servers, setServers] = useState<ServerDetail[]>([])
     const [currentServerId, setCurrentServerId] = useState<string | null>(null)
     const [currentChannelId, setCurrentChannelId] = useState<string | null>(
         null
@@ -30,12 +30,8 @@ export function SocketProvider({ children }: { children: ReactNode }) {
     }, [])
 
     const fetchedDataRef = useRef<{
-        channels: Set<string>
-        users: Set<string>
         messages: Set<string>
     }>({
-        channels: new Set(),
-        users: new Set(),
         messages: new Set(),
     })
 
@@ -43,7 +39,6 @@ export function SocketProvider({ children }: { children: ReactNode }) {
         setServers,
         setCurrentServerId,
         setCurrentChannelId,
-        servers,
     })
 
     const {
@@ -70,7 +65,6 @@ export function SocketProvider({ children }: { children: ReactNode }) {
         setCurrentChannelId,
     })
 
-    // Computed values for convenience
     const currentServer = useMemo(
         () =>
             currentServerId
@@ -95,57 +89,26 @@ export function SocketProvider({ children }: { children: ReactNode }) {
 
     useEffect(() => {
         const fetchDataForCurrentSelection = async () => {
-            if (!currentServerId) {
+            if (!currentServerId || !currentChannelId) {
                 return
             }
 
-            const server = servers.find((s) => s.id === currentServerId)
-
-            if (!server) {
-                return
-            }
+            const channel = servers
+                .find((s) => s.id === currentServerId)
+                ?.channels.find((c) => c.id === currentChannelId)
 
             if (
-                server.channels.length === 0 &&
-                server.channelIds &&
-                server.channelIds.length > 0 &&
-                !fetchedDataRef.current.channels.has(currentServerId)
+                channel &&
+                (!channel.messages || channel.messages.length === 0) &&
+                !fetchedDataRef.current.messages.has(currentChannelId)
             ) {
-                fetchedDataRef.current.channels.add(currentServerId)
-                await getPagedChannels(server.id, 50, 0)
-                const updatedServer = servers.find(
-                    (s) => s.id === currentServerId
-                )
-                if (
-                    !currentChannelId &&
-                    updatedServer &&
-                    updatedServer.channels.length > 0
-                ) {
-                    const firstChannel = updatedServer.channels[0]
-                    setCurrentChannelId(firstChannel ? firstChannel.id : null)
-                }
-            }
-
-            if (
-                (server.users.length === 0 ||
-                    server.users.length < (server.userIds?.length || 0)) &&
-                server.userIds &&
-                server.userIds.length > 0 &&
-                !fetchedDataRef.current.users.has(currentServerId)
-            ) {
-                fetchedDataRef.current.users.add(currentServerId)
-                await getServerUsers(server.id)
+                fetchedDataRef.current.messages.add(currentChannelId)
+                await getPagedMessages(currentServerId, currentChannelId, 50)
             }
         }
 
         fetchDataForCurrentSelection()
-    }, [
-        currentServerId,
-        currentChannelId,
-        servers,
-        getPagedChannels,
-        getServerUsers,
-    ])
+    }, [currentServerId, currentChannelId, servers, getPagedMessages])
 
     const contextValue = useMemo(
         () => ({

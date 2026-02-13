@@ -13,10 +13,10 @@ import { UserSummary } from '../http/model/output/user/UserSummary'
 import { IServerRepository } from '../repository/interfaces/IServerRepository'
 import { IUserRepository } from '../repository/interfaces/IUserRepository'
 import { allNotEmpty } from '../utils/stringValidation'
-import IServerServices from './interfaces/IServerServices'
+import IServerService from './interfaces/IServerService'
 import { requireOrThrow } from './utils/requireOrThrow'
 
-class ServerServices implements IServerServices {
+class ServerService implements IServerService {
     servers: IServerRepository
     users: IUserRepository
     constructor(serverRepo: IServerRepository, userRepo: IUserRepository) {
@@ -156,16 +156,37 @@ class ServerServices implements IServerServices {
             server !== undefined,
             "Server doesn't exist."
         )
-        const channelIds = await this.servers.getChannelIdsByServerId(serverId)
+
+        const channels = await this.servers.getPagedChannels(serverId, 100, 0)
+        const channelDetails = channels.map((c) => ({
+            id: c.id,
+            name: c.name,
+            description: c.description,
+            serverId: c.serverId,
+            messages: [],
+        }))
+
         const userIds = await this.servers.getUserIdsByServerId(serverId)
+        const userSummaries: UserSummary[] = []
+        for (const userId of userIds) {
+            const user = await this.users.getUserById(userId)
+            if (user) {
+                userSummaries.push({
+                    id: user.id,
+                    username: user.username,
+                    icon: '',
+                })
+            }
+        }
+
         return {
             id: server.id,
             name: server.name,
             description: server.description,
             icon: server.icon,
             ownerIds: server.owners,
-            channelIds,
-            userIds,
+            channels: channelDetails,
+            users: userSummaries,
         }
     }
     getPagedChannels = async (
@@ -213,4 +234,4 @@ class ServerServices implements IServerServices {
     }
 }
 
-export default ServerServices
+export default ServerService

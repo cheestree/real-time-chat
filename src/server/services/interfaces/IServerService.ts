@@ -10,7 +10,7 @@ import { ServerLeaveInput } from '../../http/model/input/server/ServerLeaveInput
 import { UserServersInput } from '../../http/model/input/server/UserServersInput'
 import { ServerDetail } from '../../http/model/output/server/ServerDetail'
 
-interface IServerServices {
+interface IServerService {
     getUserServers: (input: UserServersInput) => Promise<Server[]>
     getServerById: (serverId: string) => Promise<Server>
     serverExists: (input: ServerExistsInput) => Promise<boolean>
@@ -48,4 +48,4 @@ interface IServerServices {
     ) => Promise<Channel[]>
 }
 
-export default IServerServices
+export default IServerService

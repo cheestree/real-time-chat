@@ -6,10 +6,10 @@ import { MessageCreateInput } from '../http/model/input/message/MessageCreateInp
 import IMessageRepository from '../repository/interfaces/IMessageRepository'
 import { IServerRepository } from '../repository/interfaces/IServerRepository'
 import { isNotEmptyString } from '../utils/stringValidation'
-import { IMessageServices } from './interfaces/IMessageServices'
+import { IMessageService } from './interfaces/IMessageService'
 import { requireOrThrow } from './utils/requireOrThrow'
 
-class MessageServices implements IMessageServices {
+class MessageService implements IMessageService {
     servers: IServerRepository
     messages: IMessageRepository
     constructor(
@@ -105,4 +105,4 @@ class MessageServices implements IMessageServices {
     }
 }
 
-export default MessageServices
+export default MessageService

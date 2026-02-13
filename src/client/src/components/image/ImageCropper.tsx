@@ -1,7 +1,8 @@
 'use client'
 
-import React, {
+import {
     ChangeEvent,
+    MouseEvent,
     RefObject,
     useCallback,
     useRef,
@@ -51,7 +52,7 @@ export default function ImageCropper({ cropperRef }: ImageCropperProps) {
     }, [])
 
     const onClear = useCallback(
-        (e: React.MouseEvent<HTMLButtonElement, MouseEvent>) => {
+        (e: MouseEvent<HTMLButtonElement, MouseEvent>) => {
             e.preventDefault()
             cropperRef.current?.reset()
             setSrc('')

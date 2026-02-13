@@ -8,8 +8,8 @@ import { UserRegisterSchema } from '../http/model/input/user/UserRegisterInput'
 import { Path } from '../http/path/Path'
 import { createServerRepository } from '../repository/server/createServerRepository'
 import { createUserRepository } from '../repository/user/createUserRepository'
-import ServerServices from '../services/ServerServices'
-import UserServices from '../services/UserServices'
+import ServerServices from '../services/ServerService'
+import UserServices from '../services/UserService'
 
 class UserRoutes {
     public router = Router()

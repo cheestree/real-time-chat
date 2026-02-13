@@ -74,14 +74,18 @@ class UserRepository implements IUserRepository {
         )
     }
 
-    async createUser(user: UserInsertable): Promise<string | undefined> {
+    async createUser(
+        user: UserInsertable
+    ): Promise<{ id: string; internal_id: number } | undefined> {
         return withErrorHandling(async () => {
             const result = await this.db
                 .insertInto('rtchat.users')
                 .values(user)
-                .returning('id')
+                .returning(['id', 'internal_id'])
                 .executeTakeFirst()
-            return result?.id
+            return result
+                ? { id: result.id, internal_id: result.internal_id }
+                : undefined
         }, 'Error creating user')
     }
 }

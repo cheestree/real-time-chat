@@ -1,7 +1,7 @@
 'use client'
 
-import { User } from '@/domain/User'
-import { userServices } from '@/services/UserServices'
+import { userService } from '@/services/UserService'
+import { AuthenticatedUser } from '@/types/api.types'
 import { AuthActionResult, AuthContextType } from '@/types/auth.types'
 import {
     createContext,
@@ -18,7 +18,9 @@ const AuthContext = createContext<AuthContextType | undefined>(undefined)
 export function AuthProvider({ children }: { children: ReactNode }) {
     const [isLoading, setIsLoading] = useState<boolean>(false)
     const [isLoggedIn, setIsLoggedIn] = useState<boolean>(false)
-    const [loggedUser, setLoggedUser] = useState<User | undefined>(undefined)
+    const [loggedUser, setLoggedUser] = useState<AuthenticatedUser | undefined>(
+        undefined
+    )
     const [error, setError] = useState<string | null>(null)
 
     const login = useCallback(
@@ -30,18 +32,18 @@ export function AuthProvider({ children }: { children: ReactNode }) {
             setIsLoading(true)
 
             try {
-                const r = await userServices.login(username, password)
-                if (r.ok) {
-                    const { user } = await r.json()
+                const r = await userService.login({ username, password })
+                if (r.success) {
+                    const { user } = r.data
                     setLoggedUser(user)
                     setIsLoggedIn(true)
                     return { success: true }
                 } else {
-                    const { message } = await r.json()
+                    const errorMsg = r.message || r.error || 'Login failed'
                     setLoggedUser(undefined)
                     setIsLoggedIn(false)
-                    setError(message || 'Login failed')
-                    return { success: false, message }
+                    setError(errorMsg)
+                    return { success: false, message: errorMsg }
                 }
             } catch (e: unknown) {
                 const err = e as Error
@@ -65,14 +67,23 @@ export function AuthProvider({ children }: { children: ReactNode }) {
             setIsLoading(true)
 
             try {
-                const r = await userServices.register(username, email, password)
-                setIsLoggedIn(r.ok)
-                if (r.ok) {
+                const r = await userService.register({
+                    username,
+                    email,
+                    password,
+                })
+                if (r.success) {
+                    const { user } = r.data
+                    setLoggedUser(user)
+                    setIsLoggedIn(true)
                     return { success: true }
                 } else {
-                    const { message } = await r.json()
-                    setError(message || 'Registration failed')
-                    return { success: false, message }
+                    const errorMsg =
+                        r.message || r.error || 'Registration failed'
+                    setLoggedUser(undefined)
+                    setIsLoggedIn(false)
+                    setError(errorMsg)
+                    return { success: false, message: errorMsg }
                 }
             } catch (e: unknown) {
                 const err = e as Error
@@ -90,7 +101,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         setError(null)
         setIsLoading(true)
         try {
-            await userServices.logout()
+            await userService.logout()
             setLoggedUser(undefined)
             setIsLoggedIn(false)
         } finally {
@@ -102,10 +113,9 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         setError(null)
         setIsLoading(true)
         try {
-            const r = await userServices.checkAuth()
-            if (r.ok) {
-                const user: User = await r.json()
-                setLoggedUser(user)
+            const r = await userService.checkAuth()
+            if (r && r.authenticated) {
+                setLoggedUser(r.user)
                 setIsLoggedIn(true)
             } else {
                 setLoggedUser(undefined)

@@ -5,10 +5,10 @@ import { useAuth } from '@/components/context/AuthContext'
 import Servers from '@/components/servers/Servers'
 import TaskBar from '@/components/taskbar/TaskBar'
 import { useRouter } from 'next/navigation'
-import React, { useEffect } from 'react'
+import { ReactNode, useEffect } from 'react'
 import styles from './page.module.css'
 
-function AuthGuard({ children }: { children: React.ReactNode }) {
+function AuthGuard({ children }: { children: ReactNode }) {
     const { isLoggedIn, isLoading } = useAuth()
     const router = useRouter()
 

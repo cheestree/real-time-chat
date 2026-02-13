@@ -21,8 +21,8 @@ import {
     ServerLeaveSchema,
 } from '../../http/model/input/server/ServerLeaveInput'
 import { UserLeft } from '../../http/model/output/server/UserLeft'
-import MessageServices from '../../services/MessageServices'
-import ServerServices from '../../services/ServerServices'
+import MessageService from '../../services/MessageService'
+import ServerService from '../../services/ServerService'
 import { logger } from '../../utils/logger'
 import {
     ClientToServerEvents,
@@ -46,8 +46,8 @@ export class SocketManager {
             InterServerEvents,
             SocketData
         >,
-        private serverServices: ServerServices,
-        private messageServices: MessageServices,
+        private serverServices: ServerService,
+        private messageServices: MessageService,
         private authenticatedUser: AuthenticatedUser
     ) {}
 

@@ -2,7 +2,8 @@ import { RequestHandler } from 'express'
 import { asyncHandler } from '../http/middleware/asyncHandler'
 import { AuthenticatedRequest } from '../http/middleware/Authenticator'
 import { ServerCreateInput } from '../http/model/input/server/ServerCreateInput'
-import ServerServices from '../services/ServerServices'
+import { ApiResponse } from '../http/model/output/ApiResponse'
+import ServerServices from '../services/ServerService'
 
 class ServerController {
     private services: ServerServices
@@ -15,14 +16,31 @@ class ServerController {
         const servers = await this.services.getUserServers({
             userId: authReq.authenticatedUser.publicId,
         })
-        const summaries = servers.map((s) => s)
-        res.status(200).json(summaries)
+
+        const serverDetails = await Promise.all(
+            servers.map(async (server) => {
+                return await this.services.getServerDetails(server.id)
+            })
+        )
+
+        const response: ApiResponse<typeof serverDetails> = {
+            success: true,
+            data: serverDetails,
+        }
+
+        res.status(200).json(response)
     })
 
     getServerDetails: RequestHandler = asyncHandler(async (req, res) => {
         const serverId = req.params.serverId
         const serverDetails = await this.services.getServerDetails(serverId)
-        res.status(200).json(serverDetails)
+
+        const response: ApiResponse<typeof serverDetails> = {
+            success: true,
+            data: serverDetails,
+        }
+
+        res.status(200).json(response)
     })
 
     createServer: RequestHandler = asyncHandler(async (req, res) => {
@@ -32,9 +50,15 @@ class ServerController {
             authReq.authenticatedUser,
             input
         )
+
+        const response: ApiResponse<typeof server> = {
+            success: true,
+            data: server,
+        }
+
         // Note: For now, there's no server-wide notification for server creation,
         // as only the creator is in the server. If we add invitations, they would be notified.
-        res.status(201).json(server)
+        res.status(201).json(response)
     })
 
     getPagedChannels: RequestHandler = asyncHandler(async (req, res) => {
@@ -49,7 +73,15 @@ class ServerController {
             limit,
             offset
         )
-        res.status(200).json(channels.map((c) => c.toSummary()))
+
+        const channelSummaries = channels.map((c) => c.toSummary())
+
+        const response: ApiResponse<typeof channelSummaries> = {
+            success: true,
+            data: channelSummaries,
+        }
+
+        res.status(200).json(response)
     })
 
     getServerUsers: RequestHandler = asyncHandler(async (req, res) => {
@@ -60,7 +92,13 @@ class ServerController {
             authReq.authenticatedUser,
             serverId
         )
-        res.status(200).json(users)
+
+        const response: ApiResponse<typeof users> = {
+            success: true,
+            data: users,
+        }
+
+        res.status(200).json(response)
     })
 }
 

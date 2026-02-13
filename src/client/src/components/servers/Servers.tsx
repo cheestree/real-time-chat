@@ -5,7 +5,7 @@ import { useContextMenu } from '@/components/context/ContextMenuContext'
 import { useSocket } from '@/components/context/SocketContext'
 import Server from '@/components/servers/server/Server'
 
-import { useOverlay } from '@/components/context/overlay/OverlayContext'
+import { useOverlay } from '@/components/context/OverlayContext'
 import ServerCreateForm from '@/components/servers/ServerCreateForm'
 import styles from './servers.module.css'
 

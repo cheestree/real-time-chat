@@ -22,9 +22,10 @@ const ErrorHandler: ErrorRequestHandler = (
         'HTTP error occurred'
     )
 
-    res.setHeader('Content-Type', 'application/problem+json')
+    res.setHeader('Content-Type', 'application/json')
     const errorMessage = err.name || 'Internal Server Error'
     res.status(statusCode).json({
+        success: false,
         error: errorMessage,
         message: err.message,
         ...(process.env.NODE_ENV !== 'production' && { stack: err.stack }),

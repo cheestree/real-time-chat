@@ -1,10 +1,10 @@
 'use client'
 
 import { AuthProvider } from '@/components/context/AuthContext'
-import { OverlayProvider } from '@/components/context/overlay/OverlayContext'
+import { OverlayProvider } from '@/components/context/OverlayContext'
 import { SocketProvider } from '@/components/context/SocketContext'
 import ThemeProviderWrapper from '@/components/ThemeProviderWrapper'
-import React, { ReactNode } from 'react'
+import { ReactNode } from 'react'
 import { useAuth } from './context/AuthContext'
 import { ContextMenuContextProvider } from './context/ContextMenuContext'
 
@@ -24,11 +24,7 @@ function AuthenticatedProviders({ children }: { children: ReactNode }) {
     )
 }
 
-export default function AppProviders({
-    children,
-}: {
-    children: React.ReactNode
-}) {
+export default function AppProviders({ children }: { children: ReactNode }) {
     return (
         <ThemeProviderWrapper>
             <AuthProvider>

@@ -1,6 +1,6 @@
 'use client'
 
-import { useOverlay } from '@/components/context/overlay/OverlayContext'
+import { useOverlay } from '@/components/context/OverlayContext'
 import { useSocket } from '@/components/context/SocketContext'
 import ImageCropper from '@/components/image/ImageCropper'
 import { useRef } from 'react'

@@ -5,8 +5,8 @@ import { AuthenticatedRequest } from '../http/middleware/Authenticator'
 import { ChannelCreateInput } from '../http/model/input/channel/ChannelCreateInput'
 import { ServerDeleteInput } from '../http/model/input/server/ServerDeleteInput'
 import { ServerJoinInput } from '../http/model/input/server/ServerJoinInput'
-import ServerServices from '../services/ServerServices'
-import UserServices from '../services/UserServices'
+import ServerServices from '../services/ServerService'
+import UserServices from '../services/UserService'
 
 interface SocketRequest extends Request {
     io: Server

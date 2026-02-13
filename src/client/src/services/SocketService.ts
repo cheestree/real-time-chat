@@ -1,3 +1,26 @@
+import {
+    deleteServerSocketSchema,
+    DeleteServerSocketSchema,
+    joinChannelSchema,
+    JoinChannelSchema,
+    joinServerSchema,
+    JoinServerSchema,
+    leaveChannelSchema,
+    LeaveChannelSchema,
+    leaveServerSchema,
+    LeaveServerSchema,
+    messageServerSchema,
+    MessageServerSchema,
+} from '@/types/services/socket.schema'
+
+import {
+    DeleteServerSocketResponse,
+    JoinChannelResponse,
+    JoinServerResponse,
+    LeaveChannelResponse,
+    LeaveServerResponse,
+    MessageServerResponse,
+} from '@/types/services/socket.types'
 import { io, Socket } from 'socket.io-client'
 
 class SocketService {
@@ -26,47 +49,84 @@ class SocketService {
         }
     }
 
-    messageServer(
-        serverId: string | undefined,
-        channelId: string,
-        content: string
-    ): void {
-        this.socket!.emit('messageServer', {
-            serverId,
-            channelId,
-            content,
-        })
+    messageServer(data: MessageServerSchema): MessageServerResponse {
+        try {
+            messageServerSchema.parse(data)
+            this.socket!.emit('messageServer', data)
+            return { success: true, data }
+        } catch (error) {
+            console.error('Socket messageServer error:', error)
+            return { success: false, error: 'Failed to send message' }
+        }
     }
 
-    leaveServer(serverId: string): void {
-        this.socket!.emit('leaveServer', { id: serverId })
-        const room = `server_${serverId}`
-        this.joinedServerRooms.delete(room)
+    leaveServer(data: LeaveServerSchema): LeaveServerResponse {
+        try {
+            leaveServerSchema.parse(data)
+            this.socket!.emit('leaveServer', data)
+            const room = `server_${data.serverId}`
+            this.joinedServerRooms.delete(room)
+            return { success: true, data: { id: data.serverId } }
+        } catch (error) {
+            console.error('Socket leaveServer error:', error)
+            return { success: false, error: 'Failed to leave server' }
+        }
     }
 
-    deleteServer(serverId: string): void {
-        this.socket!.emit('deleteServer', { id: serverId })
+    deleteServer(data: DeleteServerSocketSchema): DeleteServerSocketResponse {
+        try {
+            deleteServerSocketSchema.parse(data)
+            this.socket!.emit('deleteServer', data)
+            return { success: true, data: { id: data.id } }
+        } catch (error) {
+            console.error('Socket deleteServer error:', error)
+            return { success: false, error: 'Failed to delete server' }
+        }
     }
 
-    joinChannel(channelId: string): void {
-        const room = `channel_${channelId}`
-        if (this.joinedChannelRooms.has(room)) return
-        this.socket!.emit('joinChannel', { channelId })
-        this.joinedChannelRooms.add(room)
+    joinChannel(data: JoinChannelSchema): JoinChannelResponse {
+        try {
+            joinChannelSchema.parse(data)
+            const room = `channel_${data.channelId}`
+            if (this.joinedChannelRooms.has(room))
+                return { success: false, error: 'Already joined' }
+            this.socket!.emit('joinChannel', data)
+            this.joinedChannelRooms.add(room)
+            return { success: true, data: { channelId: data.channelId } }
+        } catch (error) {
+            console.error('Socket joinChannel error:', error)
+            return { success: false, error: 'Failed to join channel' }
+        }
     }
 
-    leaveChannel(channelId: string): void {
-        const room = `channel_${channelId}`
-        if (!this.joinedChannelRooms.has(room)) return
-        this.socket!.emit('leaveChannel', { channelId })
-        this.joinedChannelRooms.delete(room)
+    leaveChannel(data: LeaveChannelSchema): LeaveChannelResponse {
+        try {
+            leaveChannelSchema.parse(data)
+            const room = `channel_${data.channelId}`
+            if (!this.joinedChannelRooms.has(room))
+                return { success: false, error: 'Not joined' }
+            this.socket!.emit('leaveChannel', data)
+            this.joinedChannelRooms.delete(room)
+            return { success: true, data: { channelId: data.channelId } }
+        } catch (error) {
+            console.error('Socket leaveChannel error:', error)
+            return { success: false, error: 'Failed to leave channel' }
+        }
     }
 
-    joinServer(serverId: string): void {
-        const room = `server_${serverId}`
-        if (this.joinedServerRooms.has(room)) return
-        this.socket!.emit('joinServer', { serverId })
-        this.joinedServerRooms.add(room)
+    joinServer(data: JoinServerSchema): JoinServerResponse {
+        try {
+            joinServerSchema.parse(data)
+            const room = `server_${data.serverId}`
+            if (this.joinedServerRooms.has(room))
+                return { success: false, error: 'Already joined' }
+            this.socket!.emit('joinServer', data)
+            this.joinedServerRooms.add(room)
+            return { success: true, data: { serverId: data.serverId } }
+        } catch (error) {
+            console.error('Socket joinServer error:', error)
+            return { success: false, error: 'Failed to join server' }
+        }
     }
 
     getJoinedChannelRooms(): ReadonlySet<string> {

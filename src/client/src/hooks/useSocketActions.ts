@@ -1,16 +1,15 @@
-import { Channel } from '@/domain/Channel'
-import { Server } from '@/domain/Server'
 import { UserProfile } from '@/domain/UserProfile'
-import { messageServices } from '@/services/MessageServices'
-import { serverServices } from '@/services/ServerServices'
+import { messageService } from '@/services/MessageService'
+import { serverService } from '@/services/ServerService'
 import { socketService } from '@/services/SocketService'
-import React, { useCallback } from 'react'
+import { ServerDetail } from '@/types/api.types'
+import { Dispatch, SetStateAction, useCallback } from 'react'
 
 interface UseSocketActionsProps {
-    servers: Server[]
+    servers: ServerDetail[]
     currentServerId: string | null
     currentChannelId: string | null
-    setServers: React.Dispatch<React.SetStateAction<Server[]>>
+    setServers: Dispatch<SetStateAction<ServerDetail[]>>
     setCurrentServerId: (id: string | null) => void
     setCurrentChannelId: (id: string | null) => void
 }
@@ -44,84 +43,50 @@ export function useSocketActions({
     )
 
     const getUserServers = useCallback(async () => {
-        const userServers = await serverServices.listServers()
-        const initializedServers = userServers.map((s) => {
-            return {
-                ...s,
-                ownerIds: s.ownerIds || [],
-                channelIds: s.channelIds || [],
-                userIds: s.userIds || [],
-                channels:
-                    Array.isArray(s.channels) &&
-                    typeof s.channels[0] === 'object'
-                        ? s.channels
-                        : [],
-                users:
-                    Array.isArray(s.users) && typeof s.users[0] === 'object'
-                        ? s.users
-                        : [],
-            }
-        })
-        setServers(initializedServers)
+        const userServers = await serverService.listServers()
+        if (!userServers.success) return
+
+        setServers(userServers.data)
         if (
-            initializedServers[0] &&
-            initializedServers.length > 0 &&
+            userServers.data[0] &&
+            userServers.data.length > 0 &&
             !currentServerId
         ) {
-            setCurrentServerId(initializedServers[0].id)
-            if (
-                initializedServers[0].channels &&
-                initializedServers[0].channels.length > 0 &&
-                initializedServers[0].channels[0]
-            ) {
-                setCurrentChannelId(initializedServers[0].channels[0].id)
+            setCurrentServerId(userServers.data[0].id)
+            const firstChannel = userServers.data[0].channels?.[0]
+            if (firstChannel) {
+                setCurrentChannelId(firstChannel.id)
             }
         }
     }, [currentServerId, setServers, setCurrentServerId, setCurrentChannelId])
 
     const createServer = useCallback(
-        async (
-            serverName: string,
-            serverDescription?: string,
-            serverIcon?: string
-        ) => {
-            const server = await serverServices.createServer(
-                serverName,
-                serverDescription,
-                serverIcon
-            )
-            const initializedServer = {
-                ...server,
-                channels: [],
-                users: [],
-                channelIds: server.channelIds || [],
-                userIds: server.userIds || [],
-                ownerIds: server.ownerIds || [],
+        async (name: string, description?: string, icon?: string) => {
+            const server = await serverService.createServer({
+                name,
+                description,
+                icon,
+            })
+            if (server.success) {
+                setServers((prev) => [...prev, server.data])
+                setCurrentServerId(server.data.id)
+                setCurrentChannelId(null)
             }
-            setServers((prev) => [...prev, initializedServer])
-            setCurrentServerId(server.id)
-            setCurrentChannelId(null)
         },
         [setServers, setCurrentServerId, setCurrentChannelId]
     )
 
     const joinServer = useCallback(
         async (serverId: string) => {
-            const server = await serverServices.joinServer(serverId)
             const rooms = await getJoinedServerRooms()
             if (rooms.has(serverId)) {
                 return
             }
-            const initializedServer = {
-                ...server,
-                channels: [] as Channel[],
-                users: [] as UserProfile[],
-                channelIds: server.channelIds || [],
-                userIds: server.userIds || [],
-                ownerIds: server.ownerIds || [],
-            }
-            setServers((prev) => [...prev, initializedServer])
-            setCurrentServerId(server.id)
+            const server = await serverService.joinServer({ serverId })
+            if (!server.success) return
+
+            setServers((prev) => [...prev, server.data])
+            setCurrentServerId(server.data.id)
             setCurrentChannelId(null)
         },
         [
@@ -133,20 +98,25 @@ export function useSocketActions({
     )
 
     const createChannel = useCallback(
-        async (channelName: string, channelDescription: string) => {
+        async (name: string, description: string) => {
             if (!currentServerId) return
 
-            const channel = await serverServices.createChannel(
-                currentServerId,
-                channelName,
-                channelDescription
-            )
+            const response = await serverService.createChannel({
+                serverId: currentServerId,
+                name,
+                description,
+            })
+            if (!response.success) return
+
             setServers((prev) => {
                 return prev.map((s) => {
                     if (s.id !== currentServerId) return s
                     return {
                         ...s,
-                        channels: [...(s.channels || []), channel],
+                        channels: [
+                            ...(s.channels || []),
+                            { ...response.data, messages: [] },
+                        ],
                     }
                 })
             })
@@ -157,37 +127,39 @@ export function useSocketActions({
     const messageServer = useCallback(
         (message: string) => {
             if (!currentServerId || !currentChannelId) return
-            socketService.messageServer(
-                currentServerId,
-                currentChannelId,
-                message
-            )
+            socketService.messageServer({
+                serverId: currentServerId,
+                channelId: currentChannelId,
+                content: message,
+            })
         },
         [currentServerId, currentChannelId]
     )
 
     const leaveServer = useCallback((serverId: string) => {
-        socketService.leaveServer(serverId)
+        socketService.leaveServer({ serverId })
     }, [])
 
     const deleteServer = useCallback(async (serverId: string) => {
-        await serverServices.deleteServer(serverId)
+        await serverService.deleteServer({ serverId })
     }, [])
 
     const deleteChannel = useCallback(
         async (serverId: string, channelId: string) => {
-            await serverServices.deleteChannel(serverId, channelId)
+            await serverService.deleteChannel({ serverId, channelId })
         },
         []
     )
 
     const getPagedChannels = useCallback(
         async (serverId: string, limit: number, offset: number) => {
-            const channels = await serverServices.getPagedChannels(
+            const response = await serverService.getPagedChannels({
                 serverId,
                 limit,
-                offset
-            )
+                offset,
+            })
+            if (!response.success) return
+
             setServers((prev) => {
                 return prev.map((server) => {
                     if (server.id !== serverId) return server
@@ -195,9 +167,9 @@ export function useSocketActions({
                     const existingChannelIds = new Set(
                         (server.channels || []).map((c) => c.id)
                     )
-                    const newChannels = channels.filter(
-                        (c) => !existingChannelIds.has(c.id)
-                    )
+                    const newChannels = response.data
+                        .filter((c) => !existingChannelIds.has(c.id))
+                        .map((c) => ({ ...c, messages: [] }))
                     return {
                         ...server,
                         channels: [...(server.channels || []), ...newChannels],
@@ -215,23 +187,26 @@ export function useSocketActions({
             limit: number,
             nextPageState?: string
         ) => {
-            const data = await messageServices.getPagedMessages(
+            const response = await messageService.getPagedMessages({
                 serverId,
                 channelId,
                 limit,
-                nextPageState
-            )
+                nextPageState,
+            })
+            if (!response.success) return
+
             setServers((prev) => {
                 return prev.map((server) => {
                     return {
                         ...server,
                         channels: server.channels.map((channel) => {
-                            if (channel.id !== data.channelId) return channel
+                            if (channel.id !== response.data.channelId)
+                                return channel
 
                             const existingMessageIds = new Set(
                                 (channel.messages || []).map((m) => m.id)
                             )
-                            const newMessages = data.messages.filter(
+                            const newMessages = response.data.messages.filter(
                                 (m) => !existingMessageIds.has(m.id)
                             )
                             const mergedMessages = [
@@ -256,8 +231,10 @@ export function useSocketActions({
 
     const getServerUsers = useCallback(
         async (serverId: string) => {
-            let users = await serverServices.getServerUsers(serverId)
-            users = users.map((u) => ({
+            const response = await serverService.getServerUsers({ serverId })
+            if (!response.success) return
+
+            const users = response.data.map((u) => ({
                 id: u.id,
                 username: u.username,
             }))
@@ -266,7 +243,7 @@ export function useSocketActions({
                     if (s.id === serverId) {
                         return {
                             ...s,
-                            users: users,
+                            users,
                         }
                     }
                     return s
@@ -285,25 +262,11 @@ export function useSocketActions({
                 setCurrentChannelId(firstChannel?.id || null)
                 const room = `server_${serverId}`
                 if (!socketService.getJoinedServerRooms().has(room)) {
-                    socketService.joinServer(serverId)
-                }
-                if (!server.channels || server.channels.length === 0) {
-                    getPagedChannels(serverId, 50, 0).then(() => {
-                        const updatedServer = servers.find(
-                            (s) => s.id === serverId
-                        )
-                        if (
-                            updatedServer &&
-                            updatedServer.channels.length > 0 &&
-                            updatedServer.channels[0]
-                        ) {
-                            setCurrentChannelId(updatedServer.channels[0].id)
-                        }
-                    })
+                    socketService.joinServer({ serverId })
                 }
             }
         },
-        [servers, setCurrentServerId, setCurrentChannelId, getPagedChannels]
+        [servers, setCurrentServerId, setCurrentChannelId]
     )
 
     const changeChannel = useCallback(
@@ -314,7 +277,7 @@ export function useSocketActions({
                 if (currentServerId) {
                     await getPagedMessages(currentServerId, channelId, 50)
                 }
-                socketService.joinChannel(channelId)
+                socketService.joinChannel({ channelId })
             }
         },
         [currentServerId, setCurrentChannelId, getPagedMessages]

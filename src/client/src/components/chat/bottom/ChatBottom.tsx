@@ -5,13 +5,12 @@ import Member from '@/components/members/Member'
 import { useCallback, useState } from 'react'
 
 import MessageItem from '@/components/chat/bottom/MessageItem'
-import { Channel } from '@/domain/Channel'
-import { Server } from '@/domain/Server'
+import { ChannelDetail, ServerDetail } from '@/types/api.types'
 import styles from './bottom.module.css'
 
 type ChatBottomProps = {
-    currentServer: Server
-    currentChannel: Channel
+    currentServer: ServerDetail
+    currentChannel: ChannelDetail
     isShowMembers: boolean
 }
 
@@ -38,9 +37,11 @@ export default function ChatBottom({
             className={`${styles.container} ${isShowMembers ? styles.showMembers : ''}`}
         >
             <div className={styles.messages}>
-                {(currentChannel?.messages || []).map((message) => (
-                    <MessageItem key={message.id} message={message} />
-                ))}
+                {((currentChannel && currentChannel.messages) || []).map(
+                    (message) => (
+                        <MessageItem key={message.id} message={message} />
+                    )
+                )}
             </div>
             {currentChannel && (
                 <div className={styles.send}>

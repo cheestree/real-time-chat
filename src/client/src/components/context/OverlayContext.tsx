@@ -19,7 +19,7 @@ export function OverlayProvider({ children }: { children: ReactNode }) {
     const [modal, setModal] = useState<ReactElement>()
 
     const handleClose = useCallback(() => setShow(false), [])
-    
+
     const handleShow = useCallback((modal: ReactElement) => {
         setModal(modal)
         setShow(true)

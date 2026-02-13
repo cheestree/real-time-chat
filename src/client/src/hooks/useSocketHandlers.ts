@@ -1,30 +1,24 @@
-import { Channel } from '@/domain/Channel'
 import { Message } from '@/domain/Message'
-import { Server } from '@/domain/Server'
 import { UserProfile } from '@/domain/UserProfile'
 import { socketService } from '@/services/SocketService'
-import React, { useCallback, useEffect } from 'react'
+import { ChannelDetail, ServerDetail } from '@/types/api.types'
+import { Dispatch, SetStateAction, useCallback, useEffect } from 'react'
 
 interface UseSocketHandlersProps {
-    setServers: React.Dispatch<React.SetStateAction<Server[]>>
-    setCurrentServerId: React.Dispatch<React.SetStateAction<string | null>>
-    setCurrentChannelId: React.Dispatch<React.SetStateAction<string | null>>
-    servers: Server[]
+    setServers: Dispatch<SetStateAction<ServerDetail[]>>
+    setCurrentServerId: Dispatch<SetStateAction<string | null>>
+    setCurrentChannelId: Dispatch<SetStateAction<string | null>>
 }
 
 export function useSocketHandlers({
     setServers,
     setCurrentServerId,
     setCurrentChannelId,
-    servers,
 }: UseSocketHandlersProps) {
     const onCreateServerSuccess = useCallback(
-        (server: Server) => {
+        (server: ServerDetail) => {
             if (!server.channels) server.channels = []
             if (!server.users) server.users = []
-            if (!server.channelIds) server.channelIds = []
-            if (!server.userIds) server.userIds = []
-            if (!server.ownerIds) server.ownerIds = []
 
             setServers((prev) => [...prev, server])
             setCurrentServerId(server.id)
@@ -33,17 +27,12 @@ export function useSocketHandlers({
     )
 
     const onCreateChannelSuccess = useCallback(
-        (channel: Channel) => {
+        (channel: ChannelDetail) => {
             if (!channel.messages) channel.messages = []
 
             setServers((prev) => {
                 return prev.map((server) => {
                     if (server.id !== channel.serverId) return server
-
-                    if (!server.channelIds) server.channelIds = []
-                    if (!server.channelIds.includes(channel.id)) {
-                        server.channelIds.push(channel.id)
-                    }
 
                     if (!server.channels) server.channels = []
                     const channelExists = server.channels.some(
@@ -72,9 +61,6 @@ export function useSocketHandlers({
                         ...server,
                         channels: server.channels.filter(
                             (ch) => ch.id !== data.channelId
-                        ),
-                        channelIds: server.channelIds.filter(
-                            (id) => id !== data.channelId
                         ),
                     }
                 })
@@ -162,7 +148,7 @@ export function useSocketHandlers({
     )
 
     const onChannelsPaged = useCallback(
-        (data: { channels: Channel[]; serverId: string }) => {
+        (data: { channels: ChannelDetail[]; serverId: string }) => {
             setServers((prev) => {
                 return prev.map((server) => {
                     if (server.id !== data.serverId) return server

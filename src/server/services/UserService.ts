@@ -6,10 +6,10 @@ import { UserLoginInput } from '../http/model/input/user/UserLoginInput'
 import { UserRegisterInput } from '../http/model/input/user/UserRegisterInput'
 import { LoginResult } from '../http/model/output/user/LoginResult'
 import { IUserRepository } from '../repository/interfaces/IUserRepository'
-import IUserServices from './interfaces/IUserServices'
+import IUserService from './interfaces/IUserService'
 import { requireOrThrow } from './utils/requireOrThrow'
 
-class UserServices implements IUserServices {
+class UserService implements IUserService {
     private repo: IUserRepository
     private domain: UserDomain
     constructor(repo: IUserRepository) {
@@ -50,19 +50,23 @@ class UserServices implements IUserServices {
     async logout(user: AuthenticatedUser): Promise<boolean> {
         return true
     }
-    async register(register: UserRegisterInput): Promise<UserProfile> {
+    async register(register: UserRegisterInput): Promise<AuthenticatedUser> {
         const hashedPassword = await this.domain.hashPassword(register.password)
-        const id = await this.repo.createUser({
+        const result = await this.repo.createUser({
             username: register.username,
             email: register.email,
             password: hashedPassword,
         })
         requireOrThrow(
             BadRequestError,
-            id !== undefined,
-            'ID generation failed'
+            result !== undefined,
+            'User creation failed'
         )
-        return new UserProfile(id, register.username)
+        return {
+            internalId: result.internal_id,
+            publicId: result.id,
+            profile: { id: result.id, username: register.username },
+        }
     }
     async checkAuth(token: string): Promise<AuthenticatedUser | undefined> {
         const credentials = await this.domain.validateToken(token)
@@ -94,4 +98,4 @@ class UserServices implements IUserServices {
     }
 }
 
-export default UserServices
+export default UserService
