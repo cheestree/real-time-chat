@@ -1,11 +1,11 @@
 'use client'
 
-import { useAuth } from '@/components/context/AuthContext'
+import { useAuthStore } from '@/stores/useAuthStore'
 import { useRouter } from 'next/navigation'
 import { useEffect, useState } from 'react'
 
 function LoginPage() {
-    const { login, isLoggedIn, isLoading } = useAuth()
+    const { login, isLoggedIn, isLoading } = useAuthStore()
     const [error, setError] = useState<string | null>(null)
     const router = useRouter()
 

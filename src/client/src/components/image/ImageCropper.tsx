@@ -19,7 +19,7 @@ import 'react-advanced-cropper/dist/style.css'
 import styles from './image.module.css'
 
 type ImageCropperProps = {
-    cropperRef: RefObject<CropperRef>
+    cropperRef: RefObject<CropperRef | null>
 }
 
 export default function ImageCropper({ cropperRef }: ImageCropperProps) {
@@ -52,7 +52,7 @@ export default function ImageCropper({ cropperRef }: ImageCropperProps) {
     }, [])
 
     const onClear = useCallback(
-        (e: MouseEvent<HTMLButtonElement, MouseEvent>) => {
+        (e: MouseEvent<HTMLButtonElement>) => {
             e.preventDefault()
             cropperRef.current?.reset()
             setSrc('')
@@ -65,7 +65,7 @@ export default function ImageCropper({ cropperRef }: ImageCropperProps) {
             <div className={styles.cropper}>
                 <Cropper
                     ref={cropperRef}
-                    className={styles.cropper}
+                    className={styles.cropper || ''}
                     stencilProps={{
                         aspectRatio: 1,
                     }}

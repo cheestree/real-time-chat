@@ -1,10 +1,10 @@
 'use client'
 
-import { Channel } from '@/domain/Channel'
+import { ChannelDetail } from '@/types/api.types'
 import styles from './channel.module.css'
 
 type ChannelItemProps = {
-    channel: Channel
+    channel: ChannelDetail
     currentlySelected: boolean
     onChangeChannel: () => void
 }

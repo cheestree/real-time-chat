@@ -1,10 +1,10 @@
 'use client'
 
-import { User } from '@/domain/User'
+import { AuthenticatedUser } from '@/types/api.types'
 import styles from './userBar.module.css'
 
 type UserBarProps = {
-    user: User
+    user: AuthenticatedUser
     logout: () => void
 }
 

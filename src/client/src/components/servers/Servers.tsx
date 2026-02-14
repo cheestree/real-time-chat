@@ -1,19 +1,22 @@
 'use client'
 
-import { useAuth } from '@/components/context/AuthContext'
-import { useContextMenu } from '@/components/context/ContextMenuContext'
-import { useSocket } from '@/components/context/SocketContext'
 import Server from '@/components/servers/server/Server'
+import { useAuthStore } from '@/stores/useAuthStore'
+import { useContextMenuStore } from '@/stores/useContextMenuStore'
+import { useSocketStore } from '@/stores/useSocketStore'
 
-import { useOverlay } from '@/components/context/OverlayContext'
 import ServerCreateForm from '@/components/servers/ServerCreateForm'
+import { useOverlayStore } from '@/stores/useOverlayStore'
 import styles from './servers.module.css'
 
 export default function Servers() {
-    const { servers, changeServer, deleteServer, leaveServer } = useSocket()
-    const { openContextMenu } = useContextMenu()
-    const { loggedUser } = useAuth()
-    const { handleShow } = useOverlay()
+    const servers = useSocketStore((state) => state.servers)
+    const changeServer = useSocketStore((state) => state.changeServer)
+    const deleteServer = useSocketStore((state) => state.deleteServer)
+    const leaveServer = useSocketStore((state) => state.leaveServer)
+    const openContextMenu = useContextMenuStore((state) => state.open)
+    const loggedUser = useAuthStore((state) => state.loggedUser)
+    const show = useOverlayStore((state) => state.show)
 
     return (
         <div className={styles.container}>
@@ -30,9 +33,7 @@ export default function Servers() {
                     />
                 ))}
             <div className={styles.actions}>
-                <button onClick={() => handleShow(<ServerCreateForm />)}>
-                    +
-                </button>
+                <button onClick={() => show(<ServerCreateForm />)}>+</button>
             </div>
         </div>
     )

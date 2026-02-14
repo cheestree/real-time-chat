@@ -1,19 +1,18 @@
 'use client'
 
-import { ContextMenuOption } from '@/components/context/ContextMenuContext'
-import { Server as ServerType } from '@/domain/Server'
+import { AuthenticatedUser, ServerDetail } from '@/types/api.types'
+import { ContextMenuOption } from '@/types/contextMenu.types'
 import Image from 'next/image'
 import { MouseEvent } from 'react'
 
-import { User } from '@/domain/User'
 import styles from './server.module.css'
 
 type ServerProps = {
-    server: ServerType
-    user: User
+    server: ServerDetail
+    user: AuthenticatedUser
     deleteServer: (serverId: string) => void
     openContextMenu: (
-        event: MouseEvent<HTMLDivElement, MouseEvent>,
+        event: MouseEvent<HTMLDivElement>,
         options: ContextMenuOption[]
     ) => void
     leaveServer: (serverId: string) => void
@@ -28,7 +27,7 @@ export default function Server({
     leaveServer,
     changeServer,
 }: ServerProps) {
-    const handleContextMenu = (e: MouseEvent<HTMLDivElement, MouseEvent>) => {
+    const handleContextMenu = (e: MouseEvent<HTMLDivElement>) => {
         const isMember = server.users.some((u) => u.id === user.publicId)
         const isOwner = server.ownerIds.length > 0
 

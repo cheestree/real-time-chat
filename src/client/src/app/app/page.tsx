@@ -1,15 +1,16 @@
 'use client'
 
 import ChatArea from '@/components/chat/ChatArea'
-import { useAuth } from '@/components/context/AuthContext'
 import Servers from '@/components/servers/Servers'
 import TaskBar from '@/components/taskbar/TaskBar'
+import { useAuthStore } from '@/stores/useAuthStore'
 import { useRouter } from 'next/navigation'
 import { ReactNode, useEffect } from 'react'
 import styles from './page.module.css'
 
 function AuthGuard({ children }: { children: ReactNode }) {
-    const { isLoggedIn, isLoading } = useAuth()
+    const isLoggedIn = useAuthStore((state) => state.isLoggedIn)
+    const isLoading = useAuthStore((state) => state.isLoading)
     const router = useRouter()
 
     useEffect(() => {

@@ -1,11 +1,11 @@
 'use client'
 
-import { useAuth } from '@/components/context/AuthContext'
+import { useAuthStore } from '@/stores/useAuthStore'
 import { useRouter } from 'next/navigation'
 import { useEffect, useState } from 'react'
 
 function RegisterPage() {
-    const { register, isLoggedIn, isLoading } = useAuth()
+    const { register, isLoggedIn, isLoading } = useAuthStore()
     const [error, setError] = useState<string | null>(null)
     const [success, setSuccess] = useState(false)
     const router = useRouter()

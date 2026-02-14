@@ -1,7 +1,7 @@
 import { Server, Socket } from 'socket.io'
-import MessageServices from '../../services/MessageServices'
-import ServerServices from '../../services/ServerServices'
-import UserServices from '../../services/UserServices'
+import MessageServices from '../../services/MessageService'
+import ServerServices from '../../services/ServerService'
+import UserServices from '../../services/UserService'
 import { logger } from '../../utils/logger'
 import {
     ClientToServerEvents,

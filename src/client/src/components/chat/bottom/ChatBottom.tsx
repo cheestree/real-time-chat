@@ -1,7 +1,7 @@
 'use client'
 
-import { useSocket } from '@/components/context/SocketContext'
 import Member from '@/components/members/Member'
+import { useSocketStore } from '@/stores/useSocketStore'
 import { useCallback, useState } from 'react'
 
 import MessageItem from '@/components/chat/bottom/MessageItem'
@@ -19,7 +19,7 @@ export default function ChatBottom({
     currentChannel,
     isShowMembers,
 }: ChatBottomProps) {
-    const { messageServer } = useSocket()
+    const messageServer = useSocketStore((state) => state.messageServer)
     const [chatMessage, setChatMessage] = useState<string>('')
 
     const handleKeyDown = useCallback(

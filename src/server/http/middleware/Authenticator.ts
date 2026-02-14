@@ -1,6 +1,6 @@
 import { Request, RequestHandler } from 'express'
 import { AuthenticatedUser } from '../../domain/user/AuthenticatedUser'
-import UserServices from '../../services/UserServices'
+import UserServices from '../../services/UserService'
 import { logger } from '../../utils/logger'
 
 export interface AuthenticatedRequest extends Request {

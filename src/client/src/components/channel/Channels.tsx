@@ -2,14 +2,13 @@
 
 import ChannelCreateForm from '@/components/channel/ChannelCreateForm'
 import ChannelItem from '@/components/channel/channel/Channel'
-import { useOverlay } from '@/components/context/OverlayContext'
-import { useSocket } from '@/components/context/SocketContext'
-import { Channel } from '@/domain/Channel'
-import { Server } from '@/domain/Server'
+import { useOverlayStore } from '@/stores/useOverlayStore'
+import { useSocketStore } from '@/stores/useSocketStore'
+import { ChannelDetail, ServerDetail } from '@/types/api.types'
 import styles from './channels.module.css'
 
 type ChannelsProps = {
-    currentServer: Server
+    currentServer: ServerDetail
     onChangeChannel: (id: string) => void
 }
 
@@ -17,13 +16,13 @@ export default function Channels({
     currentServer,
     onChangeChannel,
 }: ChannelsProps) {
-    const { currentChannelId } = useSocket()
-    const { handleShow } = useOverlay()
+    const currentChannelId = useSocketStore((state) => state.currentChannelId)
+    const show = useOverlayStore((state) => state.show)
 
     return (
         <div className={styles.container}>
             <button
-                onClick={() => handleShow(<ChannelCreateForm />)}
+                onClick={() => show(<ChannelCreateForm />)}
                 className={styles.addChannel}
             >
                 + Add channel
@@ -31,7 +30,7 @@ export default function Channels({
             <div className={styles.channels}>
                 {currentServer &&
                     currentServer.channels &&
-                    currentServer.channels.map((channel: Channel) => (
+                    currentServer.channels.map((channel: ChannelDetail) => (
                         <ChannelItem
                             key={channel.id}
                             channel={channel}

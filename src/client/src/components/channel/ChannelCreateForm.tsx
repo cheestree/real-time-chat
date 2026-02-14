@@ -1,19 +1,19 @@
 'use client'
 
-import { useOverlay } from '@/components/context/OverlayContext'
-import { useSocket } from '@/components/context/SocketContext'
+import { useOverlayStore } from '@/stores/useOverlayStore'
+import { useSocketStore } from '@/stores/useSocketStore'
 
 import styles from './form.module.css'
 
 export default function ChannelCreateForm() {
-    const { handleClose } = useOverlay()
-    const { createChannel } = useSocket()
+    const close = useOverlayStore((state) => state.close)
+    const createChannel = useSocketStore((state) => state.createChannel)
 
     const handleCreateChannel = (formData: FormData) => {
         const channelName = formData.get('channelName') as string
         const channelDescription = formData.get('channelDescription') as string
         createChannel(channelName, channelDescription)
-        handleClose()
+        close()
     }
 
     return (
@@ -32,7 +32,7 @@ export default function ChannelCreateForm() {
                 />
                 <div className={styles.actions}>
                     <button type="submit">Create</button>
-                    <button type="button" onClick={handleClose}>
+                    <button type="button" onClick={close}>
                         Close
                     </button>
                 </div>

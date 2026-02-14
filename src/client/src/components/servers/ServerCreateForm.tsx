@@ -1,16 +1,17 @@
 'use client'
 
-import { useOverlay } from '@/components/context/OverlayContext'
-import { useSocket } from '@/components/context/SocketContext'
 import ImageCropper from '@/components/image/ImageCropper'
+import { useOverlayStore } from '@/stores/useOverlayStore'
+import { useSocketStore } from '@/stores/useSocketStore'
 import { useRef } from 'react'
 import { CropperRef } from 'react-advanced-cropper'
 import styles from './serverCreateForm.module.css'
 
 export default function ServerCreateForm() {
-    const { handleClose } = useOverlay()
-    const { createServer, joinServer } = useSocket()
-    const cropperRef = useRef<CropperRef>(null)
+    const close = useOverlayStore((state) => state.close)
+    const createServer = useSocketStore((state) => state.createServer)
+    const joinServer = useSocketStore((state) => state.joinServer)
+    const cropperRef = useRef<CropperRef | null>(null)
 
     const handleCreateServer = (formData: FormData) => {
         const serverName = formData.get('serverName') as string
@@ -36,14 +37,14 @@ export default function ServerCreateForm() {
         }
 
         createServer(serverName, serverDescription, iconDataUrl)
-        handleClose()
+        close()
     }
 
     const handleJoinServer = (formData: FormData) => {
         const serverId = (formData.get('serverId') as string)?.trim()
         if (!serverId) return
         joinServer(serverId)
-        handleClose()
+        close()
     }
 
     return (
@@ -63,7 +64,7 @@ export default function ServerCreateForm() {
                 <ImageCropper cropperRef={cropperRef} />
                 <div className={styles.actions}>
                     <button type="submit">Create</button>
-                    <button type="button" onClick={handleClose}>
+                    <button type="button" onClick={close}>
                         Close
                     </button>
                 </div>

@@ -2,11 +2,11 @@
 
 import ToolBar from '@/components/chat/top/toolbar/ToolBar'
 import Description from '@/components/description/Description'
-import { ChannelDetail } from '@/types/api.types'
+import { ChannelSummary } from '@/types/api.types'
 import styles from './top.module.css'
 
 type ChatTopProps = {
-    channel: ChannelDetail
+    channel: ChannelSummary
     showMembersToggle: () => void
 }
 
