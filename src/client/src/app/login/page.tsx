@@ -1,13 +1,31 @@
 'use client'
 
 import { useAuthStore } from '@/stores/useAuthStore'
+import { zodResolver } from '@hookform/resolvers/zod'
 import { useRouter } from 'next/navigation'
-import { useEffect, useState } from 'react'
+import { useEffect } from 'react'
+import { useForm } from 'react-hook-form'
+import { z } from 'zod'
+
+const loginSchema = z.object({
+    username: z.string().min(1, 'Username is required'),
+    password: z.string().min(1, 'Password is required'),
+})
+
+type LoginFormData = z.infer<typeof loginSchema>
 
 function LoginPage() {
     const { login, isLoggedIn, isLoading } = useAuthStore()
-    const [error, setError] = useState<string | null>(null)
     const router = useRouter()
+
+    const {
+        register,
+        handleSubmit,
+        formState: { errors },
+        setError,
+    } = useForm<LoginFormData>({
+        resolver: zodResolver(loginSchema),
+    })
 
     useEffect(() => {
         if (isLoggedIn) {
@@ -15,40 +33,52 @@ function LoginPage() {
         }
     }, [isLoggedIn, router])
 
-    const handleSubmit = async (formData: FormData) => {
-        setError(null)
-        const username = formData.get('username') as string
-        const password = formData.get('password') as string
-
-        const result = await login(username, password)
+    const onSubmit = async (data: LoginFormData) => {
+        const result = await login(data.username, data.password)
         if (result.success) {
             router.replace('/app')
         } else {
-            setError(result.message || 'Login failed')
+            setError('root', {
+                message: result.message || 'Login failed',
+            })
         }
     }
 
     return (
         <section className="formContainer">
-            <form action={handleSubmit} className="formInput">
-                <input
-                    type="text"
-                    name="username"
-                    placeholder="Username"
-                    required
-                    disabled={isLoading}
-                />
+            <form onSubmit={handleSubmit(onSubmit)} className="formInput">
+                <div>
+                    <input
+                        type="text"
+                        placeholder="Username"
+                        disabled={isLoading}
+                        {...register('username')}
+                    />
+                    {errors.username && (
+                        <div style={{ color: 'red', fontSize: '0.875rem' }}>
+                            {errors.username.message}
+                        </div>
+                    )}
+                </div>
 
-                <input
-                    type="password"
-                    name="password"
-                    placeholder="Password"
-                    required
-                    disabled={isLoading}
-                />
+                <div>
+                    <input
+                        type="password"
+                        placeholder="Password"
+                        disabled={isLoading}
+                        {...register('password')}
+                    />
+                    {errors.password && (
+                        <div style={{ color: 'red', fontSize: '0.875rem' }}>
+                            {errors.password.message}
+                        </div>
+                    )}
+                </div>
 
-                {error && (
-                    <div style={{ color: 'red', marginBottom: 8 }}>{error}</div>
+                {errors.root && (
+                    <div style={{ color: 'red', marginBottom: 8 }}>
+                        {errors.root.message}
+                    </div>
                 )}
 
                 <button type="submit" disabled={isLoading}>

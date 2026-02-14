@@ -11,7 +11,19 @@ import { ReactNode, useEffect } from 'react'
 export function SocketInitializer() {
     const isLoggedIn = useAuthStore((state) => state.isLoggedIn)
     const getUserServers = useSocketStore((state) => state.getUserServers)
-    const setServers = useSocketStore((state) => state.setServers)
+    const addServer = useSocketStore((state) => state.addServer)
+    const addChannelToServer = useSocketStore(
+        (state) => state.addChannelToServer
+    )
+    const removeChannel = useSocketStore((state) => state.removeChannel)
+    const addUserToServer = useSocketStore((state) => state.addUserToServer)
+    const removeUserFromServer = useSocketStore(
+        (state) => state.removeUserFromServer
+    )
+    const removeServer = useSocketStore((state) => state.removeServer)
+    const addMessageToChannel = useSocketStore(
+        (state) => state.addMessageToChannel
+    )
     const setCurrentServerId = useSocketStore(
         (state) => state.setCurrentServerId
     )
@@ -25,118 +37,42 @@ export function SocketInitializer() {
         socketService.init()
 
         const onCreateServerSuccess = (server: ServerDetail) => {
-            if (!server.channels) server.channels = []
-            if (!server.users) server.users = []
-            setServers(useSocketStore.getState().servers.concat(server))
+            addServer(server)
             setCurrentServerId(server.id)
         }
 
         const onCreateChannelSuccess = (channel: ChannelDetail) => {
-            if (!channel.messages) channel.messages = []
-            setServers(
-                useSocketStore.getState().servers.map((server) => {
-                    if (server.id !== channel.serverId) return server
-                    if (!server.channels) server.channels = []
-                    const channelExists = server.channels.some(
-                        (ch) => ch.id === channel.id
-                    )
-                    if (!channelExists) {
-                        setCurrentChannelId(channel.id)
-                        return {
-                            ...server,
-                            channels: [...server.channels, channel],
-                        }
-                    }
-                    return server
-                })
-            )
+            addChannelToServer(channel.serverId, channel)
+            setCurrentChannelId(channel.id)
         }
 
         const onChannelDeleted = (data: {
             serverId: string
             channelId: string
         }) => {
-            setServers(
-                useSocketStore.getState().servers.map((server) => {
-                    if (server.id !== data.serverId) return server
-                    return {
-                        ...server,
-                        channels: server.channels.filter(
-                            (ch) => ch.id !== data.channelId
-                        ),
-                    }
-                })
-            )
+            removeChannel(data.serverId, data.channelId)
         }
 
         const onUserJoinedServer = (data: {
             user: UserProfile
             serverId: string
         }) => {
-            const { user, serverId } = data
-            setServers(
-                useSocketStore.getState().servers.map((server) => {
-                    if (server.id !== serverId) return server
-                    const userExists = server.users.some(
-                        (u) => u.id === user.id
-                    )
-                    if (!userExists) {
-                        return {
-                            ...server,
-                            users: [...server.users, user],
-                        }
-                    }
-                    return server
-                })
-            )
+            addUserToServer(data.serverId, data.user)
         }
 
         const onUserLeftServer = (data: {
             userId: string
             serverId: string
         }) => {
-            const { userId, serverId } = data
-            setServers(
-                useSocketStore.getState().servers.map((server) => {
-                    if (server.id !== serverId) return server
-                    return {
-                        ...server,
-                        users: server.users.filter((u) => u.id !== userId),
-                    }
-                })
-            )
+            removeUserFromServer(data.serverId, data.userId)
         }
 
         const onServerDeleted = (data: { serverId: string }) => {
-            setServers(
-                useSocketStore
-                    .getState()
-                    .servers.filter((s) => s.id !== data.serverId)
-            )
+            removeServer(data.serverId)
         }
 
         const onMessageReceived = (message: Message) => {
-            setServers(
-                useSocketStore.getState().servers.map((server) => {
-                    return {
-                        ...server,
-                        channels: server.channels.map((channel) => {
-                            if (channel.id === message.channelId) {
-                                const currentMessages = channel.messages || []
-                                const messageExists = currentMessages.some(
-                                    (m) => m.id === message.id
-                                )
-                                if (messageExists) return channel
-                                return {
-                                    ...channel,
-                                    messages: [...currentMessages, message],
-                                }
-                            }
-                            return channel
-                        }),
-                    }
-                })
-            )
+            addMessageToChannel(message.channelId, message)
         }
 
         socketService.on('serverCreated', onCreateServerSuccess)
@@ -157,7 +93,18 @@ export function SocketInitializer() {
             socketService.off('messageSent', onMessageReceived)
             socketService.disconnect()
         }
-    }, [isLoggedIn, setServers, setCurrentServerId, setCurrentChannelId])
+    }, [
+        isLoggedIn,
+        addServer,
+        addChannelToServer,
+        removeChannel,
+        addUserToServer,
+        removeUserFromServer,
+        removeServer,
+        addMessageToChannel,
+        setCurrentServerId,
+        setCurrentChannelId,
+    ])
 
     useEffect(() => {
         if (isLoggedIn) {

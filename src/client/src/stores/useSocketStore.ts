@@ -6,6 +6,7 @@ import { socketService } from '@/services/SocketService'
 import { ChannelDetail, ServerDetail } from '@/types/api.types'
 import { create } from 'zustand'
 import { devtools } from 'zustand/middleware'
+import { immer } from 'zustand/middleware/immer'
 
 interface SocketState {
     servers: ServerDetail[]
@@ -21,6 +22,15 @@ interface SocketState {
     setCurrentChannelId: (id: string | null) => void
     addFetchedMessage: (key: string) => void
     clearFetchedMessages: () => void
+
+    // Socket event handlers
+    addServer: (server: ServerDetail) => void
+    addChannelToServer: (serverId: string, channel: ChannelDetail) => void
+    removeChannel: (serverId: string, channelId: string) => void
+    addUserToServer: (serverId: string, user: UserProfile) => void
+    removeUserFromServer: (serverId: string, userId: string) => void
+    removeServer: (serverId: string) => void
+    addMessageToChannel: (channelId: string, message: Message) => void
 
     getUserServers: () => Promise<void>
     createServer: (
@@ -61,7 +71,7 @@ interface SocketState {
 
 export const useSocketStore = create<SocketState>()(
     devtools(
-        (set, get) => ({
+        immer((set, get) => ({
             servers: [],
             currentServerId: null,
             currentChannelId: null,
@@ -71,67 +81,186 @@ export const useSocketStore = create<SocketState>()(
             lastViewedChannelByServer: {},
 
             setServers: (servers) => {
-                set({ servers })
-                const { currentServerId, currentChannelId } = get()
-                if (currentServerId) {
-                    const server = servers.find((s) => s.id === currentServerId)
-                    set({ currentServer: server })
-                    if (currentChannelId && server) {
-                        const channel = server.channels?.find(
-                            (c) => c.id === currentChannelId
+                set((state) => {
+                    state.servers = servers
+                    const { currentServerId, currentChannelId } = get()
+                    if (currentServerId) {
+                        const server = servers.find(
+                            (s) => s.id === currentServerId
                         )
-                        set({ currentChannel: channel })
+                        state.currentServer = server
+                        if (currentChannelId && server) {
+                            const channel = server.channels?.find(
+                                (c) => c.id === currentChannelId
+                            )
+                            state.currentChannel = channel
+                        }
                     }
-                }
+                })
             },
 
             setCurrentServerId: (id) => {
-                set({ currentServerId: id })
-                if (id) {
-                    const server = get().servers.find((s) => s.id === id)
-                    set({ currentServer: server })
-                } else {
-                    set({ currentServer: undefined })
-                }
+                set((state) => {
+                    state.currentServerId = id
+                    if (id) {
+                        const server = state.servers.find((s) => s.id === id)
+                        state.currentServer = server
+                    } else {
+                        state.currentServer = undefined
+                    }
+                })
             },
 
             setCurrentChannelId: (id) => {
-                set({ currentChannelId: id })
-                const { currentServerId, servers } = get()
-                if (id && currentServerId) {
-                    const server = servers.find((s) => s.id === currentServerId)
-                    const channel = server?.channels?.find((c) => c.id === id)
-                    set({ currentChannel: channel })
-                } else {
-                    set({ currentChannel: undefined })
-                }
+                set((state) => {
+                    state.currentChannelId = id
+                    const { currentServerId } = get()
+                    if (id && currentServerId) {
+                        const server = state.servers.find(
+                            (s) => s.id === currentServerId
+                        )
+                        const channel = server?.channels?.find(
+                            (c) => c.id === id
+                        )
+                        state.currentChannel = channel
+                    } else {
+                        state.currentChannel = undefined
+                    }
+                })
             },
 
             addFetchedMessage: (key) => {
-                set((state) => ({
-                    fetchedMessages: new Set(state.fetchedMessages).add(key),
-                }))
+                set((state) => {
+                    state.fetchedMessages.add(key)
+                })
             },
 
             clearFetchedMessages: () => {
-                set({ fetchedMessages: new Set() })
+                set((state) => {
+                    state.fetchedMessages = new Set()
+                })
+            },
+
+            // Socket event handlers
+            addServer: (server) => {
+                set((state) => {
+                    if (!server.channels) server.channels = []
+                    if (!server.users) server.users = []
+                    state.servers.push(server)
+                })
+            },
+
+            addChannelToServer: (serverId, channel) => {
+                set((state) => {
+                    const server = state.servers.find((s) => s.id === serverId)
+                    if (server) {
+                        if (!server.channels) server.channels = []
+                        if (!channel.messages) channel.messages = []
+                        const channelExists = server.channels.some(
+                            (ch) => ch.id === channel.id
+                        )
+                        if (!channelExists) {
+                            server.channels.push(channel)
+                            // Update currentChannel if this is the active channel
+                            if (state.currentChannelId === channel.id) {
+                                state.currentChannel = channel
+                            }
+                        }
+                    }
+                })
+            },
+
+            removeChannel: (serverId, channelId) => {
+                set((state) => {
+                    const server = state.servers.find((s) => s.id === serverId)
+                    if (server) {
+                        server.channels = server.channels.filter(
+                            (ch) => ch.id !== channelId
+                        )
+                        // Clear currentChannel if we removed the active channel
+                        if (state.currentChannelId === channelId) {
+                            state.currentChannel = undefined
+                            state.currentChannelId = null
+                        }
+                    }
+                })
+            },
+
+            addUserToServer: (serverId, user) => {
+                set((state) => {
+                    const server = state.servers.find((s) => s.id === serverId)
+                    if (server) {
+                        const userExists = server.users.some(
+                            (u) => u.id === user.id
+                        )
+                        if (!userExists) {
+                            server.users.push(user)
+                        }
+                    }
+                })
+            },
+
+            removeUserFromServer: (serverId, userId) => {
+                set((state) => {
+                    const server = state.servers.find((s) => s.id === serverId)
+                    if (server) {
+                        server.users = server.users.filter(
+                            (u) => u.id !== userId
+                        )
+                    }
+                })
+            },
+
+            removeServer: (serverId) => {
+                set((state) => {
+                    state.servers = state.servers.filter(
+                        (s) => s.id !== serverId
+                    )
+                })
+            },
+
+            addMessageToChannel: (channelId, message) => {
+                set((state) => {
+                    for (const server of state.servers) {
+                        const channel = server.channels.find(
+                            (c) => c.id === channelId
+                        )
+                        if (channel) {
+                            if (!channel.messages) channel.messages = []
+                            const messageExists = channel.messages.some(
+                                (m) => m.id === message.id
+                            )
+                            if (!messageExists) {
+                                channel.messages.push(message)
+                            }
+                            // Update currentChannel if this is the active channel
+                            if (state.currentChannelId === channelId) {
+                                state.currentChannel = channel
+                            }
+                            break
+                        }
+                    }
+                })
             },
 
             getUserServers: async () => {
                 const result = await serverService.listServers()
                 if (result.success) {
-                    get().setServers(result.data)
-                    const { currentServerId } = get()
-                    const firstServer = result.data[0]
-                    if (
-                        !currentServerId &&
-                        firstServer &&
-                        firstServer.channels &&
-                        firstServer.channels.length > 0
-                    ) {
-                        get().setCurrentServerId(firstServer.id)
-                        get().setCurrentChannelId(firstServer.channels[0]!.id)
-                    }
+                    set((state) => {
+                        state.servers = result.data
+                        const firstServer = result.data[0]
+                        if (
+                            !state.currentServerId &&
+                            firstServer &&
+                            firstServer.channels &&
+                            firstServer.channels.length > 0
+                        ) {
+                            state.currentServerId = firstServer.id
+                            state.currentServer = firstServer
+                            state.currentChannelId = firstServer.channels[0]!.id
+                            state.currentChannel = firstServer.channels[0]
+                        }
+                    })
                 }
             },
 
@@ -142,18 +271,26 @@ export const useSocketStore = create<SocketState>()(
                     icon,
                 })
                 if (result.success) {
-                    get().setServers([...get().servers, result.data])
-                    get().setCurrentServerId(result.data.id)
-                    get().setCurrentChannelId(null)
+                    set((state) => {
+                        state.servers.push(result.data)
+                        state.currentServerId = result.data.id
+                        state.currentServer = result.data
+                        state.currentChannelId = null
+                        state.currentChannel = undefined
+                    })
                 }
             },
 
             joinServer: async (serverId) => {
                 const result = await serverService.joinServer({ serverId })
                 if (result.success) {
-                    get().setServers([...get().servers, result.data])
-                    get().setCurrentServerId(result.data.id)
-                    get().setCurrentChannelId(null)
+                    set((state) => {
+                        state.servers.push(result.data)
+                        state.currentServerId = result.data.id
+                        state.currentServer = result.data
+                        state.currentChannelId = null
+                        state.currentChannel = undefined
+                    })
                 }
             },
 
@@ -167,18 +304,18 @@ export const useSocketStore = create<SocketState>()(
                     description,
                 })
                 if (result.success) {
-                    set((state) => ({
-                        servers: state.servers.map((s) => {
-                            if (s.id !== currentServerId) return s
-                            return {
-                                ...s,
-                                channels: [
-                                    ...(s.channels || []),
-                                    { ...result.data, messages: [] },
-                                ],
-                            }
-                        }),
-                    }))
+                    set((state) => {
+                        const server = state.servers.find(
+                            (s) => s.id === currentServerId
+                        )
+                        if (server) {
+                            if (!server.channels) server.channels = []
+                            server.channels.push({
+                                ...result.data,
+                                messages: [],
+                            })
+                        }
+                    })
                 }
             },
 
@@ -219,28 +356,21 @@ export const useSocketStore = create<SocketState>()(
                     offset,
                 })
                 if (result.success) {
-                    set((state) => ({
-                        servers: state.servers.map((server) => {
-                            if (server.id === serverId) {
-                                const existingChannelIds = new Set(
-                                    (server.channels || []).map((c) => c.id)
-                                )
-                                const newChannels = result.data
-                                    .filter(
-                                        (c) => !existingChannelIds.has(c.id)
-                                    )
-                                    .map((c) => ({ ...c, messages: [] }))
-                                return {
-                                    ...server,
-                                    channels: [
-                                        ...(server.channels || []),
-                                        ...newChannels,
-                                    ],
-                                }
-                            }
-                            return server
-                        }),
-                    }))
+                    set((state) => {
+                        const server = state.servers.find(
+                            (s) => s.id === serverId
+                        )
+                        if (server) {
+                            if (!server.channels) server.channels = []
+                            const existingChannelIds = new Set(
+                                server.channels.map((c) => c.id)
+                            )
+                            const newChannels = result.data
+                                .filter((c) => !existingChannelIds.has(c.id))
+                                .map((c) => ({ ...c, messages: [] }))
+                            server.channels.push(...newChannels)
+                        }
+                    })
                 }
             },
 
@@ -264,34 +394,33 @@ export const useSocketStore = create<SocketState>()(
                         hasMore,
                     } = result.data
 
-                    set((state) => ({
-                        servers: state.servers.map((server) => ({
-                            ...server,
-                            channels: server.channels.map((channel) => {
-                                if (channel.id !== channelId) return channel
-
-                                const existingMessageIds = new Set(
-                                    (channel.messages || []).map((m) => m.id)
-                                )
-                                const newMessages = messages.filter(
-                                    (m) => !existingMessageIds.has(m.id)
-                                )
-                                const mergedMessages = [
-                                    ...(channel.messages || []),
-                                    ...newMessages,
-                                ].sort(
-                                    (a, b) =>
-                                        new Date(a.timestamp).getTime() -
-                                        new Date(b.timestamp).getTime()
-                                )
-
-                                return {
-                                    ...channel,
-                                    messages: mergedMessages,
-                                }
-                            }),
-                        })),
-                    }))
+                    set((state) => {
+                        const server = state.servers.find(
+                            (s) => s.id === serverId
+                        )
+                        const channel = server?.channels.find(
+                            (c) => c.id === channelId
+                        )
+                        if (channel) {
+                            if (!channel.messages) channel.messages = []
+                            const existingMessageIds = new Set(
+                                channel.messages.map((m) => m.id)
+                            )
+                            const newMessages = messages.filter(
+                                (m) => !existingMessageIds.has(m.id)
+                            )
+                            channel.messages.push(...newMessages)
+                            channel.messages.sort(
+                                (a, b) =>
+                                    new Date(a.timestamp).getTime() -
+                                    new Date(b.timestamp).getTime()
+                            )
+                            // Update currentChannel if this is the active channel
+                            if (state.currentChannelId === channelId) {
+                                state.currentChannel = channel
+                            }
+                        }
+                    })
 
                     return {
                         messages,
@@ -315,37 +444,86 @@ export const useSocketStore = create<SocketState>()(
                 return server?.users?.find((u) => u.id === userId)
             },
 
-            changeServer: (serverId) => {
-                const server = get().servers.find((s) => s.id === serverId)
-                if (server) {
-                    get().setCurrentServerId(serverId)
-                    const lastViewedChannelId =
-                        get().lastViewedChannelByServer[serverId]
-                    const lastViewedChannel = server.channels?.find(
-                        (c) => c.id === lastViewedChannelId
-                    )
-                    // Use last viewed channel if it exists, otherwise use first channel
-                    const channelToSelect =
-                        lastViewedChannel || server.channels?.[0]
-                    get().setCurrentChannelId(channelToSelect?.id || null)
-                    const room = `server_${serverId}`
-                    if (!socketService.getJoinedServerRooms().has(room)) {
-                        socketService.joinServer({ serverId })
+            changeServer: async (serverId) => {
+                let selectedChannelId: string | null = null
+
+                set((state) => {
+                    const server = state.servers.find((s) => s.id === serverId)
+                    if (server) {
+                        state.currentServerId = serverId
+                        state.currentServer = server
+
+                        // Check if there's a last viewed channel for this server
+                        const lastViewedChannelId =
+                            state.lastViewedChannelByServer[serverId]
+                        const lastViewedChannel = server.channels?.find(
+                            (c) => c.id === lastViewedChannelId
+                        )
+                        // Use last viewed channel if it exists, otherwise use first channel
+                        const channelToSelect =
+                            lastViewedChannel || server.channels?.[0]
+
+                        selectedChannelId = channelToSelect?.id || null
+                        state.currentChannelId = selectedChannelId
+                        state.currentChannel = channelToSelect
+                    }
+                })
+
+                const room = `server_${serverId}`
+                if (!socketService.getJoinedServerRooms().has(room)) {
+                    socketService.joinServer({ serverId })
+                }
+
+                // Fetch messages for the selected channel if not already joined
+                if (selectedChannelId) {
+                    const channelRoom = `channel_${selectedChannelId}`
+                    if (
+                        !socketService.getJoinedChannelRooms().has(channelRoom)
+                    ) {
+                        await get().getPagedMessages(
+                            serverId,
+                            selectedChannelId,
+                            50
+                        )
+                        // Sync channel reference after fetching messages
+                        set((state) => {
+                            const server = state.servers.find(
+                                (s) => s.id === serverId
+                            )
+                            const channel = server?.channels.find(
+                                (c) => c.id === selectedChannelId
+                            )
+                            state.currentChannel = channel
+                        })
+                        socketService.joinChannel({
+                            channelId: selectedChannelId,
+                        })
                     }
                 }
             },
 
             changeChannel: async (channelId) => {
                 const { currentServerId } = get()
-                if (currentServerId) {
-                    set((state) => ({
-                        lastViewedChannelByServer: {
-                            ...state.lastViewedChannelByServer,
-                            [currentServerId]: channelId,
-                        },
-                    }))
-                }
-                get().setCurrentChannelId(channelId)
+
+                // Update the channel selection and history
+                set((state) => {
+                    if (currentServerId) {
+                        state.lastViewedChannelByServer[currentServerId] =
+                            channelId
+                    }
+                    state.currentChannelId = channelId
+
+                    if (currentServerId) {
+                        const server = state.servers.find(
+                            (s) => s.id === currentServerId
+                        )
+                        const channel = server?.channels.find(
+                            (c) => c.id === channelId
+                        )
+                        state.currentChannel = channel
+                    }
+                })
+
                 const room = `channel_${channelId}`
                 if (!socketService.getJoinedChannelRooms().has(room)) {
                     if (currentServerId) {
@@ -354,7 +532,18 @@ export const useSocketStore = create<SocketState>()(
                             channelId,
                             50
                         )
-                        get().setCurrentChannelId(channelId)
+                        // After fetching messages, sync the channel reference again
+                        set((state) => {
+                            if (currentServerId) {
+                                const server = state.servers.find(
+                                    (s) => s.id === currentServerId
+                                )
+                                const channel = server?.channels.find(
+                                    (c) => c.id === channelId
+                                )
+                                state.currentChannel = channel
+                            }
+                        })
                     }
                     socketService.joinChannel({ channelId })
                 }
@@ -367,7 +556,7 @@ export const useSocketStore = create<SocketState>()(
             getJoinedServerRooms: () => {
                 return socketService.getJoinedServerRooms()
             },
-        }),
+        })),
         { name: 'SocketStore' }
     )
 )

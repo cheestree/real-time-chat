@@ -1,14 +1,33 @@
 'use client'
 
 import { useAuthStore } from '@/stores/useAuthStore'
+import { zodResolver } from '@hookform/resolvers/zod'
 import { useRouter } from 'next/navigation'
 import { useEffect, useState } from 'react'
+import { useForm } from 'react-hook-form'
+import { z } from 'zod'
+
+const registerSchema = z.object({
+    username: z.string().min(3, 'Username must be at least 3 characters'),
+    email: z.string().email('Invalid email address'),
+    password: z.string().min(8, 'Password must be at least 8 characters'),
+})
+
+type RegisterFormData = z.infer<typeof registerSchema>
 
 function RegisterPage() {
-    const { register, isLoggedIn, isLoading } = useAuthStore()
-    const [error, setError] = useState<string | null>(null)
+    const { register: registerUser, isLoggedIn, isLoading } = useAuthStore()
     const [success, setSuccess] = useState(false)
     const router = useRouter()
+
+    const {
+        register,
+        handleSubmit,
+        formState: { errors },
+        setError,
+    } = useForm<RegisterFormData>({
+        resolver: zodResolver(registerSchema),
+    })
 
     useEffect(() => {
         if (isLoggedIn) {
@@ -16,49 +35,74 @@ function RegisterPage() {
         }
     }, [isLoggedIn, router])
 
-    const handleSubmit = async (formData: FormData) => {
-        setError(null)
+    const onSubmit = async (data: RegisterFormData) => {
         setSuccess(false)
-        const username = formData.get('username') as string
-        const email = formData.get('email') as string
-        const password = formData.get('password') as string
-
-        const result = await register(username, email, password)
+        const result = await registerUser(
+            data.username,
+            data.email,
+            data.password
+        )
         if (result.success) {
             setSuccess(true)
             setTimeout(() => router.replace('/login'), 1000)
         } else {
-            setError(result.message || 'Registration failed')
+            setError('root', {
+                message: result.message || 'Registration failed',
+            })
         }
     }
 
     return (
         <section className="formContainer">
-            <form action={handleSubmit} className="formInput">
-                <input
-                    type="text"
-                    name="username"
-                    placeholder="Username"
-                    required
-                    disabled={isLoading}
-                />
-                <input
-                    type="email"
-                    name="email"
-                    placeholder="Email"
-                    required
-                    disabled={isLoading}
-                />
-                <input
-                    type="password"
-                    name="password"
-                    placeholder="Password"
-                    required
-                    disabled={isLoading}
-                />
-                {error && (
-                    <div style={{ color: 'red', marginBottom: 8 }}>{error}</div>
+            <form onSubmit={handleSubmit(onSubmit)} className="formInput">
+                <div>
+                    <input
+                        type="text"
+                        placeholder="Username"
+                        disabled={isLoading}
+                        {...register('username')}
+                    />
+                    {errors.username && (
+                        <div style={{ color: 'red', fontSize: '0.875rem' }}>
+                            {errors.username.message}
+                        </div>
+                    )}
+                </div>
+
+                <div>
+                    <input
+                        type="email"
+                        placeholder="Email"
+                        disabled={isLoading}
+                        {...register('email')}
+                    />
+                    {errors.email && (
+                        <div style={{ color: 'red', fontSize: '0.875rem' }}>
+                            {errors.email.message}
+                        </div>
+                    )}
+                </div>
+
+                <div>
+                    <input
+                        type="password"
+                        placeholder="Password"
+                        disabled={isLoading}
+                        {...register('password')}
+                    />
+                    {errors.password && (
+                        <div style={{ color: 'red', fontSize: '0.875rem' }}>
+                            {errors.password.message}
+                        </div>
+                    )}
+                </div>
+
+                {errors.root && (
+                    <div style={{ color: 'red', marginBottom: 8 }}>
+                        {errors.root.message}
+                    </div>
                 )}
+
                 {success && (
                     <div style={{ color: 'green', marginBottom: 8 }}>
                         Registration successful! Redirecting...
