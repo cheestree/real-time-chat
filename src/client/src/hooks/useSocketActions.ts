@@ -2,7 +2,7 @@ import { UserProfile } from '@/domain/UserProfile'
 import { messageService } from '@/services/MessageService'
 import { serverService } from '@/services/ServerService'
 import { socketService } from '@/services/SocketService'
-import { ServerDetail } from '@/types/api.types'
+import { ServerDetail } from '@rtchat/shared'
 import { Dispatch, SetStateAction, useCallback } from 'react'
 
 interface UseSocketActionsProps {

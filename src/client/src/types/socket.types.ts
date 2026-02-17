@@ -1,4 +1,4 @@
-import { ChannelDetail, ServerDetail } from './api.types'
+import { ChannelDetail, ServerDetail } from '@rtchat/shared'
 import { UserProfile } from '@/domain/UserProfile'
 
 export interface SocketContextType {

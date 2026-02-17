@@ -1,5 +1,5 @@
 import { Message } from '@/domain/Message'
-import { ApiResponse } from '../api.types'
+import { ApiResponse } from '@rtchat/shared'
 
 export type GetPagedMessagesResponseData = {
     messages: Message[]

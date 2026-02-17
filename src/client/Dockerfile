@@ -1,13 +1,27 @@
 FROM node:20-alpine AS deps
 WORKDIR /app
-COPY package.json package-lock.json* ./
+
+# Copy root workspace files
+COPY ../../package.json ../../package-lock.json* ./
+COPY ../../packages ./packages
+
+# Copy client package files
+COPY package.json package-lock.json* ./client/
+WORKDIR /app/client
+
+# Install dependencies (workspaces will be linked)
 RUN npm install --legacy-peer-deps
+
+# Copy client source
 COPY . .
 
 FROM node:20-alpine AS builder
 WORKDIR /app
-COPY --from=deps /app/node_modules ./node_modules
-COPY . .
+
+# Copy everything from deps stage
+COPY --from=deps /app ./
+
+WORKDIR /app/client
 
 # Accept build arguments
 ARG NEXT_PUBLIC_API_URL
@@ -24,9 +38,16 @@ WORKDIR /app
 
 ENV NODE_ENV=production
 
-COPY --from=builder /app/public ./public
-COPY --from=builder /app/.next ./.next
-COPY --from=builder /app/package.json ./
+# Copy root workspace files
+COPY ../../package.json ../../package-lock.json* ./
+COPY ../../packages ./packages
+
+# Copy client files
+COPY --from=builder /app/client/public ./client/public
+COPY --from=builder /app/client/.next ./client/.next
+COPY --from=builder /app/client/package.json ./client/
+
+WORKDIR /app/client
 
 RUN npm install --omit=dev --legacy-peer-deps
 

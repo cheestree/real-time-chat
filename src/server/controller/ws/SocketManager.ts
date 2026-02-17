@@ -20,7 +20,6 @@ import {
     ServerLeaveInput,
     ServerLeaveSchema,
 } from '../../http/model/input/server/ServerLeaveInput'
-import { UserLeft } from '../../http/model/output/server/UserLeft'
 import MessageService from '../../services/MessageService'
 import ServerService from '../../services/ServerService'
 import { logger } from '../../utils/logger'
@@ -31,6 +30,11 @@ import {
     SocketData,
 } from './events'
 import { asyncSocketHandler } from './utils/asyncSocketHandler'
+
+type UserLeft = {
+    serverId: string
+    profile: { id: string; username: string }
+}
 
 export class SocketManager {
     constructor(

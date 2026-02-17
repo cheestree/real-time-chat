@@ -5,7 +5,7 @@ import { useSocketStore } from '@/stores/useSocketStore'
 import { useCallback, useState } from 'react'
 
 import MessageItem from '@/components/chat/bottom/MessageItem'
-import { ChannelDetail, ServerDetail } from '@/types/api.types'
+import { ChannelDetail, ServerDetail } from '@rtchat/shared'
 import styles from './bottom.module.css'
 
 type ChatBottomProps = {

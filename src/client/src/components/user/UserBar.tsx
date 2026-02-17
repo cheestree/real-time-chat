@@ -1,6 +1,6 @@
 'use client'
 
-import { AuthenticatedUser } from '@/types/api.types'
+import { AuthenticatedUser } from '@rtchat/shared'
 import styles from './userBar.module.css'
 
 type UserBarProps = {

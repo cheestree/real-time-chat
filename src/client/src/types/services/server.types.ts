@@ -4,7 +4,7 @@ import {
     ApiResponse,
     ChannelSummary,
     ServerDetail,
-} from '../api.types'
+} from '@rtchat/shared'
 
 export type ListServersResponse = ApiResponse<ServerDetail[]>
 

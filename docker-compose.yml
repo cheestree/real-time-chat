@@ -9,7 +9,8 @@
 services:
   client:
     build:
-      context: ./src/client
+      context: .
+      dockerfile: ./src/client/Dockerfile
       args:
         - NEXT_PUBLIC_API_URL=${NEXT_PUBLIC_API_URL}
         - NEXT_PUBLIC_SOCKET_URL=${NEXT_PUBLIC_SOCKET_URL}
@@ -23,7 +24,9 @@ services:
       - NEXT_PUBLIC_SOCKET_URL=${NEXT_PUBLIC_SOCKET_URL}
 
   server:
-    build: ./src/server
+    build:
+      context: .
+      dockerfile: ./src/server/Dockerfile
     container_name: chat-server
     depends_on:
       - mongo

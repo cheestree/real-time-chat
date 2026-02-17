@@ -1,4 +1,4 @@
-import { AuthenticatedUser } from './api.types'
+import { AuthenticatedUser } from '@rtchat/shared'
 
 export interface AuthActionResult {
     success: boolean

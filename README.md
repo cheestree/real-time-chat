@@ -30,13 +30,20 @@ Then visit <http://localhost:3000>
 - **Caching**: Redis JSON with TTL
 - **WebSockets**: Socket.IO
 
-## :triangular_ruler: Repository layout
+## :triangular_rule: Repository layout
+
+This project uses an **npm workspace** monorepo structure:
 
 ```
-server/           # Node.js backend (Express, Socket.IO)
-client/           # Next.js app (React)
+packages/
+  shared/         # Shared TypeScript types and interfaces
+src/
+  server/         # Node.js backend (Express, Socket.IO)
+  client/         # Next.js app (React)
 sql/              # SQL and CQL bootstrapping
 ```
+
+The `@rtchat/shared` package contains all common type definitions used by both client and server, ensuring type consistency across the full stack.
 
 ## :jigsaw: Prerequisites
 
@@ -108,21 +115,29 @@ Visit <http://localhost:3000>
 **Quick demo mode** (no .env file needed):
 
 ```bash
+# First: Install all workspace dependencies (from project root)
+npm install
+
+# Build the shared package
+npm run build:shared
+
 # Terminal 1 - Backend with demo config
 cd src/server
-npm install
 npm run dev:demo
 
 # Terminal 2 - Frontend with demo config
 cd src/client
-npm install
 npm run dev:demo
 ```
 
 **With your own config:**
 
 ```bash
-# First time: create your .env files
+# First time: Install workspace dependencies and build shared package
+npm install
+npm run build:shared
+
+# Create your .env files
 cd src/server
 cp .env.example .env
 # Edit .env with your values
@@ -137,6 +152,13 @@ cd src/client && npm run dev
 ```
 
 ### Available Scripts
+
+**Workspace (from project root):**
+
+- `npm run build:shared` - Build the shared types package
+- `npm run dev:shared` - Watch mode for shared package development
+- `npm run dev:client` - Run client dev server
+- `npm run dev:server` - Run server dev server
 
 **Server:**
 

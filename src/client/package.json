@@ -12,6 +12,7 @@
         "format:check": "prettier --check ."
     },
     "dependencies": {
+        "@rtchat/shared": "*",
         "@emotion/react": "^11.14.0",
         "@hookform/resolvers": "^5.2.2",
         "dotenv": "^17.3.1",

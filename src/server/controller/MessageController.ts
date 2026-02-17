@@ -1,10 +1,17 @@
 import { RequestHandler } from 'express'
 import { asyncHandler } from '../http/middleware/asyncHandler'
 import { AuthenticatedRequest } from '../http/middleware/Authenticator'
-import { ApiResponse } from '../http/model/output/ApiResponse'
-import { GetPagedMessagesResponse } from '../http/model/output/server/GetPagedMessagesResponse'
+import { ApiResponse, MessageSummary } from '@rtchat/shared'
 import MessageServices from '../services/MessageService'
 import IMessageController from './interfaces/IMessageController'
+
+type GetPagedMessagesResponse = {
+    messages: MessageSummary[]
+    nextPageState?: string
+    serverId: string
+    channelId: string
+    hasMore: boolean
+}
 
 class MessageController implements IMessageController {
     private messageServices: MessageServices

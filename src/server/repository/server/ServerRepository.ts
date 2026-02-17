@@ -3,7 +3,7 @@ import { Kysely, PostgresDialect } from 'kysely'
 import { MongoClient } from 'mongodb'
 import { Channel, ChannelType } from '../../domain/channel/Channel'
 import { Server } from '../../domain/server/Server'
-import { ServerDetail } from '../../http/model/output/server/ServerDetail'
+import { ServerDetail } from '@rtchat/shared'
 
 interface ServerDocument {
     id: string

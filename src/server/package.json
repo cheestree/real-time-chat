@@ -17,6 +17,7 @@
     "author": "",
     "license": "ISC",
     "dependencies": {
+        "@rtchat/shared": "*",
         "bcrypt": "^6.0.0",
         "cassandra-driver": "^4.8.0",
         "compression": "^1.7.5",

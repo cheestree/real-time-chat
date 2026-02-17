@@ -3,7 +3,7 @@ import { UserProfile } from '@/domain/UserProfile'
 import { messageService } from '@/services/MessageService'
 import { serverService } from '@/services/ServerService'
 import { socketService } from '@/services/SocketService'
-import { ChannelDetail, ServerDetail } from '@/types/api.types'
+import { ChannelDetail, ServerDetail } from '@rtchat/shared'
 import { create } from 'zustand'
 import { devtools } from 'zustand/middleware'
 import { immer } from 'zustand/middleware/immer'
@@ -259,6 +259,22 @@ export const useSocketStore = create<SocketState>()(
                             state.currentServer = firstServer
                             state.currentChannelId = firstServer.channels[0]!.id
                             state.currentChannel = firstServer.channels[0]
+                        }
+                    })
+
+                    // Fetch messages for the first channel
+                    set(async (state) => {
+                        const firstServer = result.data[0]
+                        const firstChannel = firstServer?.channels?.[0]
+                        if (firstServer && firstChannel) {
+                            await state.getPagedMessages(
+                                firstServer.id,
+                                firstChannel.id,
+                                50
+                            )
+                            socketService.joinChannel({
+                                channelId: firstChannel.id,
+                            })
                         }
                     })
                 }

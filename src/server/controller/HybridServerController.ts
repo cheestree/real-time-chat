@@ -5,7 +5,7 @@ import { AuthenticatedRequest } from '../http/middleware/Authenticator'
 import { ChannelCreateInput } from '../http/model/input/channel/ChannelCreateInput'
 import { ServerDeleteInput } from '../http/model/input/server/ServerDeleteInput'
 import { ServerJoinInput } from '../http/model/input/server/ServerJoinInput'
-import { ApiResponse } from '../http/model/output/ApiResponse'
+import { ApiResponse } from '@rtchat/shared'
 import ServerServices from '../services/ServerService'
 import UserServices from '../services/UserService'
 

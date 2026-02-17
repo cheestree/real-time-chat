@@ -1,10 +1,13 @@
+import { ChannelSummary, MessageSummary } from '@rtchat/shared'
 import { Server } from '../../domain/server/Server'
 import { AuthenticatedUser } from '../../domain/user/AuthenticatedUser'
 import { MessageCreateInput } from '../../http/model/input/message/MessageCreateInput'
 import { ServerLeaveInput } from '../../http/model/input/server/ServerLeaveInput'
-import { ChannelSummary } from '../../http/model/output/server/ChannelSummary'
-import { MessageSummary } from '../../http/model/output/server/MessageSummary'
-import { UserLeft } from '../../http/model/output/server/UserLeft'
+
+type UserLeft = {
+    serverId: string
+    profile: { id: string; username: string }
+}
 
 export interface InterServerEvents {
     ping: () => void

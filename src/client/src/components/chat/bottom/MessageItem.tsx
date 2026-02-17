@@ -1,6 +1,6 @@
 import { Fragment, JSX, memo } from 'react'
 
-import { MessageSummary } from '@/types/api.types'
+import { MessageSummary } from '@rtchat/shared'
 import styles from './message.module.css'
 
 type MessageItemProps = {

@@ -1,6 +1,6 @@
 'use client'
 
-import { AuthenticatedUser, ServerDetail } from '@/types/api.types'
+import { AuthenticatedUser, ServerDetail } from '@rtchat/shared'
 import { ContextMenuOption } from '@/types/contextMenu.types'
 import Image from 'next/image'
 import { MouseEvent } from 'react'

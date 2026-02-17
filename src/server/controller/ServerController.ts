@@ -2,7 +2,7 @@ import { RequestHandler } from 'express'
 import { asyncHandler } from '../http/middleware/asyncHandler'
 import { AuthenticatedRequest } from '../http/middleware/Authenticator'
 import { ServerCreateInput } from '../http/model/input/server/ServerCreateInput'
-import { ApiResponse } from '../http/model/output/ApiResponse'
+import { ApiResponse } from '@rtchat/shared'
 import ServerServices from '../services/ServerService'
 
 class ServerController {

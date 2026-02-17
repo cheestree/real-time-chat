@@ -1,4 +1,4 @@
-import { ServerSummary } from '../../http/model/output/server/ServerSummary'
+import { ServerSummary } from '@rtchat/shared'
 
 export class Server {
     id: string

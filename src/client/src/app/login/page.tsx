@@ -44,6 +44,16 @@ function LoginPage() {
         }
     }
 
+    if (isLoggedIn || isLoading) {
+        return (
+            <section className="formContainer">
+                <div style={{ textAlign: 'center', padding: '2rem' }}>
+                    Loading...
+                </div>
+            </section>
+        )
+    }
+
     return (
         <section className="formContainer">
             <form onSubmit={handleSubmit(onSubmit)} className="formInput">

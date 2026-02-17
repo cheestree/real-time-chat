@@ -3,8 +3,15 @@ FROM node:20 AS builder
 
 WORKDIR /app
 
-# Copy package files and install all dependencies (including dev)
-COPY package.json package-lock.json ./
+# Copy root package files for workspace
+COPY ../../package.json ../../package-lock.json ./
+COPY ../../packages ./packages
+
+# Copy server package files
+COPY package.json package-lock.json ./server/
+WORKDIR /app/server
+
+# Install all dependencies (workspaces will be linked)
 RUN npm ci --legacy-peer-deps
 
 # Copy source code
@@ -20,12 +27,19 @@ WORKDIR /app
 
 ENV NODE_ENV=production
 
-# Copy package files and install only production dependencies
-COPY package.json package-lock.json ./
+# Copy root workspace files
+COPY ../../package.json ../../package-lock.json ./
+COPY ../../packages ./packages
+
+# Copy server package files
+COPY package.json package-lock.json ./server/
+WORKDIR /app/server
+
+# Install only production dependencies
 RUN npm ci --omit=dev --legacy-peer-deps
 
 # Copy built files from builder
-COPY --from=builder /app/dist ./dist
+COPY --from=builder /app/server/dist ./dist
 
 # Expose the server port
 EXPOSE 4000

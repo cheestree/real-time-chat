@@ -1,4 +1,4 @@
-import { ApiResponse, AuthenticatedUser } from '../api.types'
+import { ApiResponse, AuthenticatedUser } from '@rtchat/shared'
 
 export type LoginResponse = ApiResponse<{
     token: string

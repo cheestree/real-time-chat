@@ -1,5 +1,5 @@
 import { userService } from '@/services/UserService'
-import { AuthenticatedUser } from '@/types/api.types'
+import { AuthenticatedUser } from '@rtchat/shared'
 import { create } from 'zustand'
 import { devtools, persist } from 'zustand/middleware'
 

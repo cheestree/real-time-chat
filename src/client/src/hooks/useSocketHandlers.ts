@@ -1,7 +1,7 @@
 import { Message } from '@/domain/Message'
 import { UserProfile } from '@/domain/UserProfile'
 import { socketService } from '@/services/SocketService'
-import { ChannelDetail, ServerDetail } from '@/types/api.types'
+import { ChannelDetail, ServerDetail } from '@rtchat/shared'
 import { Dispatch, SetStateAction, useCallback, useEffect } from 'react'
 
 interface UseSocketHandlersProps {

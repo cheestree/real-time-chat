@@ -1,13 +1,15 @@
+import { ApiResponse, AuthenticatedUser } from '@rtchat/shared'
 import { Request, RequestHandler, Response } from 'express'
 import { asyncHandler } from '../http/middleware/asyncHandler'
 import { AuthenticatedRequest } from '../http/middleware/Authenticator'
 import { UserLoginInput } from '../http/model/input/user/UserLoginInput'
 import { UserRegisterInput } from '../http/model/input/user/UserRegisterInput'
-import { AuthCheckResponse } from '../http/model/output/user/AuthCheckResponse'
-import { LoginResponse } from '../http/model/output/user/LoginResponse'
-import { RegisterResponse } from '../http/model/output/user/RegisterResponse'
 import UserServices from '../services/UserService'
 import IUserController from './interfaces/IUserController'
+
+type AuthCheckResponse = { authenticated: true; user: AuthenticatedUser }
+type LoginResponse = ApiResponse<{ token: string; user: AuthenticatedUser }>
+type RegisterResponse = ApiResponse<{ user: AuthenticatedUser }>
 
 class UserController implements IUserController {
     private services: UserServices

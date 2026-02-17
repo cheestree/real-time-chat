@@ -1,4 +1,4 @@
-import { ChannelSummary } from '../../http/model/output/server/ChannelSummary'
+import { ChannelSummary } from '@rtchat/shared'
 
 export enum ChannelType {
     SERVER = 'SERVER',

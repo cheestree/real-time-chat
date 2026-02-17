@@ -8,7 +8,7 @@ import { ServerExistsInput } from '../../http/model/input/server/ServerExistsInp
 import { ServerJoinInput } from '../../http/model/input/server/ServerJoinInput'
 import { ServerLeaveInput } from '../../http/model/input/server/ServerLeaveInput'
 import { UserServersInput } from '../../http/model/input/server/UserServersInput'
-import { ServerDetail } from '../../http/model/output/server/ServerDetail'
+import { ServerDetail } from '@rtchat/shared'
 
 interface IServerService {
     getUserServers: (input: UserServersInput) => Promise<ServerDetail[]>

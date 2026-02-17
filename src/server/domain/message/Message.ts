@@ -1,4 +1,4 @@
-import { MessageSummary } from '../../http/model/output/server/MessageSummary'
+import { MessageSummary } from '@rtchat/shared'
 import { ChannelType } from '../channel/Channel'
 
 export class Message {

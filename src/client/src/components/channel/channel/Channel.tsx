@@ -1,6 +1,6 @@
 'use client'
 
-import { ChannelDetail } from '@/types/api.types'
+import { ChannelDetail } from '@rtchat/shared'
 import styles from './channel.module.css'
 
 type ChannelItemProps = {

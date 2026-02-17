@@ -1,4 +1,4 @@
-import { ApiResponse } from '../api.types'
+import { ApiResponse } from '@rtchat/shared'
 
 export type MessageServerResponse = ApiResponse<{
     serverId?: string

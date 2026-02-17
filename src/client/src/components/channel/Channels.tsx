@@ -4,7 +4,7 @@ import ChannelCreateForm from '@/components/channel/ChannelCreateForm'
 import ChannelItem from '@/components/channel/channel/Channel'
 import { useOverlayStore } from '@/stores/useOverlayStore'
 import { useSocketStore } from '@/stores/useSocketStore'
-import { ChannelDetail, ServerDetail } from '@/types/api.types'
+import { ChannelDetail, ServerDetail } from '@rtchat/shared'
 import styles from './channels.module.css'
 
 type ChannelsProps = {

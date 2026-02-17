@@ -5,7 +5,7 @@ import { UserProfile } from '@/domain/UserProfile'
 import { socketService } from '@/services/SocketService'
 import { useAuthStore } from '@/stores/useAuthStore'
 import { useSocketStore } from '@/stores/useSocketStore'
-import { ChannelDetail, ServerDetail } from '@/types/api.types'
+import { ChannelDetail, ServerDetail } from '@rtchat/shared'
 import { ReactNode, useEffect } from 'react'
 
 export function SocketInitializer() {
