@@ -1,10 +1,9 @@
 import { UUID } from 'bson'
 import { Kysely, PostgresDialect } from 'kysely'
 import { MongoClient } from 'mongodb'
-import { Pool } from 'pg'
 import { Channel, ChannelType } from '../../domain/channel/Channel'
 import { Server } from '../../domain/server/Server'
-import { logger } from '../../utils/logger'
+import { ServerDetail } from '../../http/model/output/server/ServerDetail'
 
 interface ServerDocument {
     id: string
@@ -13,7 +12,7 @@ interface ServerDocument {
     ownerId: number
     icon: string
     users: number[]
-    channels: string[]
+    channels: { id: string; name: string }[]
 }
 
 interface ChannelDocument {
@@ -27,7 +26,7 @@ interface ChannelDocument {
 
 import { Database } from '../Database'
 import { IServerRepository } from '../interfaces/IServerRepository'
-import { createMongoClient } from '../utils/databaseClients'
+import { createMongoClient, getPostgresPool } from '../utils/databaseClients'
 
 class ServerRepository implements IServerRepository {
     private mdb: MongoClient
@@ -37,15 +36,7 @@ class ServerRepository implements IServerRepository {
         this.mdb = createMongoClient()
         this.db = new Kysely<Database>({
             dialect: new PostgresDialect({
-                pool: new Pool({
-                    user: process.env.POSTGRES_USER,
-                    host: process.env.POSTGRES_HOST,
-                    database: process.env.POSTGRES_DB,
-                    password: process.env.POSTGRES_PASSWORD,
-                    port: process.env.POSTGRES_PORT
-                        ? parseInt(process.env.POSTGRES_PORT)
-                        : 5432,
-                }),
+                pool: getPostgresPool(),
             }),
         })
     }
@@ -59,7 +50,8 @@ class ServerRepository implements IServerRepository {
             .toArray()
             .then((servers) => {
                 if (servers.length === 0) return []
-                return servers[0].channels || []
+                const channels = servers[0].channels || []
+                return channels.map((ch: { id: string; name: string }) => ch.id)
             })
     }
     async getUserIdsByServerId(serverId: string): Promise<number[]> {
@@ -122,14 +114,14 @@ class ServerRepository implements IServerRepository {
     }
 
     async channelExists(serverId: string, channelId: string): Promise<boolean> {
-        const server = await this.mdb
+        const server = (await this.mdb
             .db('rtchat')
             .collection('servers')
-            .findOne({ id: serverId })
+            .findOne({ id: serverId })) as ServerDocument | null
         if (!server) return false
         return (
             Array.isArray(server.channels) &&
-            server.channels.includes(channelId)
+            server.channels.some((ch) => ch.id === channelId)
         )
     }
 
@@ -153,7 +145,14 @@ class ServerRepository implements IServerRepository {
         await this.mdb
             .db('rtchat')
             .collection('servers')
-            .updateOne({ id: serverId }, { $addToSet: { channels: channelId } })
+            .updateOne(
+                { id: serverId },
+                {
+                    $addToSet: {
+                        channels: { id: channelId, name: channelName },
+                    },
+                }
+            )
         return new Channel(
             channelId,
             serverId,
@@ -172,7 +171,22 @@ class ServerRepository implements IServerRepository {
         icon?: string
     ): Promise<Server> {
         const serversCol = this.mdb.db('rtchat').collection('servers')
+        const channelsCol = this.mdb.db('rtchat').collection('channels')
         const serverId = new UUID().toString()
+        const generalChannelId = new UUID().toString()
+
+        // Create the general channel in the channels collection
+        await channelsCol.insertOne({
+            id: generalChannelId,
+            name: 'general',
+            description: 'General discussion channel',
+            messages: [],
+            blacklist: [],
+            whitelist: [],
+            type: ChannelType.SERVER,
+        })
+
+        // Create the server with the general channel ID and name
         const doc = {
             id: serverId,
             name: name,
@@ -180,10 +194,9 @@ class ServerRepository implements IServerRepository {
             ownerId: userId,
             icon: icon || '',
             users: [userId],
-            channels: [],
+            channels: [{ id: generalChannelId, name: 'general' }],
         }
         const result = await serversCol.insertOne(doc)
-        logger.debug({ insertedId: result.insertedId }, 'Server insert result')
 
         await this.db
             .insertInto('rtchat.server_members')
@@ -197,7 +210,6 @@ class ServerRepository implements IServerRepository {
         const createdDoc = (await serversCol.findOne({
             _id: result.insertedId,
         })) as ServerDocument | null
-        logger.debug({ server: createdDoc }, 'Created server')
         return this.mapToDomain(createdDoc!)
     }
 
@@ -249,17 +261,34 @@ class ServerRepository implements IServerRepository {
         await this.mdb
             .db('rtchat')
             .collection<ServerDocument>('servers')
-            .updateOne({ id: serverId }, { $pull: { channels: channelId } })
+            .updateOne(
+                { id: serverId },
+                { $pull: { channels: { id: channelId } } }
+            )
         return true
     }
 
-    async getUserServers(userId: number): Promise<Server[]> {
+    async getUserServers(userId: number): Promise<ServerDetail[]> {
         const docs = (await this.mdb
             .db('rtchat')
             .collection('servers')
             .find({ users: { $in: [userId] } })
             .toArray()) as unknown as ServerDocument[]
-        return docs.map((doc) => this.mapToDomain(doc))
+
+        return docs.map((doc) => ({
+            id: doc.id,
+            name: doc.name,
+            description: doc.description,
+            icon: doc.icon,
+            ownerIds: [doc.ownerId],
+            channels: doc.channels.map((ch) => ({
+                id: ch.id,
+                name: ch.name,
+                description: '',
+                serverId: doc.id,
+            })),
+            users: [],
+        }))
     }
 
     async getPagedChannels(
@@ -276,7 +305,10 @@ class ServerRepository implements IServerRepository {
             return []
         }
 
-        const channelIds = server.channels.slice(offset, offset + limit)
+        const channelRefs = server.channels.slice(offset, offset + limit)
+        const channelIds = channelRefs.map(
+            (ch: { id: string; name: string }) => ch.id
+        )
 
         const channelDocs = (await this.mdb
             .db('rtchat')
@@ -305,7 +337,7 @@ class ServerRepository implements IServerRepository {
             doc.description,
             doc.ownerId,
             doc.icon,
-            doc.channels,
+            doc.channels.map((ch) => ch.id),
             doc.users
         )
     }

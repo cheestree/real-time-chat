@@ -1,9 +1,10 @@
 import { UUID } from 'bson'
 import { Channel, ChannelType } from '../../domain/channel/Channel'
 import { Server } from '../../domain/server/Server'
+import { ServerDetail } from '../../http/model/output/server/ServerDetail'
 
 export interface IServerRepository {
-    getUserServers(userId: number): Promise<Server[]>
+    getUserServers(userId: number): Promise<ServerDetail[]>
     userExists(userId: UUID): Promise<boolean>
     getServerById(serverId: string): Promise<Server | undefined>
     createServer(

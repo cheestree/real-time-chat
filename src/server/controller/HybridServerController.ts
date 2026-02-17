@@ -5,6 +5,7 @@ import { AuthenticatedRequest } from '../http/middleware/Authenticator'
 import { ChannelCreateInput } from '../http/model/input/channel/ChannelCreateInput'
 import { ServerDeleteInput } from '../http/model/input/server/ServerDeleteInput'
 import { ServerJoinInput } from '../http/model/input/server/ServerJoinInput'
+import { ApiResponse } from '../http/model/output/ApiResponse'
 import ServerServices from '../services/ServerService'
 import UserServices from '../services/UserService'
 
@@ -21,16 +22,21 @@ class HybridServerController {
     joinServer: RequestHandler = asyncHandler(async (req, res) => {
         const authReq = req as AuthenticatedRequest
         const input: ServerJoinInput = req.body
-        const server = await this.serverServices.addUserToServer(
+        const serverDetails = await this.serverServices.addUserToServer(
             authReq.authenticatedUser,
             input
         )
         const io = (req as unknown as SocketRequest).io
-        io.to(server.id).emit('userJoinedServer', {
-            serverId: server.id,
+        io.to(serverDetails.id).emit('userJoinedServer', {
+            serverId: serverDetails.id,
             user: authReq.authenticatedUser.profile,
         })
-        res.status(200).json(server)
+
+        const response: ApiResponse<typeof serverDetails> = {
+            success: true,
+            data: serverDetails,
+        }
+        res.status(200).json(response)
     })
 
     createChannel: RequestHandler = asyncHandler(async (req, res) => {
@@ -41,8 +47,14 @@ class HybridServerController {
             input
         )
         const io = (req as unknown as SocketRequest).io
-        io.to(input.serverId).emit('channelCreated', channel.toSummary())
-        res.status(201).json(channel.toSummary())
+        const channelSummary = channel.toSummary()
+        io.to(input.serverId).emit('channelCreated', channelSummary)
+
+        const response: ApiResponse<typeof channelSummary> = {
+            success: true,
+            data: channelSummary,
+        }
+        res.status(201).json(response)
     })
 
     deleteChannel: RequestHandler = asyncHandler(async (req, res) => {
@@ -58,7 +70,12 @@ class HybridServerController {
 
         const io = (req as unknown as SocketRequest).io
         io.to(serverId).emit('channelDeleted', { serverId, channelId })
-        res.status(200).json({ success: true })
+
+        const response: ApiResponse<{ success: boolean }> = {
+            success: true,
+            data: { success: true },
+        }
+        res.status(200).json(response)
     })
 
     deleteServer: RequestHandler = asyncHandler(async (req, res) => {
@@ -79,7 +96,11 @@ class HybridServerController {
             )
         }
 
-        res.status(200).json({ success: true })
+        const response: ApiResponse<{ success: boolean }> = {
+            success: true,
+            data: { success: true },
+        }
+        res.status(200).json(response)
     })
 
     logout: RequestHandler = asyncHandler(async (req, res) => {

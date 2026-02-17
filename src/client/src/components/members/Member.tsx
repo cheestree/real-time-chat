@@ -1,6 +1,7 @@
 'use client'
 
 import Image from 'next/image'
+import { memo } from 'react'
 import styles from './member.module.css'
 
 type MemberProps = {
@@ -10,7 +11,7 @@ type MemberProps = {
     icon: string
 }
 
-export default function Member({ id, name, status, icon }: MemberProps) {
+function Member({ id, name, icon }: MemberProps) {
     return (
         <div className={styles.member} key={id}>
             <div className={styles.memberIcon}>
@@ -20,3 +21,5 @@ export default function Member({ id, name, status, icon }: MemberProps) {
         </div>
     )
 }
+
+export default memo(Member)

@@ -1,4 +1,4 @@
-import { Fragment, JSX } from 'react'
+import { Fragment, JSX, memo } from 'react'
 
 import { MessageSummary } from '@/types/api.types'
 import styles from './message.module.css'
@@ -7,7 +7,7 @@ type MessageItemProps = {
     message: MessageSummary
 }
 
-export default function MessageItem({ message }: MessageItemProps) {
+function MessageItem({ message }: MessageItemProps) {
     const extractURLs = (str: string) => {
         const urlRegex = /(https?:\/\/\S+)/g
         const parts = str.split(urlRegex)
@@ -57,3 +57,5 @@ export default function MessageItem({ message }: MessageItemProps) {
         </div>
     )
 }
+
+export default memo(MessageItem)

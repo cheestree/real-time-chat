@@ -17,15 +17,9 @@ class ServerController {
             userId: authReq.authenticatedUser.publicId,
         })
 
-        const serverDetails = await Promise.all(
-            servers.map(async (server) => {
-                return await this.services.getServerDetails(server.id)
-            })
-        )
-
-        const response: ApiResponse<typeof serverDetails> = {
+        const response: ApiResponse<typeof servers> = {
             success: true,
-            data: serverDetails,
+            data: servers,
         }
 
         res.status(200).json(response)
@@ -46,14 +40,14 @@ class ServerController {
     createServer: RequestHandler = asyncHandler(async (req, res) => {
         const authReq = req as AuthenticatedRequest
         const input: ServerCreateInput = req.body
-        const server = await this.services.createServer(
+        const serverDetails = await this.services.createServer(
             authReq.authenticatedUser,
             input
         )
 
-        const response: ApiResponse<typeof server> = {
+        const response: ApiResponse<typeof serverDetails> = {
             success: true,
-            data: server,
+            data: serverDetails,
         }
 
         // Note: For now, there's no server-wide notification for server creation,

@@ -1,7 +1,6 @@
 import { Request, RequestHandler } from 'express'
 import { AuthenticatedUser } from '../../domain/user/AuthenticatedUser'
 import UserServices from '../../services/UserService'
-import { logger } from '../../utils/logger'
 
 export interface AuthenticatedRequest extends Request {
     authenticatedUser: AuthenticatedUser
@@ -26,7 +25,6 @@ const authenticatorWithServices = (
             }
             return res.status(401).send('Token invalid')
         } catch (err) {
-            logger.error({ err }, 'Authentication error')
             return res.status(401).send('Authentication error')
         }
     }

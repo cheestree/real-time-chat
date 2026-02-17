@@ -11,13 +11,13 @@ import { UserServersInput } from '../../http/model/input/server/UserServersInput
 import { ServerDetail } from '../../http/model/output/server/ServerDetail'
 
 interface IServerService {
-    getUserServers: (input: UserServersInput) => Promise<Server[]>
+    getUserServers: (input: UserServersInput) => Promise<ServerDetail[]>
     getServerById: (serverId: string) => Promise<Server>
     serverExists: (input: ServerExistsInput) => Promise<boolean>
     createServer: (
         user: AuthenticatedUser,
         input: ServerCreateInput
-    ) => Promise<Server>
+    ) => Promise<ServerDetail>
     createChannel: (
         user: AuthenticatedUser,
         input: ChannelCreateInput
@@ -25,7 +25,7 @@ interface IServerService {
     addUserToServer: (
         user: AuthenticatedUser,
         input: ServerJoinInput
-    ) => Promise<Server>
+    ) => Promise<ServerDetail>
     leaveServer: (
         user: AuthenticatedUser,
         input: ServerLeaveInput

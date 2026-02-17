@@ -8,7 +8,11 @@
 
 services:
   client:
-    build: ./src/client
+    build:
+      context: ./src/client
+      args:
+        - NEXT_PUBLIC_API_URL=${NEXT_PUBLIC_API_URL}
+        - NEXT_PUBLIC_SOCKET_URL=${NEXT_PUBLIC_SOCKET_URL}
     container_name: chat-client
     ports:
       - "3000:3000"
@@ -34,6 +38,7 @@ services:
       - SERVER_HOST=${SERVER_HOST}
       - SERVER_PORT=${SERVER_PORT}
       - SERVER_PROFILE=${SERVER_PROFILE}
+      - DEMO_MODE=${DEMO_MODE}
       - POSTGRES_HOST=${POSTGRES_HOST}
       - POSTGRES_PORT=${POSTGRES_PORT}
       - POSTGRES_DB=${POSTGRES_DB}
@@ -48,6 +53,9 @@ services:
       - REDIS_PASSWORD=${REDIS_PASSWORD}
       - CASSANDRA_HOST=${CASSANDRA_HOST}
       - CASSANDRA_PORT=${CASSANDRA_PORT}
+      - CASSANDRA_CONTACT_POINTS=${CASSANDRA_CONTACT_POINTS}
+      - CASSANDRA_KEYSPACE=${CASSANDRA_KEYSPACE}
+      - CASSANDRA_LOCAL_DATACENTER=${CASSANDRA_LOCAL_DATACENTER}
 
   mongo:
     image: mongo:latest

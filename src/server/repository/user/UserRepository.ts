@@ -1,7 +1,7 @@
 import { Kysely, PostgresDialect } from 'kysely'
-import { Pool } from 'pg'
 import { Database, UserInsertable, UserSelectable } from '../Database'
 import { IUserRepository } from '../interfaces/IUserRepository'
+import { getPostgresPool } from '../utils/databaseClients'
 import {
     withErrorHandling,
     withErrorHandlingBoolean,
@@ -13,15 +13,7 @@ class UserRepository implements IUserRepository {
     constructor() {
         this.db = new Kysely<Database>({
             dialect: new PostgresDialect({
-                pool: new Pool({
-                    user: process.env.POSTGRES_USER,
-                    host: process.env.POSTGRES_HOST,
-                    database: process.env.POSTGRES_DB,
-                    password: process.env.POSTGRES_PASSWORD,
-                    port: process.env.POSTGRES_PORT
-                        ? parseInt(process.env.POSTGRES_PORT)
-                        : 5432,
-                }),
+                pool: getPostgresPool(),
             }),
         })
     }
@@ -72,6 +64,19 @@ class UserRepository implements IUserRepository {
                     .executeTakeFirst(),
             'Error fetching user by internal ID'
         )
+    }
+
+    async getUsersByIds(ids: number[]): Promise<UserSelectable[]> {
+        if (ids.length === 0) return []
+        return withErrorHandling(
+            () =>
+                this.db
+                    .selectFrom('rtchat.users')
+                    .selectAll()
+                    .where('internal_id', 'in', ids)
+                    .execute(),
+            'Error fetching users by internal IDs'
+        ).then((users) => users || [])
     }
 
     async createUser(

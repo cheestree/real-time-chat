@@ -271,26 +271,78 @@ export const useSocketStore = create<SocketState>()(
                     icon,
                 })
                 if (result.success) {
+                    const server = result.data
+                    const generalChannel = server.channels?.[0]
+
                     set((state) => {
-                        state.servers.push(result.data)
-                        state.currentServerId = result.data.id
-                        state.currentServer = result.data
-                        state.currentChannelId = null
-                        state.currentChannel = undefined
+                        state.servers.push(server)
+                        state.currentServerId = server.id
+                        state.currentServer = server
+
+                        // If there's a general channel, switch to it
+                        if (generalChannel) {
+                            state.currentChannelId = generalChannel.id
+                            state.currentChannel = generalChannel
+                            state.lastViewedChannelByServer[server.id] =
+                                generalChannel.id
+                        } else {
+                            state.currentChannelId = null
+                            state.currentChannel = undefined
+                        }
                     })
+
+                    // Join the general channel socket room
+                    if (generalChannel) {
+                        socketService.joinChannel({
+                            channelId: generalChannel.id,
+                        })
+                    }
                 }
             },
 
             joinServer: async (serverId) => {
                 const result = await serverService.joinServer({ serverId })
                 if (result.success) {
+                    const server = result.data
+                    const firstChannel = server.channels?.[0]
+
+                    // Ensure channels and users arrays exist
+                    if (!server.channels) server.channels = []
+                    if (!server.users) server.users = []
+
                     set((state) => {
-                        state.servers.push(result.data)
-                        state.currentServerId = result.data.id
-                        state.currentServer = result.data
-                        state.currentChannelId = null
-                        state.currentChannel = undefined
+                        // Check if server already exists
+                        const existingIndex = state.servers.findIndex(
+                            (s) => s.id === server.id
+                        )
+                        if (existingIndex >= 0) {
+                            // Update existing server
+                            state.servers[existingIndex] = server
+                        } else {
+                            // Add new server
+                            state.servers.push(server)
+                        }
+                        state.currentServerId = server.id
+                        state.currentServer = server
+
+                        // If there's a first channel, switch to it
+                        if (firstChannel) {
+                            state.currentChannelId = firstChannel.id
+                            state.currentChannel = firstChannel
+                            state.lastViewedChannelByServer[server.id] =
+                                firstChannel.id
+                        } else {
+                            state.currentChannelId = null
+                            state.currentChannel = undefined
+                        }
                     })
+
+                    // Join the first channel socket room
+                    if (firstChannel) {
+                        socketService.joinChannel({
+                            channelId: firstChannel.id,
+                        })
+                    }
                 }
             },
 
@@ -304,18 +356,31 @@ export const useSocketStore = create<SocketState>()(
                     description,
                 })
                 if (result.success) {
+                    const newChannel = {
+                        ...result.data,
+                        messages: [],
+                    }
+
                     set((state) => {
                         const server = state.servers.find(
                             (s) => s.id === currentServerId
                         )
                         if (server) {
                             if (!server.channels) server.channels = []
-                            server.channels.push({
-                                ...result.data,
-                                messages: [],
-                            })
+                            server.channels.push(newChannel)
+
+                            // Switch to the newly created channel
+                            state.currentChannelId = newChannel.id
+                            state.currentChannel = newChannel
+
+                            // Update last viewed channel for this server
+                            state.lastViewedChannelByServer[currentServerId] =
+                                newChannel.id
                         }
                     })
+
+                    // Join the channel socket room
+                    socketService.joinChannel({ channelId: newChannel.id })
                 }
             },
 

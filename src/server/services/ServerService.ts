@@ -23,7 +23,9 @@ class ServerService implements IServerService {
         this.servers = serverRepo
         this.users = userRepo
     }
-    getUserServers = async (input: UserServersInput): Promise<Server[]> => {
+    getUserServers = async (
+        input: UserServersInput
+    ): Promise<ServerDetail[]> => {
         requireOrThrow(
             BadRequestError,
             await this.users.userExists(input.userId),
@@ -47,7 +49,7 @@ class ServerService implements IServerService {
     createServer = async (
         user: AuthenticatedUser,
         input: ServerCreateInput
-    ): Promise<Server> => {
+    ): Promise<ServerDetail> => {
         const serverNameTrimmed = input.name.trim()
         const serverDescriptionTrimmed = input.description?.trim()
         requireOrThrow(
@@ -55,12 +57,14 @@ class ServerService implements IServerService {
             !(!serverNameTrimmed || !serverDescriptionTrimmed),
             "Server name/description can't be an empty string."
         )
-        return await this.servers.createServer(
+        const server = await this.servers.createServer(
             serverNameTrimmed,
             user.internalId,
             serverDescriptionTrimmed,
             input.icon
         )
+        // Return full server details with populated channels
+        return await this.getServerDetails(server.id)
     }
     createChannel = async (
         user: AuthenticatedUser,
@@ -84,7 +88,7 @@ class ServerService implements IServerService {
     addUserToServer = async (
         user: AuthenticatedUser,
         input: ServerJoinInput
-    ): Promise<Server> => {
+    ): Promise<ServerDetail> => {
         requireOrThrow(
             BadRequestError,
             await this.servers.serverExists(input.serverId),
@@ -95,10 +99,8 @@ class ServerService implements IServerService {
             !(await this.servers.containsUser(input.serverId, user.internalId)),
             'User is already a member of the server.'
         )
-        return await this.servers.addUserToServer(
-            input.serverId,
-            user.internalId
-        )
+        await this.servers.addUserToServer(input.serverId, user.internalId)
+        return await this.getServerDetails(input.serverId)
     }
     leaveServer = async (
         user: AuthenticatedUser,
@@ -163,21 +165,15 @@ class ServerService implements IServerService {
             name: c.name,
             description: c.description,
             serverId: c.serverId,
-            messages: [],
         }))
 
         const userIds = await this.servers.getUserIdsByServerId(serverId)
-        const userSummaries: UserSummary[] = []
-        for (const userId of userIds) {
-            const user = await this.users.getUserById(userId)
-            if (user) {
-                userSummaries.push({
-                    id: user.id,
-                    username: user.username,
-                    icon: '',
-                })
-            }
-        }
+        const users = await this.users.getUsersByIds(userIds)
+        const userSummaries: UserSummary[] = users.map((user) => ({
+            id: user.id,
+            username: user.username,
+            icon: '',
+        }))
 
         return {
             id: server.id,
@@ -223,14 +219,11 @@ class ServerService implements IServerService {
             'User is not a member of the server.'
         )
         const userIds = await this.servers.getUserIdsByServerId(serverId)
-        const profiles: UserSummary[] = []
-        for (const id of userIds) {
-            const user = await this.users.getUserById(id)
-            if (user) {
-                profiles.push({ id: user.id, username: user.username })
-            }
-        }
-        return profiles
+        const users = await this.users.getUsersByIds(userIds)
+        return users.map((user) => ({
+            id: user.id,
+            username: user.username,
+        }))
     }
 }
 

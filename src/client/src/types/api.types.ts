@@ -58,7 +58,7 @@ export type ChannelSummary = {
 }
 
 export type ChannelDetail = ChannelSummary & {
-    messages: MessageSummary[]
+    messages?: MessageSummary[]
 }
 
 export enum ChannelType {
