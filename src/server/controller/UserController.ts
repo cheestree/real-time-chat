@@ -1,9 +1,12 @@
-import { ApiResponse, AuthenticatedUser } from '@rtchat/shared'
+import {
+    ApiResponse,
+    AuthenticatedUser,
+    UserLoginInput,
+    UserRegisterInput,
+} from '@rtchat/shared'
 import { Request, RequestHandler, Response } from 'express'
 import { asyncHandler } from '../http/middleware/asyncHandler'
 import { AuthenticatedRequest } from '../http/middleware/Authenticator'
-import { UserLoginInput } from '../http/model/input/user/UserLoginInput'
-import { UserRegisterInput } from '../http/model/input/user/UserRegisterInput'
 import UserServices from '../services/UserService'
 import IUserController from './interfaces/IUserController'
 

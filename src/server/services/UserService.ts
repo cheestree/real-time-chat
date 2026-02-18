@@ -2,9 +2,7 @@ import { BadRequestError } from '../domain/error/Error'
 import { AuthenticatedUser } from '../domain/user/AuthenticatedUser'
 import { UserDomain } from '../domain/user/UserDomain'
 import { UserProfile } from '../domain/user/UserProfile'
-import { UserLoginInput } from '../http/model/input/user/UserLoginInput'
-import { UserRegisterInput } from '../http/model/input/user/UserRegisterInput'
-import { LoginResult } from '@rtchat/shared'
+import { UserLoginInput, UserRegisterInput, LoginResult } from '@rtchat/shared'
 import { IUserRepository } from '../repository/interfaces/IUserRepository'
 import IUserService from './interfaces/IUserService'
 import { requireOrThrow } from './utils/requireOrThrow'
@@ -38,6 +36,7 @@ class UserService implements IUserService {
         const options = {
             httpOnly: true,
             secure: true,
+            sameSite: 'strict' as const,
             maxAge: expireTime,
         }
         const authUser: AuthenticatedUser = {

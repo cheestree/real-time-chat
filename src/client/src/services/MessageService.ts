@@ -1,17 +1,17 @@
 import { Path } from '@/http/path'
 import { get } from '@/http/requests'
 import {
+    GetPagedMessagesInput,
+    GetPagedMessagesResponse,
     GetPagedMessagesSchema,
-    getPagedMessagesSchema,
-} from '@/types/services/message.schema'
-import { GetPagedMessagesResponse } from '@/types/services/message.types'
+} from '@rtchat/shared'
 
 class MessageService {
     async getPagedMessages(
-        data: GetPagedMessagesSchema
+        data: GetPagedMessagesInput
     ): Promise<GetPagedMessagesResponse> {
         try {
-            getPagedMessagesSchema.parse(data)
+            GetPagedMessagesSchema.parse(data)
             let url =
                 process.env.NEXT_PUBLIC_API_URL +
                 Path.SERVERS +

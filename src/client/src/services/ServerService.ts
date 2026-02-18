@@ -1,29 +1,31 @@
 import { Path } from '@/http/path'
 import { get, post } from '@/http/requests'
 import {
-    createChannelSchema,
-    CreateChannelSchema,
-    createServerSchema,
-    CreateServerSchema,
-    DeleteChannelSchema,
-    DeleteServerSchema,
-    deleteServerSchema,
-    GetPagedChannelsSchema,
-    GetServerUsersSchema,
-    joinServerSchema,
-    JoinServerSchema,
-} from '@/types/services/server.schema'
-import {
+    ChannelCreateSchema,
     CreateChannelResponse,
+    ChannelCreateInput as CreateChannelSchema,
     CreateServerResponse,
+    ServerCreateInput as CreateServerSchema,
     DeleteChannelResponse,
     DeleteServerResponse,
+    ServerDeleteInput as DeleteServerSchema,
     GetPagedChannelsResponse,
     GetServerDetailsResponse,
     GetServerUsersResponse,
     JoinServerResponse,
+    ServerJoinInput as JoinServerSchema,
     ListServersResponse,
-} from '@/types/services/server.types'
+    ServerCreateSchema,
+    ServerDeleteSchema,
+    ServerJoinSchema,
+} from '@rtchat/shared'
+
+// Keep local schemas that don't exist on server
+import {
+    DeleteChannelSchema,
+    GetPagedChannelsSchema,
+    GetServerUsersSchema,
+} from '@/types/services/server.schema'
 
 class ServerService {
     async listServers(): Promise<ListServersResponse> {
@@ -69,7 +71,7 @@ class ServerService {
         data: CreateServerSchema
     ): Promise<CreateServerResponse> {
         try {
-            createServerSchema.parse(data)
+            ServerCreateSchema.parse(data)
             const response = await post(
                 process.env.NEXT_PUBLIC_API_URL + Path.SERVERS,
                 true,
@@ -88,7 +90,7 @@ class ServerService {
 
     async joinServer(data: JoinServerSchema): Promise<JoinServerResponse> {
         try {
-            joinServerSchema.parse(data)
+            ServerJoinSchema.parse(data)
             const response = await post(
                 process.env.NEXT_PUBLIC_API_URL + Path.SERVERS + '/join',
                 true,
@@ -109,7 +111,7 @@ class ServerService {
         data: CreateChannelSchema
     ): Promise<CreateChannelResponse> {
         try {
-            createChannelSchema.parse(data)
+            ChannelCreateSchema.parse(data)
             const response = await post(
                 process.env.NEXT_PUBLIC_API_URL + Path.CHANNELS,
                 true,
@@ -156,7 +158,7 @@ class ServerService {
         data: DeleteServerSchema
     ): Promise<DeleteServerResponse> {
         try {
-            deleteServerSchema.parse(data)
+            ServerDeleteSchema.parse(data)
             const response = await post(
                 process.env.NEXT_PUBLIC_API_URL + Path.SERVERS + '/delete',
                 true,

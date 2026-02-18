@@ -1,25 +1,17 @@
-import { Server, Socket } from 'socket.io'
-import { AuthenticatedUser } from '../../domain/user/AuthenticatedUser'
 import {
     ChannelJoinInput,
     ChannelJoinSchema,
-} from '../../http/model/input/channel/ChannelJoinInput'
-import {
     ChannelLeaveInput,
     ChannelLeaveSchema,
-} from '../../http/model/input/channel/ChannelLeaveInput'
-import {
     MessageCreateInput,
     MessageCreateSchema,
-} from '../../http/model/input/message/MessageCreateInput'
-import {
     ServerJoinInput,
     ServerJoinSchema,
-} from '../../http/model/input/server/ServerJoinInput'
-import {
     ServerLeaveInput,
     ServerLeaveSchema,
-} from '../../http/model/input/server/ServerLeaveInput'
+} from '@rtchat/shared'
+import { Server, Socket } from 'socket.io'
+import { AuthenticatedUser } from '../../domain/user/AuthenticatedUser'
 import MessageService from '../../services/MessageService'
 import ServerService from '../../services/ServerService'
 import { logger } from '../../utils/logger'

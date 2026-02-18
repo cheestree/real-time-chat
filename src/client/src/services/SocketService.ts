@@ -1,26 +1,25 @@
 import {
     deleteServerSocketSchema,
     DeleteServerSocketSchema,
-    joinChannelSchema,
-    JoinChannelSchema,
-    joinServerSchema,
-    JoinServerSchema,
-    leaveChannelSchema,
-    LeaveChannelSchema,
-    leaveServerSchema,
-    LeaveServerSchema,
-    messageServerSchema,
-    MessageServerSchema,
 } from '@/types/services/socket.schema'
-
 import {
+    ChannelJoinSchema,
+    ChannelLeaveSchema,
     DeleteServerSocketResponse,
     JoinChannelResponse,
-    JoinServerResponse,
+    ChannelJoinInput as JoinChannelSchema,
+    JoinServerSocketResponse,
+    ServerJoinInput as JoinServerSchema,
     LeaveChannelResponse,
+    ChannelLeaveInput as LeaveChannelSchema,
     LeaveServerResponse,
+    ServerLeaveInput as LeaveServerSchema,
+    MessageCreateSchema,
     MessageServerResponse,
-} from '@/types/services/socket.types'
+    MessageCreateInput as MessageServerSchema,
+    ServerJoinSchema,
+    ServerLeaveSchema,
+} from '@rtchat/shared'
 import { io, Socket } from 'socket.io-client'
 
 class SocketService {
@@ -51,9 +50,16 @@ class SocketService {
 
     messageServer(data: MessageServerSchema): MessageServerResponse {
         try {
-            messageServerSchema.parse(data)
+            MessageCreateSchema.parse(data)
             this.socket!.emit('messageServer', data)
-            return { success: true, data }
+            return {
+                success: true,
+                data: {
+                    serverId: data.serverId,
+                    channelId: data.channelId,
+                    content: data.content,
+                },
+            }
         } catch (error) {
             console.error('Socket messageServer error:', error)
             return { success: false, error: 'Failed to send message' }
@@ -62,7 +68,7 @@ class SocketService {
 
     leaveServer(data: LeaveServerSchema): LeaveServerResponse {
         try {
-            leaveServerSchema.parse(data)
+            ServerLeaveSchema.parse(data)
             this.socket!.emit('leaveServer', data)
             const room = `server_${data.serverId}`
             this.joinedServerRooms.delete(room)
@@ -86,7 +92,7 @@ class SocketService {
 
     joinChannel(data: JoinChannelSchema): JoinChannelResponse {
         try {
-            joinChannelSchema.parse(data)
+            ChannelJoinSchema.parse(data)
             const room = `channel_${data.channelId}`
             if (this.joinedChannelRooms.has(room))
                 return { success: false, error: 'Already joined' }
@@ -101,7 +107,7 @@ class SocketService {
 
     leaveChannel(data: LeaveChannelSchema): LeaveChannelResponse {
         try {
-            leaveChannelSchema.parse(data)
+            ChannelLeaveSchema.parse(data)
             const room = `channel_${data.channelId}`
             if (!this.joinedChannelRooms.has(room))
                 return { success: false, error: 'Not joined' }
@@ -114,9 +120,9 @@ class SocketService {
         }
     }
 
-    joinServer(data: JoinServerSchema): JoinServerResponse {
+    joinServer(data: JoinServerSchema): JoinServerSocketResponse {
         try {
-            joinServerSchema.parse(data)
+            ServerJoinSchema.parse(data)
             const room = `server_${data.serverId}`
             if (this.joinedServerRooms.has(room))
                 return { success: false, error: 'Already joined' }

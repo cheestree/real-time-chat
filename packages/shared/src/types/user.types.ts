@@ -17,5 +17,11 @@ export type AuthenticatedUser = {
 export type LoginResult = {
   token: string;
   user: AuthenticatedUser;
+  options: {
+    httpOnly: boolean;
+    secure: boolean;
+    sameSite: "strict" | "lax" | "none";
+    maxAge: number;
+  };
 };
 

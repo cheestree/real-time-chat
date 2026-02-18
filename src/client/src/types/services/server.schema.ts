@@ -1,29 +1,6 @@
 import { z } from 'zod'
 
-export const createServerSchema = z.object({
-    name: z.string(),
-    description: z.string().optional(),
-    icon: z.string().optional(),
-})
-export type CreateServerSchema = z.infer<typeof createServerSchema>
-
-export const joinServerSchema = z.object({
-    serverId: z.string(),
-})
-export type JoinServerSchema = z.infer<typeof joinServerSchema>
-
-export const createChannelSchema = z.object({
-    serverId: z.string(),
-    name: z.string(),
-    description: z.string().optional(),
-})
-export type CreateChannelSchema = z.infer<typeof createChannelSchema>
-
-export const deleteServerSchema = z.object({
-    serverId: z.string(),
-})
-export type DeleteServerSchema = z.infer<typeof deleteServerSchema>
-
+// Client-only schemas (not used on server)
 export const deleteChannelSchema = z.object({
     serverId: z.string(),
     channelId: z.string(),

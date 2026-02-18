@@ -1,22 +1,20 @@
 import { Path } from '@/http/path'
 import { get, post } from '@/http/requests'
 import {
-    loginSchema,
-    LoginSchema,
-    registerSchema,
-    RegisterSchema,
-} from '@/types/services/user.schema'
-import {
     AuthCheckResponse,
     LoginResponse,
+    UserLoginInput as LoginSchema,
     LogoutResponse,
     RegisterResponse,
-} from '@/types/services/user.types'
+    UserRegisterInput as RegisterSchema,
+    UserLoginSchema,
+    UserRegisterSchema,
+} from '@rtchat/shared'
 
 class UserService {
     async login(data: LoginSchema): Promise<LoginResponse> {
         try {
-            loginSchema.parse(data)
+            UserLoginSchema.parse(data)
             const response = await post(
                 process.env.NEXT_PUBLIC_API_URL + Path.LOGIN,
                 true,
@@ -51,7 +49,7 @@ class UserService {
     }
     async register(data: RegisterSchema): Promise<RegisterResponse> {
         try {
-            registerSchema.parse(data)
+            UserRegisterSchema.parse(data)
             const response = await post(
                 process.env.NEXT_PUBLIC_API_URL + Path.REGISTER,
                 false,

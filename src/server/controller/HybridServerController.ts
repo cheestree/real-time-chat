@@ -1,11 +1,13 @@
+import {
+    ApiResponse,
+    ChannelCreateInput,
+    ServerDeleteInput,
+    ServerJoinInput,
+} from '@rtchat/shared'
 import { Request, RequestHandler } from 'express'
 import { Server } from 'socket.io'
 import { asyncHandler } from '../http/middleware/asyncHandler'
 import { AuthenticatedRequest } from '../http/middleware/Authenticator'
-import { ChannelCreateInput } from '../http/model/input/channel/ChannelCreateInput'
-import { ServerDeleteInput } from '../http/model/input/server/ServerDeleteInput'
-import { ServerJoinInput } from '../http/model/input/server/ServerJoinInput'
-import { ApiResponse } from '@rtchat/shared'
 import ServerServices from '../services/ServerService'
 import UserServices from '../services/UserService'
 
