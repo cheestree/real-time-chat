@@ -28,6 +28,7 @@ import { RedisStore } from 'connect-redis'
 import SocketHandlers from './controller/ws/SocketHandlers'
 import ErrorHandler from './http/middleware/ErrorHandler'
 import { getRedisClient } from './repository/utils/databaseClients'
+import { directMessageRoutes } from './routes/DirectMessageRoutes'
 import { messageRoutes } from './routes/MessageRoutes'
 import { serverRoutes } from './routes/ServerRoutes'
 import { userRoutes } from './routes/UserRoutes'
@@ -114,7 +115,8 @@ const httpServer = createServer(app)
             socket,
             userRoutes.userServices,
             serverRoutes.serverServices,
-            messageRoutes.messageServices
+            messageRoutes.messageServices,
+            directMessageRoutes.dmServices
         )
     }
 
@@ -171,6 +173,14 @@ const httpServer = createServer(app)
             next()
         },
         messageRoutes.router
+    )
+    app.use(
+        '/api',
+        (req, res, next) => {
+            ;(req as unknown as SocketRequest).io = io
+            next()
+        },
+        directMessageRoutes.router
     )
     app.use(ErrorHandler)
 

@@ -1,8 +1,8 @@
+import { MessageCreateInput } from '@rtchat/shared'
 import { ChannelType } from '../domain/channel/Channel'
 import { BadRequestError } from '../domain/error/Error'
 import { Message } from '../domain/message/Message'
 import { AuthenticatedUser } from '../domain/user/AuthenticatedUser'
-import { MessageCreateInput } from '@rtchat/shared'
 import IMessageRepository from '../repository/interfaces/IMessageRepository'
 import { IServerRepository } from '../repository/interfaces/IServerRepository'
 import { isNotEmptyString } from '../utils/stringValidation'
@@ -95,7 +95,6 @@ class MessageService implements IMessageService {
                 "Channel doesn't exist."
             )
         }
-        // For DMs, we might need extra checks here in the future
 
         return await this.messages.getPagedMessages(
             channelId,

@@ -20,7 +20,6 @@ import {
     ServerJoinSchema,
 } from '@rtchat/shared'
 
-// Keep local schemas that don't exist on server
 import {
     DeleteChannelSchema,
     GetPagedChannelsSchema,

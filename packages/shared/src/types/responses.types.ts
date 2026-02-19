@@ -2,6 +2,7 @@ import { ApiResponse } from "./api.types";
 import { ChannelSummary } from "./channel.types";
 import { ServerDetail } from "./server.types";
 import { AuthenticatedUser, UserSummary } from "./user.types";
+import { ConversationSummary } from "./directMessage.types";
 
 // User API Responses
 export type LoginResponse = ApiResponse<{
@@ -76,5 +77,24 @@ export type LeaveChannelResponse = ApiResponse<{
 
 export type DeleteServerSocketResponse = ApiResponse<{
   id: string;
+}>;
+
+// Direct Message API Responses
+export type GetDirectMessagesResponseData = {
+  messages: any[]; // Will be typed as Message domain object on client
+  nextPageState?: string;
+  recipientId: string;
+  hasMore: boolean;
+};
+
+export type GetDirectMessagesResponse = ApiResponse<GetDirectMessagesResponseData>;
+
+export type ListConversationsResponse = ApiResponse<ConversationSummary[]>;
+
+export type SendDirectMessageResponse = ApiResponse<{
+  id: string;
+  recipientId: string;
+  content: string;
+  timestamp: string;
 }>;
 

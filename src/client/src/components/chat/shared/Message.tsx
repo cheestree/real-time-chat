@@ -1,13 +1,21 @@
 import { Fragment, JSX, memo } from 'react'
-
-import { MessageSummary } from '@rtchat/shared'
 import styles from './message.module.css'
 
-type MessageItemProps = {
-    message: MessageSummary
+type MessageProps = {
+    id: string
+    authorUsername: string
+    authorIcon?: string | undefined
+    content: string
+    timestamp: string
 }
 
-function MessageItem({ message }: MessageItemProps) {
+function Message({
+    id,
+    authorUsername,
+    authorIcon,
+    content,
+    timestamp,
+}: MessageProps) {
     const extractURLs = (str: string) => {
         const urlRegex = /(https?:\/\/\S+)/g
         const parts = str.split(urlRegex)
@@ -36,20 +44,25 @@ function MessageItem({ message }: MessageItemProps) {
     }
 
     return (
-        <div
-            className={styles.container}
-            key={`${message.id}-${message.timestamp}`}
-        >
-            <img className={styles.icon} src={message.authorIcon} alt="icon" />
+        <div className={styles.container} key={`${id}-${timestamp}`}>
+            {authorIcon ? (
+                <img src={authorIcon} alt="" className={styles.avatar} />
+            ) : (
+                <div className={styles.defaultAvatar}>
+                    {authorUsername.charAt(0).toUpperCase()}
+                </div>
+            )}
             <div className={styles.messageContent}>
                 <div className={styles.messageHeader}>
-                    <strong>{message.authorUsername}</strong>
+                    <strong className={styles.username}>
+                        {authorUsername}
+                    </strong>
                     <span className={styles.timestamp}>
-                        {new Date(message.timestamp).toLocaleTimeString()}
+                        {new Date(timestamp).toLocaleTimeString()}
                     </span>
                 </div>
                 <div className={styles.messageBody}>
-                    {extractURLs(message.content).map((element, i) => (
+                    {extractURLs(content).map((element, i) => (
                         <Fragment key={i}>{element}</Fragment>
                     ))}
                 </div>
@@ -58,4 +71,4 @@ function MessageItem({ message }: MessageItemProps) {
     )
 }
 
-export default memo(MessageItem)
+export default memo(Message)

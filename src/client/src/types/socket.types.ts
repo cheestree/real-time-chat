@@ -1,5 +1,5 @@
-import { ChannelDetail, ServerDetail } from '@rtchat/shared'
 import { UserProfile } from '@/domain/UserProfile'
+import { ChannelDetail, ServerDetail } from '@rtchat/shared'
 
 export interface SocketContextType {
     createServer: (

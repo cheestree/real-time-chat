@@ -1,4 +1,8 @@
-import { ChannelSummary, MessageSummary } from '@rtchat/shared'
+import {
+    ChannelSummary,
+    DirectMessageCreateInput,
+    MessageSummary,
+} from '@rtchat/shared'
 import { Server } from '../../domain/server/Server'
 import { AuthenticatedUser } from '../../domain/user/AuthenticatedUser'
 import { MessageCreateInput } from '../../http/model/input/message/MessageCreateInput'
@@ -19,11 +23,14 @@ export interface SocketData {
 
 export interface ClientToServerEvents {
     messageServer: (data: MessageCreateInput) => void
+    messageDM: (data: DirectMessageCreateInput) => void
     leaveServer: (data: ServerLeaveInput) => void
     disconnect: () => void
     joinChannel: (data: { channelId: string }) => void
     joinServer: (data: { serverId: string }) => void
     leaveChannel: (data: { channelId: string }) => void
+    joinDM: (data: { recipientId: string }) => void
+    leaveDM: (data: { recipientId: string }) => void
 }
 
 export interface ServerToClientEvents {
@@ -40,6 +47,18 @@ export interface ServerToClientEvents {
             channelId: string
         }
     ) => void
+    dmSent: (
+        message: MessageSummary & {
+            recipientId: string
+            senderId: string
+        }
+    ) => void
+    dmNotification: (notification: {
+        senderId: string
+        senderUsername: string
+        content: string
+        timestamp: string
+    }) => void
     messagesPaged: (data: {
         messages: MessageSummary[]
         nextPageState?: string

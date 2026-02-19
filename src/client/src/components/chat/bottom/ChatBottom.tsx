@@ -4,7 +4,7 @@ import Member from '@/components/members/Member'
 import { useSocketStore } from '@/stores/useSocketStore'
 import { useCallback, useState } from 'react'
 
-import MessageItem from '@/components/chat/bottom/MessageItem'
+import Message from '@/components/chat/shared/Message'
 import { ChannelDetail, ServerDetail } from '@rtchat/shared'
 import styles from './bottom.module.css'
 
@@ -20,6 +20,9 @@ export default function ChatBottom({
     isShowMembers,
 }: ChatBottomProps) {
     const messageServer = useSocketStore((state) => state.messageServer)
+    const changeConversation = useSocketStore(
+        (state) => state.changeConversation
+    )
     const [chatMessage, setChatMessage] = useState<string>('')
 
     const handleKeyDown = useCallback(
@@ -32,6 +35,13 @@ export default function ChatBottom({
         [chatMessage, messageServer]
     )
 
+    const handleMemberClick = useCallback(
+        (userId: string, username: string) => {
+            changeConversation(userId, username)
+        },
+        [changeConversation]
+    )
+
     return (
         <div
             className={`${styles.container} ${isShowMembers ? styles.showMembers : ''}`}
@@ -39,7 +49,14 @@ export default function ChatBottom({
             <div className={styles.messages}>
                 {((currentChannel && currentChannel.messages) || []).map(
                     (message) => (
-                        <MessageItem key={message.id} message={message} />
+                        <Message
+                            key={message.id}
+                            id={message.id}
+                            authorUsername={message.authorUsername}
+                            authorIcon={message.authorIcon}
+                            content={message.content}
+                            timestamp={message.timestamp}
+                        />
                     )
                 )}
             </div>
@@ -65,6 +82,7 @@ export default function ChatBottom({
                                 name={user.username}
                                 icon={''}
                                 status={true}
+                                onClickMember={handleMemberClick}
                             />
                         ))}
                 </div>

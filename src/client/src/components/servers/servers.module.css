@@ -14,13 +14,13 @@
 .server {
     height: 4rem;
     width: 4rem;
-    border-radius: 32px;
+    border-radius: var(--border-radius-lg);
 }
 
 .server:hover,
 .server:hover img,
 .server:hover a {
-    border-radius: 20px;
+    border-radius: var(--border-radius-md);
 }
 
 .actions {
@@ -29,7 +29,7 @@
     gap: var(--gap-sm);
 }
 
-.actions>button {
+.actions > button {
     flex: 1;
     height: 4rem;
     width: 4rem;

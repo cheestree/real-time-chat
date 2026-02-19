@@ -1,7 +1,7 @@
+import { ServerDetail } from '@rtchat/shared'
 import { UUID } from 'bson'
 import { Channel, ChannelType } from '../../domain/channel/Channel'
 import { Server } from '../../domain/server/Server'
-import { ServerDetail } from '@rtchat/shared'
 
 export interface IServerRepository {
     getUserServers(userId: number): Promise<ServerDetail[]>

@@ -10,8 +10,12 @@
     --color-error: #ef4444;
     --color-success: #22c55e;
     --color-text: #e5e7eb;
+    --color-text-secondary: #9ca3af;
     --color-input-bg: #232336;
     --color-input-border: #6366f1;
+    --color-overlay: rgba(0, 0, 0, 0.5);
+    --color-hover-bg: rgba(128, 128, 128, 0.2);
+    --color-selected-bg: rgba(128, 128, 128, 0.5);
 
     --gap-sm: 0.5rem;
     --gap-md: 1rem;
@@ -21,6 +25,7 @@
     --padding-md: 1rem;
     --padding-lg: 1.5rem;
 
+    --margin-xs: 0.25rem;
     --margin-sm: 0.5rem;
     --margin-md: 1rem;
     --margin-lg: 1.5rem;

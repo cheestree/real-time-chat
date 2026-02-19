@@ -6,10 +6,12 @@ import {
     ChannelJoinSchema,
     ChannelLeaveSchema,
     DeleteServerSocketResponse,
+    DirectMessageCreateInput,
+    DirectMessageCreateSchema,
     JoinChannelResponse,
     ChannelJoinInput as JoinChannelSchema,
-    JoinServerSocketResponse,
     ServerJoinInput as JoinServerSchema,
+    JoinServerSocketResponse,
     LeaveChannelResponse,
     ChannelLeaveInput as LeaveChannelSchema,
     LeaveServerResponse,
@@ -26,6 +28,7 @@ class SocketService {
     private socket: Socket | null = null
     private joinedChannelRooms: Set<string> = new Set()
     private joinedServerRooms: Set<string> = new Set()
+    private joinedDMRooms: Set<string> = new Set()
 
     init(): void {
         if (!this.socket) {
@@ -141,6 +144,55 @@ class SocketService {
 
     getJoinedServerRooms(): ReadonlySet<string> {
         return this.joinedServerRooms
+    }
+
+    getJoinedDMRooms(): ReadonlySet<string> {
+        return this.joinedDMRooms
+    }
+
+    messageDM(data: DirectMessageCreateInput) {
+        try {
+            DirectMessageCreateSchema.parse(data)
+            this.socket!.emit('messageDM', data)
+            return {
+                success: true,
+                data: {
+                    recipientId: data.recipientId,
+                    content: data.content,
+                },
+            }
+        } catch (error) {
+            console.error('Socket messageDM error:', error)
+            return { success: false, error: 'Failed to send direct message' }
+        }
+    }
+
+    joinDM(data: { recipientId: string }) {
+        try {
+            const room = `dm_${data.recipientId}`
+            if (this.joinedDMRooms.has(room))
+                return { success: false, error: 'Already joined' }
+            this.socket!.emit('joinDM', data)
+            this.joinedDMRooms.add(room)
+            return { success: true, data: { recipientId: data.recipientId } }
+        } catch (error) {
+            console.error('Socket joinDM error:', error)
+            return { success: false, error: 'Failed to join DM' }
+        }
+    }
+
+    leaveDM(data: { recipientId: string }) {
+        try {
+            const room = `dm_${data.recipientId}`
+            if (!this.joinedDMRooms.has(room))
+                return { success: false, error: 'Not joined' }
+            this.socket!.emit('leaveDM', data)
+            this.joinedDMRooms.delete(room)
+            return { success: true, data: { recipientId: data.recipientId } }
+        } catch (error) {
+            console.error('Socket leaveDM error:', error)
+            return { success: false, error: 'Failed to leave DM' }
+        }
     }
 
     on<T = unknown>(event: string, callback: (data: T) => void): void {

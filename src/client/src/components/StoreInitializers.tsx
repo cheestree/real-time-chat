@@ -10,26 +10,6 @@ import { ReactNode, useEffect } from 'react'
 
 export function SocketInitializer() {
     const isLoggedIn = useAuthStore((state) => state.isLoggedIn)
-    const getUserServers = useSocketStore((state) => state.getUserServers)
-    const addServer = useSocketStore((state) => state.addServer)
-    const addChannelToServer = useSocketStore(
-        (state) => state.addChannelToServer
-    )
-    const removeChannel = useSocketStore((state) => state.removeChannel)
-    const addUserToServer = useSocketStore((state) => state.addUserToServer)
-    const removeUserFromServer = useSocketStore(
-        (state) => state.removeUserFromServer
-    )
-    const removeServer = useSocketStore((state) => state.removeServer)
-    const addMessageToChannel = useSocketStore(
-        (state) => state.addMessageToChannel
-    )
-    const setCurrentServerId = useSocketStore(
-        (state) => state.setCurrentServerId
-    )
-    const setCurrentChannelId = useSocketStore(
-        (state) => state.setCurrentChannelId
-    )
 
     useEffect(() => {
         if (!isLoggedIn) return
@@ -37,42 +17,76 @@ export function SocketInitializer() {
         socketService.init()
 
         const onCreateServerSuccess = (server: ServerDetail) => {
-            addServer(server)
-            setCurrentServerId(server.id)
+            useSocketStore.getState().addServer(server)
+            useSocketStore.getState().setCurrentServerId(server.id)
         }
 
         const onCreateChannelSuccess = (channel: ChannelDetail) => {
-            addChannelToServer(channel.serverId, channel)
-            setCurrentChannelId(channel.id)
+            useSocketStore
+                .getState()
+                .addChannelToServer(channel.serverId, channel)
+            useSocketStore.getState().setCurrentChannelId(channel.id)
         }
 
         const onChannelDeleted = (data: {
             serverId: string
             channelId: string
         }) => {
-            removeChannel(data.serverId, data.channelId)
+            useSocketStore
+                .getState()
+                .removeChannel(data.serverId, data.channelId)
         }
 
         const onUserJoinedServer = (data: {
-            user: UserProfile
             serverId: string
+            user: UserProfile
         }) => {
-            addUserToServer(data.serverId, data.user)
+            useSocketStore.getState().addUserToServer(data.serverId, data.user)
         }
 
         const onUserLeftServer = (data: {
-            userId: string
             serverId: string
+            userId: string
         }) => {
-            removeUserFromServer(data.serverId, data.userId)
+            useSocketStore
+                .getState()
+                .removeUserFromServer(data.serverId, data.userId)
         }
 
         const onServerDeleted = (data: { serverId: string }) => {
-            removeServer(data.serverId)
+            useSocketStore.getState().removeServer(data.serverId)
         }
 
         const onMessageReceived = (message: Message) => {
-            addMessageToChannel(message.channelId, message)
+            useSocketStore
+                .getState()
+                .addMessageToChannel(message.channelId, message)
+        }
+
+        const onDMReceived = (data: any) => {
+            const currentUser = useAuthStore.getState().loggedUser
+            if (!currentUser) return
+
+            const otherUserId =
+                data.senderId === currentUser.publicId
+                    ? data.recipientId
+                    : data.senderId
+            const otherUsername =
+                data.senderId === currentUser.publicId
+                    ? ''
+                    : data.authorUsername
+
+            useSocketStore
+                .getState()
+                .addMessageToConversation(otherUserId, otherUsername, {
+                    id: data.id,
+                    senderId: data.senderId,
+                    recipientId: data.recipientId,
+                    content: data.content,
+                    timestamp: data.timestamp,
+                    authorUsername: data.authorUsername,
+                    authorIcon: data.authorIcon,
+                })
         }
 
         socketService.on('serverCreated', onCreateServerSuccess)
@@ -82,6 +96,7 @@ export function SocketInitializer() {
         socketService.on('userLeftServer', onUserLeftServer)
         socketService.on('serverDeleted', onServerDeleted)
         socketService.on('messageSent', onMessageReceived)
+        socketService.on('dmSent', onDMReceived)
 
         return () => {
             socketService.off('serverCreated', onCreateServerSuccess)
@@ -91,26 +106,16 @@ export function SocketInitializer() {
             socketService.off('userLeftServer', onUserLeftServer)
             socketService.off('serverDeleted', onServerDeleted)
             socketService.off('messageSent', onMessageReceived)
+            socketService.off('dmSent', onDMReceived)
             socketService.disconnect()
         }
-    }, [
-        isLoggedIn,
-        addServer,
-        addChannelToServer,
-        removeChannel,
-        addUserToServer,
-        removeUserFromServer,
-        removeServer,
-        addMessageToChannel,
-        setCurrentServerId,
-        setCurrentChannelId,
-    ])
+    }, [isLoggedIn])
 
     useEffect(() => {
         if (isLoggedIn) {
-            getUserServers()
+            useSocketStore.getState().getUserServers()
         }
-    }, [isLoggedIn, getUserServers])
+    }, [isLoggedIn])
 
     return null
 }

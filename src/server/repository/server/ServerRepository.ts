@@ -1,9 +1,9 @@
+import { ServerDetail } from '@rtchat/shared'
 import { UUID } from 'bson'
 import { Kysely, PostgresDialect } from 'kysely'
 import { MongoClient } from 'mongodb'
 import { Channel, ChannelType } from '../../domain/channel/Channel'
 import { Server } from '../../domain/server/Server'
-import { ServerDetail } from '@rtchat/shared'
 
 interface ServerDocument {
     id: string

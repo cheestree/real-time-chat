@@ -7,7 +7,7 @@
 }
 
 .channelItem:hover {
-    background: rgba(147, 80, 254, 0.1);
+    background: var(--color-hover-bg);
     transition: background ease-in-out 0.2s;
     border-radius: var(--border-radius-lg);
 }
@@ -15,6 +15,11 @@
 .channelButton {
     width: 100%;
     text-align: left;
+    background: transparent;
+}
+
+.channelButton.selected {
+    background: var(--color-selected-bg);
 }
 
 .channelName {

@@ -1,7 +1,7 @@
+import { ApiResponse, MessageSummary } from '@rtchat/shared'
 import { RequestHandler } from 'express'
 import { asyncHandler } from '../http/middleware/asyncHandler'
 import { AuthenticatedRequest } from '../http/middleware/Authenticator'
-import { ApiResponse, MessageSummary } from '@rtchat/shared'
 import MessageServices from '../services/MessageService'
 import IMessageController from './interfaces/IMessageController'
 

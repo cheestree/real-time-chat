@@ -1,6 +1,6 @@
 .server {
     transition: ease-in-out 0.2s;
-    border-radius: 32px;
+    border-radius: var(--border-radius-lg);
     background: var(--tertiary);
     height: 4rem;
     width: 4rem;
@@ -11,7 +11,7 @@
 
 .server img {
     transition: ease-in-out 0.2s;
-    border-radius: 32px;
+    border-radius: var(--border-radius-lg);
     width: 4rem;
 }
 
@@ -19,6 +19,6 @@
 .server:hover img,
 .server:hover a {
     transition: ease-in-out 0.2s;
-    border-radius: 20px;
-    background: rgba(64, 64, 64, 1);
+    border-radius: var(--border-radius-md);
+    background: var(--color-hover-bg);
 }

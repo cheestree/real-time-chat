@@ -6,4 +6,5 @@ export enum Path {
     SERVERS = '/servers',
     CHANNELS = '/channels',
     MESSAGES = '/messages',
+    DIRECT_MESSAGES = '/dms',
 }

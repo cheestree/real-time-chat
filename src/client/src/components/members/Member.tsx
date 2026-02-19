@@ -9,11 +9,17 @@ type MemberProps = {
     name: string
     status: boolean
     icon: string
+    onClickMember?: (userId: string, username: string) => void
 }
 
-function Member({ id, name, icon }: MemberProps) {
+function Member({ id, name, icon, onClickMember }: MemberProps) {
     return (
-        <div className={styles.member} key={id}>
+        <div
+            className={styles.member}
+            key={id}
+            onClick={() => onClickMember?.(id, name)}
+            style={{ cursor: onClickMember ? 'pointer' : 'default' }}
+        >
             <div className={styles.memberIcon}>
                 {icon ? <Image alt="" src={icon} /> : name[0]}
             </div>

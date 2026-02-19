@@ -1,13 +1,59 @@
 .container {
     display: flex;
     flex-direction: column;
+    flex: 1;
     min-width: 192px;
     max-width: 192px;
-    padding: var(--padding-sm);
+    padding: var(--padding-md);
     border-radius: var(--border-radius-lg);
     margin: var(--margin-sm);
     background: var(--secondary);
     gap: var(--gap-sm);
+}
+
+.modeToggle {
+    display: flex;
+    gap: var(--gap-xs);
+    padding: var(--padding-sm);
+    background: var(--background);
+    border-radius: var(--border-radius);
+}
+
+.modeToggle button {
+    flex: 1;
+    padding: var(--padding-sm);
+    border: none;
+    border-radius: var(--border-radius);
+    background: transparent;
+    cursor: pointer;
+    font-size: 0.9rem;
+    font-weight: 500;
+    transition: all 0.2s ease;
+}
+
+.modeToggle button:hover {
+    background: var(--hover-bg);
+}
+
+.modeToggle button.active {
+    background: var(--primary-color);
+    color: white;
+}
+
+.dmHeader {
+    padding: var(--padding-md);
+}
+
+.dmHeader h3 {
+    margin: 0;
+    font-size: 1rem;
+    font-weight: 600;
+}
+
+.dmHint {
+    margin: 0.5rem 0 0 0;
+    font-size: 0.85rem;
+    color: var(--text-secondary);
 }
 
 .channel {

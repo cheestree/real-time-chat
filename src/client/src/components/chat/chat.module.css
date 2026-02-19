@@ -5,4 +5,7 @@
     flex: 1;
     gap: var(--gap-sm);
     margin: var(--margin-sm);
+    padding: var(--padding-sm);
+    border-radius: var(--border-radius-lg);
+    background: var(--primary);
 }

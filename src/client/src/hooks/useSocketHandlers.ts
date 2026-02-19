@@ -1,6 +1,8 @@
+import { DirectMessage } from '@/domain/DirectMessage'
 import { Message } from '@/domain/Message'
 import { UserProfile } from '@/domain/UserProfile'
 import { socketService } from '@/services/SocketService'
+import { useAuthStore } from '@/stores/useAuthStore'
 import { ChannelDetail, ServerDetail } from '@rtchat/shared'
 import { Dispatch, SetStateAction, useCallback, useEffect } from 'react'
 
@@ -8,12 +10,18 @@ interface UseSocketHandlersProps {
     setServers: Dispatch<SetStateAction<ServerDetail[]>>
     setCurrentServerId: Dispatch<SetStateAction<string | null>>
     setCurrentChannelId: Dispatch<SetStateAction<string | null>>
+    addMessageToConversation: (
+        otherUserId: string,
+        otherUsername: string,
+        message: DirectMessage
+    ) => void
 }
 
 export function useSocketHandlers({
     setServers,
     setCurrentServerId,
     setCurrentChannelId,
+    addMessageToConversation,
 }: UseSocketHandlersProps) {
     const onCreateServerSuccess = useCallback(
         (server: ServerDetail) => {
@@ -215,6 +223,48 @@ export function useSocketHandlers({
         [setServers]
     )
 
+    const onDMSent = useCallback(
+        (data: any) => {
+            const loggedUser = useAuthStore.getState().loggedUser
+            if (!loggedUser) return
+
+            // Determine the "other" user
+            const otherUserId =
+                data.senderId === loggedUser.publicId
+                    ? data.recipientId
+                    : data.senderId
+            const otherUsername =
+                data.senderId === loggedUser.publicId ? '' : data.authorUsername
+
+            const dmMessage: DirectMessage = {
+                id: data.id,
+                senderId: data.senderId,
+                recipientId: data.recipientId,
+                content: data.content,
+                timestamp: data.timestamp,
+                authorUsername: data.authorUsername,
+                authorIcon: data.authorIcon,
+            }
+            addMessageToConversation(otherUserId, otherUsername, dmMessage)
+        },
+        [addMessageToConversation]
+    )
+
+    const onDMNotification = useCallback(
+        (data: {
+            senderId: string
+            senderUsername: string
+            content: string
+            timestamp: string
+        }) => {
+            // Show notification if user is not currently viewing this DM
+            console.log(
+                `New DM from ${data.senderUsername}: ${data.content.substring(0, 50)}...`
+            )
+        },
+        []
+    )
+
     useEffect(() => {
         socketService.on('serverCreated', onCreateServerSuccess)
         socketService.on('userJoinedServer', onUserJoinedServer)
@@ -225,6 +275,8 @@ export function useSocketHandlers({
         socketService.on('serverDeleted', onDeleteServerSuccess)
         socketService.on('channelsPaged', onChannelsPaged)
         socketService.on('messagesPaged', onMessagesPaged)
+        socketService.on('dmSent', onDMSent)
+        socketService.on('dmNotification', onDMNotification)
 
         return () => {
             socketService.off('serverCreated', onCreateServerSuccess)
@@ -236,6 +288,8 @@ export function useSocketHandlers({
             socketService.off('serverDeleted', onDeleteServerSuccess)
             socketService.off('channelsPaged', onChannelsPaged)
             socketService.off('messagesPaged', onMessagesPaged)
+            socketService.off('dmSent', onDMSent)
+            socketService.off('dmNotification', onDMNotification)
         }
     }, [
         onCreateServerSuccess,
@@ -247,5 +301,7 @@ export function useSocketHandlers({
         onDeleteServerSuccess,
         onChannelsPaged,
         onMessagesPaged,
+        onDMSent,
+        onDMNotification,
     ])
 }

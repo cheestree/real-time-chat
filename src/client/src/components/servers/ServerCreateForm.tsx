@@ -1,19 +1,16 @@
 'use client'
 
-import dynamic from 'next/dynamic'
 import { useOverlayStore } from '@/stores/useOverlayStore'
 import { useSocketStore } from '@/stores/useSocketStore'
+import dynamic from 'next/dynamic'
 import { useRef } from 'react'
 import { CropperRef } from 'react-advanced-cropper'
 import styles from './serverCreateForm.module.css'
 
-const ImageCropper = dynamic(
-    () => import('@/components/image/ImageCropper'),
-    {
-        ssr: false,
-        loading: () => <div>Loading cropper...</div>,
-    }
-)
+const ImageCropper = dynamic(() => import('@/components/image/ImageCropper'), {
+    ssr: false,
+    loading: () => <div>Loading cropper...</div>,
+})
 
 export default function ServerCreateForm() {
     const close = useOverlayStore((state) => state.close)

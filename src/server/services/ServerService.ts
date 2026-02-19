@@ -1,8 +1,17 @@
+import {
+    ServerCreateInput,
+    ServerDeleteInput,
+    ServerDetail,
+    ServerExistsInput,
+    ServerJoinInput,
+    ServerLeaveInput,
+    UserServersInput,
+    UserSummary,
+} from '@rtchat/shared'
 import { Channel } from '../domain/channel/Channel'
 import { BadRequestError } from '../domain/error/Error'
 import { Server } from '../domain/server/Server'
 import { AuthenticatedUser } from '../domain/user/AuthenticatedUser'
-import { ServerCreateInput, ServerDeleteInput, ServerExistsInput, ServerJoinInput, ServerLeaveInput, UserServersInput, ServerDetail, UserSummary } from '@rtchat/shared'
 import { IServerRepository } from '../repository/interfaces/IServerRepository'
 import { IUserRepository } from '../repository/interfaces/IUserRepository'
 import { allNotEmpty } from '../utils/stringValidation'
@@ -25,7 +34,28 @@ class ServerService implements IServerService {
             'User does not exist.'
         )
         const user = await this.users.getUserByUUID(input.userId)
-        return await this.servers.getUserServers(user!.internal_id)
+        const servers = await this.servers.getUserServers(user!.internal_id)
+
+        // Populate users for each server
+        const serversWithUsers = await Promise.all(
+            servers.map(async (server) => {
+                const userIds = await this.servers.getUserIdsByServerId(
+                    server.id
+                )
+                const users = await this.users.getUsersByIds(userIds)
+                const userSummaries: UserSummary[] = users.map((user) => ({
+                    id: user.id,
+                    username: user.username,
+                    icon: '',
+                }))
+                return {
+                    ...server,
+                    users: userSummaries,
+                }
+            })
+        )
+
+        return serversWithUsers
     }
     getServerById = async (serverId: string): Promise<Server> => {
         const server = await this.servers.getServerById(serverId)

@@ -13,6 +13,11 @@
     gap: 1rem;
 }
 
+.error {
+    color: var(--color-error);
+    font-size: 0.875rem;
+}
+
 .actions {
     display: flex;
     justify-content: flex-end;

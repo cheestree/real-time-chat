@@ -13,6 +13,7 @@ const Path = {
     SERVERS: '/servers',
     CHANNELS: '/channels',
     MESSAGES: '/messages',
+    DIRECT_MESSAGES: '/dms',
 } as const
 
 export { Path }

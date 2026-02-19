@@ -3,29 +3,24 @@
 import { ChannelDetail } from '@rtchat/shared'
 import styles from './channel.module.css'
 
-type ChannelItemProps = {
+type ChannelProps = {
     channel: ChannelDetail
     currentlySelected: boolean
     onChangeChannel: () => void
 }
 
-export default function ChannelItem({
+export default function Channel({
     channel,
     currentlySelected,
     onChangeChannel,
-}: ChannelItemProps) {
+}: ChannelProps) {
     return (
         <div className={styles.channelItem}>
             <button
-                className={styles.channelButton}
+                className={`${styles.channelButton} ${currentlySelected ? styles.selected : ''}`}
                 key={`${channel.name}-${channel.id}`}
                 id={`${channel.id}`}
                 onClick={onChangeChannel}
-                style={{
-                    backgroundColor: currentlySelected
-                        ? 'rgba(128, 128, 128, .5)'
-                        : 'transparent',
-                }}
             >
                 <span className={styles.channelName}>{channel.name}</span>
             </button>

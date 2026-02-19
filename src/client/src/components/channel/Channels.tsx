@@ -1,7 +1,7 @@
 'use client'
 
 import ChannelCreateForm from '@/components/channel/ChannelCreateForm'
-import ChannelItem from '@/components/channel/channel/Channel'
+import Channel from '@/components/channel/channel/Channel'
 import { useOverlayStore } from '@/stores/useOverlayStore'
 import { useSocketStore } from '@/stores/useSocketStore'
 import { ChannelDetail, ServerDetail } from '@rtchat/shared'
@@ -31,7 +31,7 @@ export default function Channels({
                 {currentServer &&
                     currentServer.channels &&
                     currentServer.channels.map((channel: ChannelDetail) => (
-                        <ChannelItem
+                        <Channel
                             key={channel.id}
                             channel={channel}
                             currentlySelected={currentChannelId === channel.id}

@@ -2,8 +2,8 @@
 
 import { useOverlayStore } from '@/stores/useOverlayStore'
 import { useSocketStore } from '@/stores/useSocketStore'
-import { useForm } from 'react-hook-form'
 import { zodResolver } from '@hookform/resolvers/zod'
+import { useForm } from 'react-hook-form'
 import { z } from 'zod'
 
 import styles from './form.module.css'
@@ -42,7 +42,7 @@ export default function ChannelCreateForm() {
                         {...register('channelName')}
                     />
                     {errors.channelName && (
-                        <span style={{ color: 'red', fontSize: '0.875rem' }}>
+                        <span className={styles.error}>
                             {errors.channelName.message}
                         </span>
                     )}
@@ -54,7 +54,7 @@ export default function ChannelCreateForm() {
                         {...register('channelDescription')}
                     />
                     {errors.channelDescription && (
-                        <span style={{ color: 'red', fontSize: '0.875rem' }}>
+                        <span className={styles.error}>
                             {errors.channelDescription.message}
                         </span>
                     )}

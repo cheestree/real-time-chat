@@ -3,6 +3,8 @@ import {
     ChannelJoinSchema,
     ChannelLeaveInput,
     ChannelLeaveSchema,
+    DirectMessageCreateInput,
+    DirectMessageCreateSchema,
     MessageCreateInput,
     MessageCreateSchema,
     ServerJoinInput,
@@ -12,6 +14,7 @@ import {
 } from '@rtchat/shared'
 import { Server, Socket } from 'socket.io'
 import { AuthenticatedUser } from '../../domain/user/AuthenticatedUser'
+import DirectMessageService from '../../services/DirectMessageService'
 import MessageService from '../../services/MessageService'
 import ServerService from '../../services/ServerService'
 import { logger } from '../../utils/logger'
@@ -44,11 +47,13 @@ export class SocketManager {
         >,
         private serverServices: ServerService,
         private messageServices: MessageService,
+        private dmServices: DirectMessageService,
         private authenticatedUser: AuthenticatedUser
     ) {}
 
     private joinedChannelRooms: Set<string> = new Set()
     private joinedServerRooms: Set<string> = new Set()
+    private joinedDMRooms: Set<string> = new Set()
 
     messageServer = asyncSocketHandler<MessageCreateInput>(async (data) => {
         const validatedData = MessageCreateSchema.parse(data)
@@ -137,5 +142,68 @@ export class SocketManager {
     disconnect = asyncSocketHandler(async () => {
         logger.info(`Client disconnected from main`)
         this.socket.disconnect()
+    }, this.socket)
+
+    messageDM = asyncSocketHandler<DirectMessageCreateInput>(async (data) => {
+        const validatedData = DirectMessageCreateSchema.parse(data)
+
+        const message = await this.dmServices.sendDirectMessage(
+            this.authenticatedUser,
+            validatedData
+        )
+
+        const recipientRoom = `user_${validatedData.recipientId}`
+        const senderRoom = `user_${this.authenticatedUser.publicId}`
+
+        const dmMessage = {
+            id: message.id,
+            authorId: message.authorId,
+            content: message.content,
+            timestamp: message.timestamp.toISOString(),
+            recipientId: validatedData.recipientId,
+            senderId: this.authenticatedUser.publicId,
+            authorUsername: message.authorUsername,
+            authorIcon: message.authorIcon,
+        }
+
+        // Send message to both users
+        this.io.to(recipientRoom).emit('dmSent', dmMessage)
+        this.io.to(senderRoom).emit('dmSent', dmMessage)
+
+        // Send notification to recipient for UI alerts/toasts
+        this.io.to(recipientRoom).emit('dmNotification', {
+            senderId: this.authenticatedUser.publicId,
+            senderUsername: this.authenticatedUser.profile.username,
+            content: message.content,
+            timestamp: message.timestamp.toISOString(),
+        })
+    }, this.socket)
+
+    joinDM = asyncSocketHandler<{ recipientId: string }>(async (data) => {
+        const newRoom = `dm_${data.recipientId}`
+
+        if (this.joinedDMRooms.has(newRoom)) {
+            logger.info(
+                `Socket ${this.socket.id} already in DM room ${newRoom}`
+            )
+            return
+        }
+        this.socket.join(newRoom)
+        this.joinedDMRooms.add(newRoom)
+        logger.info(`Socket ${this.socket.id} joined DM room ${newRoom}`)
+    }, this.socket)
+
+    leaveDM = asyncSocketHandler<{ recipientId: string }>(async (data) => {
+        const room = `dm_${data.recipientId}`
+
+        if (this.joinedDMRooms.has(room)) {
+            this.socket.leave(room)
+            this.joinedDMRooms.delete(room)
+            logger.info(`Socket ${this.socket.id} left DM room ${room}`)
+        } else {
+            logger.info(
+                `Socket ${this.socket.id} not in DM room ${room}, cannot leave.`
+            )
+        }
     }, this.socket)
 }
