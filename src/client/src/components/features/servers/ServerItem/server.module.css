@@ -1,0 +1,24 @@
+.server {
+    transition: ease-in-out 0.2s;
+    border-radius: var(--border-radius-lg);
+    background: var(--tertiary);
+    height: 4rem;
+    width: 4rem;
+    color: var(--text-inverse);
+    text-transform: none;
+    border: none;
+}
+
+.server img {
+    transition: ease-in-out 0.2s;
+    border-radius: var(--border-radius-lg);
+    width: 4rem;
+}
+
+.server:hover,
+.server:hover img,
+.server:hover a {
+    transition: ease-in-out 0.2s;
+    border-radius: var(--border-radius-md);
+    background: var(--color-hover-bg);
+}

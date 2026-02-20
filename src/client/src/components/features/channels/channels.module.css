@@ -1,0 +1,18 @@
+.container {
+    display: flex;
+    flex-direction: column;
+    flex: 1;
+    gap: var(--gap-sm);
+    overflow: auto;
+}
+
+.channels {
+    display: flex;
+    flex-direction: column;
+    flex: 1;
+    gap: var(--gap-sm);
+}
+
+.addChannel {
+    width: 100%;
+}

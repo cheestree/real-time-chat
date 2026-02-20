@@ -36,14 +36,40 @@ This project uses an **npm workspace** monorepo structure:
 
 ```
 packages/
-  shared/         # Shared TypeScript types and interfaces
+  shared/              # Shared TypeScript types and interfaces
 src/
-  server/         # Node.js backend (Express, Socket.IO)
-  client/         # Next.js app (React)
-sql/              # SQL and CQL bootstrapping
+  server/              # Node.js backend (Express, Socket.IO)
+    controller/        # HTTP & WebSocket handlers
+    services/          # Business logic layer
+    repository/        # Data access layer
+    domain/            # Business entities & errors
+    routes/            # API route definitions
+  client/              # Next.js app (React)
+    src/
+      components/
+        features/      # Feature-based components (servers, channels, messages, DMs)
+        layout/        # Layout components (TaskBar, UserBar)
+        shared/        # Reusable UI components
+      hooks/           # Custom React hooks
+      stores/          # Zustand state management (sliced architecture)
+      services/        # API clients
+sql/                   # SQL and CQL bootstrapping
 ```
 
 The `@rtchat/shared` package contains all common type definitions used by both client and server, ensuring type consistency across the full stack.
+
+### Architecture Highlights
+
+**Backend (Server):**
+- Clean architecture with clear separation: Controllers → Services → Repositories
+- Interface-based design for dependency injection
+- Domain-driven error handling
+
+**Frontend (Client):**
+- Feature-based component organization (not UI-type based)
+- Custom hooks for business logic (`useServerActions`, `useChannelNavigation`, etc.)
+- Zustand store split into focused slices (server, channel, message, directMessage)
+- Socket event handlers extracted to dedicated hooks
 
 ## :jigsaw: Prerequisites
 

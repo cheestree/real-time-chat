@@ -1,0 +1,19 @@
+.image-container {
+    width: 10rem;
+    height: 10rem;
+}
+
+.cropper {
+    width: 20rem;
+}
+
+.input[type='file'] {
+    display: none;
+}
+
+.customFileButton {
+    background-color: var(--color-overlay);
+    padding: 1px;
+    border-radius: var(--border-radius-sm);
+    color: var(--text-inverse);
+}

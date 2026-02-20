@@ -1,0 +1,34 @@
+.channelItem {
+    border: none;
+    border-radius: var(--border-radius-lg);
+    margin: 0;
+    background: transparent;
+    color: var(--color-text);
+    padding: 0;
+}
+
+.channelItem:hover {
+    background: var(--color-hover-bg);
+    transition: background ease-in-out 0.2s;
+    border-radius: var(--border-radius-lg);
+}
+
+.channelButton {
+    width: 100%;
+    text-align: left;
+    background: transparent;
+    color: var(--color-text);
+}
+
+.channelButton.selected {
+    background: var(--color-selected-bg);
+}
+
+.channelName {
+    width: 100%;
+    margin-left: 0;
+    overflow: hidden;
+    text-align: left;
+    text-overflow: ellipsis;
+    text-transform: none;
+}
