@@ -74,6 +74,10 @@ export const createServerSlice: StateCreator<
                 const userExists = server.users.some((u) => u.id === user.id)
                 if (!userExists) {
                     server.users.push(user)
+                    // Update currentServer if this is the active server
+                    if (state.currentServerId === serverId) {
+                        state.currentServer = server
+                    }
                 }
             }
         })
@@ -84,6 +88,10 @@ export const createServerSlice: StateCreator<
             const server = state.servers.find((s) => s.id === serverId)
             if (server) {
                 server.users = server.users.filter((u) => u.id !== userId)
+                // Update currentServer if this is the active server
+                if (state.currentServerId === serverId) {
+                    state.currentServer = server
+                }
             }
         })
     },
@@ -158,11 +166,10 @@ export const createServerSlice: StateCreator<
                 }
             })
 
-            if (generalChannel) {
-                socketService.joinChannel({
-                    channelId: generalChannel.id,
-                })
-            }
+            socketService.joinServer({ serverId: server.id })
+            socketService.joinChannel({
+                channelId: generalChannel!.id,
+            })
         }
     },
 
@@ -199,8 +206,11 @@ export const createServerSlice: StateCreator<
                 }
             })
 
-            // Join the first channel socket room
+            socketService.joinServer({ serverId: server.id })
+
+            // Fetch messages and join the first channel socket room
             if (firstChannel) {
+                await get().getPagedMessages(server.id, firstChannel.id, 50)
                 socketService.joinChannel({
                     channelId: firstChannel.id,
                 })

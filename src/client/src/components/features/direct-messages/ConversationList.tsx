@@ -2,7 +2,7 @@
 
 import { Conversation } from '@/domain/DirectMessage'
 import { useSocketStore } from '@/stores/useSocketStore'
-import ConversationComponent from './conversation/Conversation'
+import ConversationComponent from './ConversationItem/Conversation'
 import styles from './directMessages.module.css'
 
 type DirectMessagesProps = {

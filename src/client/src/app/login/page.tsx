@@ -1,5 +1,6 @@
 'use client'
 
+import { useLoading } from '@/components/context/LoadingContext'
 import { useAuthStore } from '@/stores/useAuthStore'
 import { zodResolver } from '@hookform/resolvers/zod'
 import { useRouter } from 'next/navigation'
@@ -15,7 +16,8 @@ const loginSchema = z.object({
 type LoginFormData = z.infer<typeof loginSchema>
 
 function LoginPage() {
-    const { login, isLoggedIn, isLoading } = useAuthStore()
+    const { login, isLoggedIn } = useAuthStore()
+    const { setLoading } = useLoading()
     const router = useRouter()
 
     const {
@@ -34,24 +36,19 @@ function LoginPage() {
     }, [isLoggedIn, router])
 
     const onSubmit = async (data: LoginFormData) => {
-        const result = await login(data.username, data.password)
-        if (result.success) {
-            router.replace('/app')
-        } else {
-            setError('root', {
-                message: result.message || 'Login failed',
-            })
+        setLoading(true)
+        try {
+            const result = await login(data.username, data.password)
+            if (result.success) {
+                router.replace('/app')
+            } else {
+                setError('root', {
+                    message: result.message || 'Login failed',
+                })
+            }
+        } finally {
+            setLoading(false)
         }
-    }
-
-    if (isLoggedIn || isLoading) {
-        return (
-            <section className="formContainer">
-                <div style={{ textAlign: 'center', padding: '2rem' }}>
-                    Loading...
-                </div>
-            </section>
-        )
     }
 
     return (
@@ -61,7 +58,6 @@ function LoginPage() {
                     <input
                         type="text"
                         placeholder="Username"
-                        disabled={isLoading}
                         {...register('username')}
                     />
                     {errors.username && (
@@ -75,7 +71,6 @@ function LoginPage() {
                     <input
                         type="password"
                         placeholder="Password"
-                        disabled={isLoading}
                         {...register('password')}
                     />
                     {errors.password && (
@@ -91,9 +86,7 @@ function LoginPage() {
                     </div>
                 )}
 
-                <button type="submit" disabled={isLoading}>
-                    {isLoading ? 'Logging in...' : 'Login'}
-                </button>
+                <button type="submit">Login</button>
             </form>
         </section>
     )

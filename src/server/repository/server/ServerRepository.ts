@@ -254,16 +254,27 @@ class ServerRepository implements IServerRepository {
         return true
     }
 
-    async deleteServer(serverId: string, ownerId: number): Promise<boolean> {
+    async deleteServer(
+        serverId: string,
+        ownerPublicId: string
+    ): Promise<boolean> {
         const server = await this.mdb
             .db('rtchat')
             .collection('servers')
-            .findOne({ id: serverId, ownerId: ownerId })
+            .findOne({ id: serverId, owners: { $in: [ownerPublicId] } })
         if (!server) return false
+
+        // Delete all channels associated with this server
+        await this.mdb
+            .db('rtchat')
+            .collection('channels')
+            .deleteMany({ serverId: serverId })
+
+        // Delete the server itself
         await this.mdb
             .db('rtchat')
             .collection('servers')
-            .deleteOne({ id: serverId, ownerId: ownerId })
+            .deleteOne({ id: serverId })
         return true
     }
 

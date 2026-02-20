@@ -14,6 +14,7 @@ services:
       args:
         - NEXT_PUBLIC_API_URL=${NEXT_PUBLIC_API_URL}
         - NEXT_PUBLIC_SOCKET_URL=${NEXT_PUBLIC_SOCKET_URL}
+        - NODE_ENV=${NODE_ENV}
     container_name: chat-client
     ports:
       - "3000:3000"
@@ -22,7 +23,7 @@ services:
     environment:
       - NEXT_PUBLIC_API_URL=${NEXT_PUBLIC_API_URL}
       - NEXT_PUBLIC_SOCKET_URL=${NEXT_PUBLIC_SOCKET_URL}
-
+      - NODE_ENV=${NODE_ENV}
   server:
     build:
       context: .

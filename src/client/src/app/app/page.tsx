@@ -10,18 +10,14 @@ import styles from './page.module.css'
 
 function AuthGuard({ children }: { children: ReactNode }) {
     const isLoggedIn = useAuthStore((state) => state.isLoggedIn)
-    const isLoading = useAuthStore((state) => state.isLoading)
     const router = useRouter()
 
     useEffect(() => {
-        if (!isLoading && !isLoggedIn) {
+        if (!isLoggedIn) {
             router.replace('/login')
         }
-    }, [isLoggedIn, isLoading, router])
+    }, [isLoggedIn, router])
 
-    if (isLoading) {
-        return <div>Loading...</div>
-    }
     if (!isLoggedIn) {
         return null
     }

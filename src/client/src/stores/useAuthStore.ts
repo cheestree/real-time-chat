@@ -4,7 +4,6 @@ import { create } from 'zustand'
 import { devtools, persist } from 'zustand/middleware'
 
 interface AuthState {
-    isLoading: boolean
     isLoggedIn: boolean
     loggedUser: AuthenticatedUser | undefined
     error: string | null
@@ -27,13 +26,12 @@ export const useAuthStore = create<AuthState>()(
     devtools(
         persist(
             (set) => ({
-                isLoading: false,
                 isLoggedIn: false,
                 loggedUser: undefined,
                 error: null,
 
                 login: async (username, password) => {
-                    set({ error: null, isLoading: true })
+                    set({ error: null })
 
                     try {
                         const r = await userService.login({
@@ -44,7 +42,6 @@ export const useAuthStore = create<AuthState>()(
                             set({
                                 loggedUser: r.data.user,
                                 isLoggedIn: true,
-                                isLoading: false,
                             })
                             return { success: true }
                         } else {
@@ -54,19 +51,18 @@ export const useAuthStore = create<AuthState>()(
                                 loggedUser: undefined,
                                 isLoggedIn: false,
                                 error: errorMsg,
-                                isLoading: false,
                             })
                             return { success: false, message: errorMsg }
                         }
                     } catch (e) {
                         const errorMsg = (e as Error)?.message || 'Login error'
-                        set({ error: errorMsg, isLoading: false })
+                        set({ error: errorMsg })
                         return { success: false, message: errorMsg }
                     }
                 },
 
                 register: async (username, email, password) => {
-                    set({ error: null, isLoading: true })
+                    set({ error: null })
 
                     try {
                         const r = await userService.register({
@@ -78,53 +74,47 @@ export const useAuthStore = create<AuthState>()(
                             set({
                                 loggedUser: r.data.user,
                                 isLoggedIn: true,
-                                isLoading: false,
                             })
                             return { success: true }
                         } else {
                             const errorMsg =
                                 r.message || r.error || 'Registration failed'
-                            set({ error: errorMsg, isLoading: false })
+                            set({ error: errorMsg })
                             return { success: false, message: errorMsg }
                         }
                     } catch (e) {
                         const errorMsg =
                             (e as Error)?.message || 'Registration error'
-                        set({ error: errorMsg, isLoading: false })
+                        set({ error: errorMsg })
                         return { success: false, message: errorMsg }
                     }
                 },
 
                 logout: async () => {
-                    set({ isLoading: true })
                     try {
                         await userService.logout()
                         set({
                             loggedUser: undefined,
                             isLoggedIn: false,
                             error: null,
-                            isLoading: false,
                         })
                     } catch {
-                        set({ isLoading: false })
+                        // Silent fail on logout
                     }
                 },
 
                 checkAuth: async () => {
-                    set({ isLoading: true })
                     try {
                         const r = await userService.checkAuth()
                         if (r && r.authenticated) {
                             set({
                                 loggedUser: r.user,
                                 isLoggedIn: true,
-                                isLoading: false,
                             })
                         } else {
                             set({
                                 loggedUser: undefined,
                                 isLoggedIn: false,
-                                isLoading: false,
                             })
                         }
                     } catch (e) {
@@ -132,7 +122,6 @@ export const useAuthStore = create<AuthState>()(
                             loggedUser: undefined,
                             isLoggedIn: false,
                             error: (e as Error)?.message || 'Auth check error',
-                            isLoading: false,
                         })
                     }
                 },
@@ -154,5 +143,4 @@ export const useAuthStore = create<AuthState>()(
 // Convenience selectors
 export const useUser = () => useAuthStore((state) => state.loggedUser)
 export const useIsLoggedIn = () => useAuthStore((state) => state.isLoggedIn)
-export const useAuthLoading = () => useAuthStore((state) => state.isLoading)
 export const useAuthError = () => useAuthStore((state) => state.error)

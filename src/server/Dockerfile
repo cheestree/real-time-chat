@@ -3,21 +3,18 @@ FROM node:20 AS builder
 
 WORKDIR /app
 
-# Copy root package files for workspace
-COPY ../../package.json ../../package-lock.json ./
-COPY ../../packages ./packages
+# Copy root package files for workspace (context is project root)
+COPY package.json package-lock.json ./
+COPY packages ./packages
 
-# Copy server package files
-COPY package.json package-lock.json ./server/
-WORKDIR /app/server
+# Copy server source
+COPY src/server ./src/server
 
-# Install all dependencies (workspaces will be linked)
+# Install all dependencies (includes workspace dependencies)
 RUN npm ci --legacy-peer-deps
 
-# Copy source code
-COPY . .
-
-# Build TypeScript to JavaScript
+# Build the server
+WORKDIR /app/src/server
 RUN npm run build
 
 # Production image
@@ -28,18 +25,19 @@ WORKDIR /app
 ENV NODE_ENV=production
 
 # Copy root workspace files
-COPY ../../package.json ../../package-lock.json ./
-COPY ../../packages ./packages
+COPY package.json package-lock.json ./
+COPY packages ./packages
 
 # Copy server package files
-COPY package.json package-lock.json ./server/
-WORKDIR /app/server
+COPY src/server/package.json src/server/package-lock.json ./src/server/
 
 # Install only production dependencies
 RUN npm ci --omit=dev --legacy-peer-deps
 
 # Copy built files from builder
-COPY --from=builder /app/server/dist ./dist
+COPY --from=builder /app/src/server/dist ./src/server/dist
+
+WORKDIR /app/src/server
 
 # Expose the server port
 EXPOSE 4000

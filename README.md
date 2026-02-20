@@ -61,11 +61,13 @@ The `@rtchat/shared` package contains all common type definitions used by both c
 ### Architecture Highlights
 
 **Backend (Server):**
+
 - Clean architecture with clear separation: Controllers → Services → Repositories
 - Interface-based design for dependency injection
 - Domain-driven error handling
 
 **Frontend (Client):**
+
 - Feature-based component organization (not UI-type based)
 - Custom hooks for business logic (`useServerActions`, `useChannelNavigation`, etc.)
 - Zustand store split into focused slices (server, channel, message, directMessage)
@@ -116,6 +118,7 @@ The `@rtchat/shared` package contains all common type definitions used by both c
 - Database credentials (PostgreSQL, MongoDB, Cassandra, Redis)
 - `CORS_ORIGIN` - Your frontend URL
 - `SERVER_PROFILE` - Set to `production` for production use
+- `NODE_ENV` - Set to `production` for production use
 
 ## :bank: Database setup
 

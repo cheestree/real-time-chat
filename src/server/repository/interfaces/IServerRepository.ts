@@ -33,7 +33,7 @@ export interface IServerRepository {
         userPublicId: string,
         userInternalId: number
     ): Promise<boolean>
-    deleteServer(serverId: string, userId: number): Promise<boolean>
+    deleteServer(serverId: string, ownerPublicId: string): Promise<boolean>
     deleteChannel(serverId: string, channelId: string): Promise<boolean>
     isServerOwner(serverId: string, userPublicId: string): Promise<boolean>
     containsUser(serverId: string, userPublicId: string): Promise<boolean>

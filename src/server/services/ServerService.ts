@@ -155,7 +155,7 @@ class ServerService implements IServerService {
             await this.servers.isServerOwner(input.serverId, user.publicId),
             'Only the server owner can delete the server.'
         )
-        return await this.servers.deleteServer(input.serverId, user.internalId)
+        return await this.servers.deleteServer(input.serverId, user.publicId)
     }
     deleteChannel = async (
         user: AuthenticatedUser,

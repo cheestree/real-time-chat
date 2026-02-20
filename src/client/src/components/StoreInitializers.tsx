@@ -1,5 +1,6 @@
 'use client'
 
+import { useLoading } from '@/components/context/LoadingContext'
 import { useSocketEvents } from '@/hooks/useSocketEvents'
 import { useAuthStore } from '@/stores/useAuthStore'
 import { useSocketStore } from '@/stores/useSocketStore'
@@ -23,10 +24,19 @@ export function SocketInitializer() {
 
 export function AuthInitializer() {
     const checkAuth = useAuthStore((state) => state.checkAuth)
+    const { setLoading } = useLoading()
 
     useEffect(() => {
-        checkAuth()
-    }, [checkAuth])
+        const runCheckAuth = async () => {
+            setLoading(true)
+            try {
+                await checkAuth()
+            } finally {
+                setLoading(false)
+            }
+        }
+        runCheckAuth()
+    }, [checkAuth, setLoading])
 
     return null
 }

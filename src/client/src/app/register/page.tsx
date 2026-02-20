@@ -1,5 +1,6 @@
 'use client'
 
+import { useLoading } from '@/components/context/LoadingContext'
 import { useAuthStore } from '@/stores/useAuthStore'
 import { zodResolver } from '@hookform/resolvers/zod'
 import { useRouter } from 'next/navigation'
@@ -16,7 +17,8 @@ const registerSchema = z.object({
 type RegisterFormData = z.infer<typeof registerSchema>
 
 function RegisterPage() {
-    const { register: registerUser, isLoggedIn, isLoading } = useAuthStore()
+    const { register: registerUser, isLoggedIn } = useAuthStore()
+    const { setLoading } = useLoading()
     const [success, setSuccess] = useState(false)
     const router = useRouter()
 
@@ -37,29 +39,24 @@ function RegisterPage() {
 
     const onSubmit = async (data: RegisterFormData) => {
         setSuccess(false)
-        const result = await registerUser(
-            data.username,
-            data.email,
-            data.password
-        )
-        if (result.success) {
-            setSuccess(true)
-            setTimeout(() => router.replace('/login'), 1000)
-        } else {
-            setError('root', {
-                message: result.message || 'Registration failed',
-            })
+        setLoading(true)
+        try {
+            const result = await registerUser(
+                data.username,
+                data.email,
+                data.password
+            )
+            if (result.success) {
+                setSuccess(true)
+                setTimeout(() => router.replace('/login'), 1000)
+            } else {
+                setError('root', {
+                    message: result.message || 'Registration failed',
+                })
+            }
+        } finally {
+            setLoading(false)
         }
-    }
-
-    if (isLoggedIn || isLoading) {
-        return (
-            <section className="formContainer">
-                <div style={{ textAlign: 'center', padding: '2rem' }}>
-                    Loading...
-                </div>
-            </section>
-        )
     }
 
     return (
@@ -69,7 +66,6 @@ function RegisterPage() {
                     <input
                         type="text"
                         placeholder="Username"
-                        disabled={isLoading}
                         {...register('username')}
                     />
                     {errors.username && (
@@ -83,7 +79,6 @@ function RegisterPage() {
                     <input
                         type="email"
                         placeholder="Email"
-                        disabled={isLoading}
                         {...register('email')}
                     />
                     {errors.email && (
@@ -97,7 +92,6 @@ function RegisterPage() {
                     <input
                         type="password"
                         placeholder="Password"
-                        disabled={isLoading}
                         {...register('password')}
                     />
                     {errors.password && (
@@ -119,9 +113,7 @@ function RegisterPage() {
                     </div>
                 )}
 
-                <button type="submit" disabled={isLoading}>
-                    {isLoading ? 'Submitting...' : 'Submit'}
-                </button>
+                <button type="submit">Submit</button>
             </form>
         </section>
     )
