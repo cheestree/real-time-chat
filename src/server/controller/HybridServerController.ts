@@ -29,7 +29,7 @@ class HybridServerController {
             input
         )
         const io = (req as unknown as SocketRequest).io
-        io.to(serverDetails.id).emit('userJoinedServer', {
+        io.to(`server_${serverDetails.id}`).emit('userJoinedServer', {
             serverId: serverDetails.id,
             user: authReq.authenticatedUser.profile,
         })
@@ -50,7 +50,7 @@ class HybridServerController {
         )
         const io = (req as unknown as SocketRequest).io
         const channelSummary = channel.toSummary()
-        io.to(input.serverId).emit('channelCreated', channelSummary)
+        io.to(`server_${input.serverId}`).emit('channelCreated', channelSummary)
 
         const response: ApiResponse<typeof channelSummary> = {
             success: true,
@@ -71,7 +71,10 @@ class HybridServerController {
         )
 
         const io = (req as unknown as SocketRequest).io
-        io.to(serverId).emit('channelDeleted', { serverId, channelId })
+        io.to(`server_${serverId}`).emit('channelDeleted', {
+            serverId,
+            channelId,
+        })
 
         const response: ApiResponse<{ success: boolean }> = {
             success: true,
@@ -90,13 +93,9 @@ class HybridServerController {
 
         const io = (req as unknown as SocketRequest).io
 
-        io.to(input.serverId).emit('serverDeleted', input.serverId)
-
-        if (server) {
-            server.users.forEach((u) =>
-                io.to(`user_${u}`).emit('serverDeleted', input.serverId)
-            )
-        }
+        io.to(`server_${input.serverId}`).emit('serverDeleted', {
+            serverId: input.serverId,
+        })
 
         const response: ApiResponse<{ success: boolean }> = {
             success: true,

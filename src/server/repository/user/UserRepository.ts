@@ -79,6 +79,19 @@ class UserRepository implements IUserRepository {
         ).then((users) => users || [])
     }
 
+    async getUsersByPublicIds(publicIds: string[]): Promise<UserSelectable[]> {
+        if (publicIds.length === 0) return []
+        return withErrorHandling(
+            () =>
+                this.db
+                    .selectFrom('rtchat.users')
+                    .selectAll()
+                    .where('id', 'in', publicIds)
+                    .execute(),
+            'Error fetching users by public IDs'
+        ).then((users) => users || [])
+    }
+
     async createUser(
         user: UserInsertable
     ): Promise<{ id: string; internal_id: number } | undefined> {

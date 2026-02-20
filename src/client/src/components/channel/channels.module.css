@@ -3,6 +3,7 @@
     flex-direction: column;
     flex: 1;
     gap: var(--gap-sm);
+    overflow: auto;
 }
 
 .channels {
@@ -10,7 +11,6 @@
     flex-direction: column;
     flex: 1;
     gap: var(--gap-sm);
-    overflow-y: auto;
 }
 
 .addChannel {

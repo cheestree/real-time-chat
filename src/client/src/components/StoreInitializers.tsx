@@ -25,7 +25,6 @@ export function SocketInitializer() {
             useSocketStore
                 .getState()
                 .addChannelToServer(channel.serverId, channel)
-            useSocketStore.getState().setCurrentChannelId(channel.id)
         }
 
         const onChannelDeleted = (data: {
@@ -46,11 +45,11 @@ export function SocketInitializer() {
 
         const onUserLeftServer = (data: {
             serverId: string
-            userId: string
+            profile: UserProfile
         }) => {
             useSocketStore
                 .getState()
-                .removeUserFromServer(data.serverId, data.userId)
+                .removeUserFromServer(data.serverId, data.profile.id)
         }
 
         const onServerDeleted = (data: { serverId: string }) => {

@@ -12,8 +12,8 @@
 }
 
 .customFileButton {
-    background-color: grey;
+    background-color: var(--color-overlay);
     padding: 1px;
     border-radius: var(--border-radius-sm);
-    color: white;
+    color: var(--text-inverse);
 }

@@ -3,10 +3,9 @@ import { ServerSummary } from '@rtchat/shared'
 export class Server {
     id: string
     name: string
-    owner: number[]
     channels: string[]
     users: number[]
-    owners: number[]
+    owners: string[]
     description: string
     memberCount: number
     icon: string = ''
@@ -14,16 +13,16 @@ export class Server {
         id: string,
         serverName: string,
         description: string,
-        ownerId: number | number[],
+        ownerIds: string[],
         icon: string,
         channelIds: string[] = [],
         userIds: number[] = []
     ) {
         this.id = id
         this.name = serverName
-        this.owner = Array.isArray(ownerId) ? ownerId : [ownerId]
+        this.owners = ownerIds
         this.channels = channelIds
-        this.users = userIds.length > 0 ? userIds : [this.owner[0]]
+        this.users = userIds
         this.description = description
         this.memberCount = this.users.length
         if (icon) this.icon = icon

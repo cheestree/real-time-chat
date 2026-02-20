@@ -9,10 +9,10 @@ interface ServerDocument {
     id: string
     name: string
     description: string
-    ownerId: number
+    owners: string[]
     icon: string
-    users: number[]
-    channels: { id: string; name: string }[]
+    users: string[]
+    channels: string[]
 }
 
 interface ChannelDocument {
@@ -45,16 +45,10 @@ class ServerRepository implements IServerRepository {
         return await this.mdb
             .db('rtchat')
             .collection('servers')
-            .find({ id: serverId })
-            .project({ channels: 1, _id: 0 })
-            .toArray()
-            .then((servers) => {
-                if (servers.length === 0) return []
-                const channels = servers[0].channels || []
-                return channels.map((ch: { id: string; name: string }) => ch.id)
-            })
+            .findOne({ id: serverId }, { projection: { channels: 1, _id: 0 } })
+            .then((server) => (server?.channels as string[]) || [])
     }
-    async getUserIdsByServerId(serverId: string): Promise<number[]> {
+    async getUserIdsByServerId(serverId: string): Promise<string[]> {
         return await this.mdb
             .db('rtchat')
             .collection('servers')
@@ -70,15 +64,25 @@ class ServerRepository implements IServerRepository {
         throw new Error('Method not implemented.')
     }
 
-    async isServerOwner(serverId: string, userId: number): Promise<boolean> {
-        throw new Error('Method not implemented.')
-    }
-
-    async containsUser(serverId: string, userId: number): Promise<boolean> {
+    async isServerOwner(
+        serverId: string,
+        userPublicId: string
+    ): Promise<boolean> {
         return await this.mdb
             .db('rtchat')
             .collection('servers')
-            .findOne({ id: serverId, users: { $in: [userId] } })
+            .findOne({ id: serverId, owners: { $in: [userPublicId] } })
+            .then((server) => server != null)
+    }
+
+    async containsUser(
+        serverId: string,
+        userPublicId: string
+    ): Promise<boolean> {
+        return await this.mdb
+            .db('rtchat')
+            .collection('servers')
+            .findOne({ id: serverId, users: { $in: [userPublicId] } })
             .then((server) => server != null)
     }
 
@@ -91,17 +95,21 @@ class ServerRepository implements IServerRepository {
         return this.mapToDomain(doc)
     }
 
-    async addUserToServer(serverId: string, userId: number): Promise<Server> {
+    async addUserToServer(
+        serverId: string,
+        userPublicId: string,
+        userInternalId: number
+    ): Promise<Server> {
         await this.mdb
             .db('rtchat')
             .collection('servers')
-            .updateOne({ id: serverId }, { $addToSet: { users: userId } })
+            .updateOne({ id: serverId }, { $addToSet: { users: userPublicId } })
 
         await this.db
             .insertInto('rtchat.server_members')
             .values({
                 server_id: serverId,
-                user_id: userId,
+                user_id: userInternalId,
             })
             .onConflict((oc) => oc.doNothing())
             .execute()
@@ -121,7 +129,7 @@ class ServerRepository implements IServerRepository {
         if (!server) return false
         return (
             Array.isArray(server.channels) &&
-            server.channels.some((ch) => ch.id === channelId)
+            server.channels.includes(channelId)
         )
     }
 
@@ -145,14 +153,7 @@ class ServerRepository implements IServerRepository {
         await this.mdb
             .db('rtchat')
             .collection('servers')
-            .updateOne(
-                { id: serverId },
-                {
-                    $addToSet: {
-                        channels: { id: channelId, name: channelName },
-                    },
-                }
-            )
+            .updateOne({ id: serverId }, { $addToSet: { channels: channelId } })
         return new Channel(
             channelId,
             serverId,
@@ -167,6 +168,7 @@ class ServerRepository implements IServerRepository {
     async createServer(
         name: string,
         userId: number,
+        userPublicId: string,
         description?: string,
         icon?: string
     ): Promise<Server> {
@@ -186,15 +188,15 @@ class ServerRepository implements IServerRepository {
             type: ChannelType.SERVER,
         })
 
-        // Create the server with the general channel ID and name
+        // Create the server with the general channel ID only
         const doc = {
             id: serverId,
             name: name,
             description: description || '',
-            ownerId: userId,
+            owners: [userPublicId],
             icon: icon || '',
-            users: [userId],
-            channels: [{ id: generalChannelId, name: 'general' }],
+            users: [userPublicId],
+            channels: [generalChannelId],
         }
         const result = await serversCol.insertOne(doc)
 
@@ -231,13 +233,25 @@ class ServerRepository implements IServerRepository {
         return this.mapToDomain(doc)
     }
 
-    async leaveServer(serverId: string, userId: number): Promise<boolean> {
-        return await this.mdb
+    async leaveServer(
+        serverId: string,
+        userPublicId: string,
+        userInternalId: number
+    ): Promise<boolean> {
+        // Remove from MongoDB
+        await this.mdb
             .db('rtchat')
             .collection<ServerDocument>('servers')
-            .updateOne({ id: serverId }, { $pull: { users: userId } })
-            .then(() => true)
-            .catch(() => false)
+            .updateOne({ id: serverId }, { $pull: { users: userPublicId } })
+
+        // Remove from PostgreSQL
+        await this.db
+            .deleteFrom('rtchat.server_members')
+            .where('server_id', '=', serverId)
+            .where('user_id', '=', userInternalId)
+            .execute()
+
+        return true
     }
 
     async deleteServer(serverId: string, ownerId: number): Promise<boolean> {
@@ -261,32 +275,52 @@ class ServerRepository implements IServerRepository {
         await this.mdb
             .db('rtchat')
             .collection<ServerDocument>('servers')
-            .updateOne(
-                { id: serverId },
-                { $pull: { channels: { id: channelId } } }
-            )
+            .updateOne({ id: serverId }, { $pull: { channels: channelId } })
         return true
     }
 
-    async getUserServers(userId: number): Promise<ServerDetail[]> {
+    async getUserServers(userPublicId: string): Promise<ServerDetail[]> {
         const docs = (await this.mdb
             .db('rtchat')
             .collection('servers')
-            .find({ users: { $in: [userId] } })
+            .find({ users: { $in: [userPublicId] } })
             .toArray()) as unknown as ServerDocument[]
+
+        // Collect all unique channel IDs across all servers
+        const allChannelIds = [...new Set(docs.flatMap((doc) => doc.channels))]
+
+        // Fetch full channel documents in one query
+        const channelDocs = (await this.mdb
+            .db('rtchat')
+            .collection('channels')
+            .find({ id: { $in: allChannelIds } })
+            .toArray()) as unknown as ChannelDocument[]
+
+        const channelMap = new Map(channelDocs.map((ch) => [ch.id, ch]))
 
         return docs.map((doc) => ({
             id: doc.id,
             name: doc.name,
             description: doc.description,
             icon: doc.icon,
-            ownerIds: [doc.ownerId],
-            channels: doc.channels.map((ch) => ({
-                id: ch.id,
-                name: ch.name,
-                description: '',
-                serverId: doc.id,
-            })),
+            ownerIds: doc.owners || [],
+            channels: doc.channels
+                .map((channelId) => {
+                    const ch = channelMap.get(channelId)
+                    if (!ch) return null
+                    return {
+                        id: ch.id,
+                        name: ch.name,
+                        description: ch.description,
+                        serverId: doc.id,
+                    }
+                })
+                .filter(Boolean) as {
+                id: string
+                name: string
+                description: string
+                serverId: string
+            }[],
             users: [],
         }))
     }
@@ -305,9 +339,9 @@ class ServerRepository implements IServerRepository {
             return []
         }
 
-        const channelRefs = server.channels.slice(offset, offset + limit)
-        const channelIds = channelRefs.map(
-            (ch: { id: string; name: string }) => ch.id
+        const channelIds = (server.channels as string[]).slice(
+            offset,
+            offset + limit
         )
 
         const channelDocs = (await this.mdb
@@ -335,10 +369,10 @@ class ServerRepository implements IServerRepository {
             doc.id,
             doc.name,
             doc.description,
-            doc.ownerId,
+            doc.owners,
             doc.icon,
-            doc.channels.map((ch) => ch.id),
-            doc.users
+            doc.channels,
+            [] // Don't pass users - Server domain doesn't need MongoDB users array
         )
     }
 }

@@ -7,7 +7,7 @@
 
 .header {
     padding: var(--padding-md);
-    border-bottom: 1px solid var(--border-color);
+    border-bottom: 1px solid var(--color-input-border);
 }
 
 .header h3 {

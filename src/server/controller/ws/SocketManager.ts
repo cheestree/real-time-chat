@@ -89,8 +89,11 @@ export class SocketManager {
             profile: this.authenticatedUser.profile,
         }
 
-        this.socket.leave(validatedData.serverId)
-        this.io.to(validatedData.serverId).emit('userLeftServer', left)
+        // Emit to everyone in the server room (including the leaving user) before they leave
+        this.io
+            .to(`server_${validatedData.serverId}`)
+            .emit('userLeftServer', left)
+        this.socket.leave(`server_${validatedData.serverId}`)
     }, this.socket)
 
     joinChannel = asyncSocketHandler<ChannelJoinInput>(async (data) => {

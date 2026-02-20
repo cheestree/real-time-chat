@@ -1,7 +1,5 @@
-import { LoginResult } from '@rtchat/shared'
+import { LoginResult, UserLoginInput, UserRegisterInput } from '@rtchat/shared'
 import { AuthenticatedUser } from '../../domain/user/AuthenticatedUser'
-import { UserLoginInput } from '../../http/model/input/user/UserLoginInput'
-import { UserRegisterInput } from '../../http/model/input/user/UserRegisterInput'
 
 interface IUserService {
     login(input: UserLoginInput): Promise<LoginResult>

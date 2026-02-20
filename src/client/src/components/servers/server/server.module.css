@@ -4,7 +4,7 @@
     background: var(--tertiary);
     height: 4rem;
     width: 4rem;
-    color: white;
+    color: var(--text-inverse);
     text-transform: none;
     border: none;
 }

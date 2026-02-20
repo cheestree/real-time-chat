@@ -1,14 +1,16 @@
-import { ServerDetail } from '@rtchat/shared'
+import {
+    ChannelCreateInput,
+    ServerCreateInput,
+    ServerDeleteInput,
+    ServerDetail,
+    ServerExistsInput,
+    ServerJoinInput,
+    ServerLeaveInput,
+    UserServersInput,
+} from '@rtchat/shared'
 import { Channel } from '../../domain/channel/Channel'
 import { Server } from '../../domain/server/Server'
 import { AuthenticatedUser } from '../../domain/user/AuthenticatedUser'
-import { ChannelCreateInput } from '../../http/model/input/channel/ChannelCreateInput'
-import { ServerCreateInput } from '../../http/model/input/server/ServerCreateInput'
-import { ServerDeleteInput } from '../../http/model/input/server/ServerDeleteInput'
-import { ServerExistsInput } from '../../http/model/input/server/ServerExistsInput'
-import { ServerJoinInput } from '../../http/model/input/server/ServerJoinInput'
-import { ServerLeaveInput } from '../../http/model/input/server/ServerLeaveInput'
-import { UserServersInput } from '../../http/model/input/server/UserServersInput'
 
 interface IServerService {
     getUserServers: (input: UserServersInput) => Promise<ServerDetail[]>

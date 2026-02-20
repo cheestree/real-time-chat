@@ -66,7 +66,7 @@ export default function ServerCreateForm() {
                     name="serverDescription"
                     placeholder="Enter description"
                 />
-                <ImageCropper cropperRef={cropperRef} />
+                {/**<ImageCropper cropperRef={cropperRef} />**/}
                 <div className={styles.actions}>
                     <button type="submit">Create</button>
                     <button type="button" onClick={close}>

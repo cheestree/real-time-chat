@@ -1,12 +1,12 @@
 import {
     ChannelSummary,
     DirectMessageCreateInput,
+    MessageCreateInput,
     MessageSummary,
+    ServerLeaveInput,
 } from '@rtchat/shared'
 import { Server } from '../../domain/server/Server'
 import { AuthenticatedUser } from '../../domain/user/AuthenticatedUser'
-import { MessageCreateInput } from '../../http/model/input/message/MessageCreateInput'
-import { ServerLeaveInput } from '../../http/model/input/server/ServerLeaveInput'
 
 type UserLeft = {
     serverId: string

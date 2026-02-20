@@ -15,7 +15,7 @@
     display: flex;
     gap: var(--gap-xs);
     padding: var(--padding-sm);
-    background: var(--background);
+    background: var(--color-bg);
     border-radius: var(--border-radius);
 }
 
@@ -25,6 +25,7 @@
     border: none;
     border-radius: var(--border-radius);
     background: transparent;
+    color: var(--color-text);
     cursor: pointer;
     font-size: 0.9rem;
     font-weight: 500;
@@ -32,12 +33,14 @@
 }
 
 .modeToggle button:hover {
-    background: var(--hover-bg);
+    background: var(--color-hover-bg);
+    color: var(--color-hover-fg);
 }
 
 .modeToggle button.active {
-    background: var(--primary-color);
-    color: white;
+    background: var(--color-primary);
+    color: var(--text-inverse);
+    box-shadow: 0 0 0 2px var(--color-selected-bg);
 }
 
 .dmHeader {
@@ -53,7 +56,7 @@
 .dmHint {
     margin: 0.5rem 0 0 0;
     font-size: 0.85rem;
-    color: var(--text-secondary);
+    color: var(--color-text-secondary);
 }
 
 .channel {
@@ -61,5 +64,6 @@
     border-radius: var(--margin-sm);
     margin: var(--margin-sm);
     background: transparent;
+    color: var(--color-text);
     white-space: nowrap;
 }

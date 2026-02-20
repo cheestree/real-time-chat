@@ -3,6 +3,7 @@
     border-radius: var(--border-radius-lg);
     margin: 0;
     background: transparent;
+    color: var(--color-text);
     padding: 0;
 }
 
@@ -16,6 +17,7 @@
     width: 100%;
     text-align: left;
     background: transparent;
+    color: var(--color-text);
 }
 
 .channelButton.selected {

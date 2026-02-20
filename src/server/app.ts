@@ -27,6 +27,7 @@ interface SocketRequest extends express.Request {
 import { RedisStore } from 'connect-redis'
 import SocketHandlers from './controller/ws/SocketHandlers'
 import ErrorHandler from './http/middleware/ErrorHandler'
+import { sanitize } from './http/middleware/Sanitize'
 import { getRedisClient } from './repository/utils/databaseClients'
 import { directMessageRoutes } from './routes/DirectMessageRoutes'
 import { messageRoutes } from './routes/MessageRoutes'
@@ -88,10 +89,15 @@ const httpServer = createServer(app)
 
         const token = getCookie(cookies, 'token')
         if (token) {
-            const user = await userRoutes.userServices.checkAuth(token)
-            if (user) {
-                socket.data.user = user
-                authenticated = true
+            try {
+                const user = await userRoutes.userServices.checkAuth(token)
+                if (user) {
+                    socket.data.user = user
+                    authenticated = true
+                }
+            } catch (error) {
+                console.error('Socket authentication error:', error)
+                return next(new Error('Authentication failed'))
             }
         }
 
@@ -137,6 +143,7 @@ const httpServer = createServer(app)
     app.use(sessionMiddleware)
     app.use(express.json())
     app.use(cookieParser())
+    app.use(sanitize)
 
     // Rate limiting for API routes
     app.use('/api', limiter)

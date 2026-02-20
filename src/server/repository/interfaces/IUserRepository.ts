@@ -5,6 +5,7 @@ export interface IUserRepository {
     getUserById: (id: number) => Promise<UserSelectable | undefined>
     getUserByUUID: (uuid: string) => Promise<UserSelectable | undefined>
     getUsersByIds: (ids: number[]) => Promise<UserSelectable[]>
+    getUsersByPublicIds: (publicIds: string[]) => Promise<UserSelectable[]>
     createUser: (
         user: UserInsertable
     ) => Promise<{ id: string; internal_id: number } | undefined>

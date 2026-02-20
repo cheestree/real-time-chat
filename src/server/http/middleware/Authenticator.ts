@@ -25,6 +25,7 @@ const authenticatorWithServices = (
             }
             return res.status(401).send('Token invalid')
         } catch (err) {
+            console.error('Authentication error:', err)
             return res.status(401).send('Authentication error')
         }
     }

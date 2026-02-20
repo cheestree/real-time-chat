@@ -9,11 +9,11 @@
 }
 
 .conversation:hover {
-    background-color: var(--hover-bg);
+    background-color: var(--color-hover-bg);
 }
 
 .conversation.selected {
-    background-color: var(--selected-bg);
+    background-color: var(--color-selected-bg);
 }
 
 .avatar {
@@ -36,8 +36,8 @@
     display: flex;
     align-items: center;
     justify-content: center;
-    background-color: var(--primary-color);
-    color: white;
+    background-color: var(--color-primary);
+    color: var(--text-inverse);
     font-weight: 600;
     font-size: 1.2rem;
 }
@@ -55,15 +55,15 @@
 
 .lastMessage {
     font-size: 0.85rem;
-    color: var(--text-secondary);
+    color: var(--color-text-secondary);
     white-space: nowrap;
     overflow: hidden;
     text-overflow: ellipsis;
 }
 
 .unreadBadge {
-    background-color: var(--primary-color);
-    color: white;
+    background-color: var(--color-primary);
+    color: var(--text-inverse);
     border-radius: var(--border-radius);
     padding: 2px 8px;
     font-size: 0.75rem;

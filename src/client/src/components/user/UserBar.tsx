@@ -11,7 +11,7 @@ type UserBarProps = {
 export default function UserBar({ user, logout }: UserBarProps) {
     return (
         <div className={styles.container}>
-            <div className={styles.userIcon}>{user.profile.username[0]}</div>
+            <div className={styles.username}>{user.profile.username}</div>
             <button className={styles.logout} onClick={logout}>
                 Logout
             </button>

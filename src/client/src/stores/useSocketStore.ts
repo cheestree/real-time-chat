@@ -192,9 +192,11 @@ export const useSocketStore = create<SocketState>()(
                         )
                         if (!channelExists) {
                             server.channels.push(channel)
-                            // Update currentChannel if this is the active channel
                             if (state.currentChannelId === channel.id) {
                                 state.currentChannel = channel
+                            }
+                            if (state.currentServerId === serverId) {
+                                state.currentServer = server
                             }
                         }
                     }
@@ -208,10 +210,12 @@ export const useSocketStore = create<SocketState>()(
                         server.channels = server.channels.filter(
                             (ch) => ch.id !== channelId
                         )
-                        // Clear currentChannel if we removed the active channel
                         if (state.currentChannelId === channelId) {
                             state.currentChannel = undefined
                             state.currentChannelId = null
+                        }
+                        if (state.currentServerId === serverId) {
+                            state.currentServer = server
                         }
                     }
                 })
@@ -247,6 +251,12 @@ export const useSocketStore = create<SocketState>()(
                     state.servers = state.servers.filter(
                         (s) => s.id !== serverId
                     )
+                    if (state.currentServerId === serverId) {
+                        state.currentServer = undefined
+                        state.currentServerId = null
+                        state.currentChannel = undefined
+                        state.currentChannelId = null
+                    }
                 })
             },
 
@@ -264,7 +274,6 @@ export const useSocketStore = create<SocketState>()(
                             if (!messageExists) {
                                 channel.messages.push(message)
                             }
-                            // Update currentChannel if this is the active channel
                             if (state.currentChannelId === channelId) {
                                 state.currentChannel = channel
                             }
@@ -292,6 +301,11 @@ export const useSocketStore = create<SocketState>()(
                             state.currentChannel = firstServer.channels[0]
                         }
                     })
+
+                    // Join socket server rooms for all servers
+                    for (const server of result.data) {
+                        socketService.joinServer({ serverId: server.id })
+                    }
 
                     // Fetch messages for the first channel
                     set(async (state) => {
@@ -338,7 +352,6 @@ export const useSocketStore = create<SocketState>()(
                         }
                     })
 
-                    // Join the general channel socket room
                     if (generalChannel) {
                         socketService.joinChannel({
                             channelId: generalChannel.id,
@@ -421,8 +434,6 @@ export const useSocketStore = create<SocketState>()(
                                 newChannel.id
                         }
                     })
-
-                    // Join the channel socket room
                     socketService.joinChannel({ channelId: newChannel.id })
                 }
             },
@@ -447,6 +458,44 @@ export const useSocketStore = create<SocketState>()(
 
             leaveServer: (serverId) => {
                 socketService.leaveServer({ serverId })
+
+                set((state) => {
+                    // Remove the server from the list
+                    state.servers = state.servers.filter(
+                        (s) => s.id !== serverId
+                    )
+
+                    // If we left the currently active server, switch to another one
+                    if (state.currentServerId === serverId) {
+                        state.currentServerId = null
+                        state.currentServer = undefined
+                        state.currentChannelId = null
+                        state.currentChannel = undefined
+
+                        // Switch to the first available server
+                        const firstServer = state.servers[0]
+                        if (firstServer) {
+                            state.currentServerId = firstServer.id
+                            state.currentServer = firstServer
+
+                            // Get last viewed channel for this server or use first channel
+                            const lastChannelId =
+                                state.lastViewedChannelByServer[firstServer.id]
+                            const channel =
+                                firstServer.channels?.find(
+                                    (c) => c.id === lastChannelId
+                                ) || firstServer.channels?.[0]
+
+                            if (channel) {
+                                state.currentChannelId = channel.id
+                                state.currentChannel = channel
+                            }
+                        }
+                    }
+
+                    // Clean up last viewed channel for this server
+                    delete state.lastViewedChannelByServer[serverId]
+                })
             },
 
             joinChannel: (channelId) => {
@@ -694,7 +743,7 @@ export const useSocketStore = create<SocketState>()(
                     // Create conversation if it doesn't exist
                     if (!conversation) {
                         conversation = {
-                            id: otherUserId, // Use otherUserId as conversation ID
+                            id: otherUserId,
                             otherUserId,
                             otherUsername: otherUsername || 'Unknown User',
                             messages: [],

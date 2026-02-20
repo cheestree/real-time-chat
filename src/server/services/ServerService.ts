@@ -1,4 +1,5 @@
 import {
+    ChannelCreateInput,
     ServerCreateInput,
     ServerDeleteInput,
     ServerDetail,
@@ -14,7 +15,6 @@ import { Server } from '../domain/server/Server'
 import { AuthenticatedUser } from '../domain/user/AuthenticatedUser'
 import { IServerRepository } from '../repository/interfaces/IServerRepository'
 import { IUserRepository } from '../repository/interfaces/IUserRepository'
-import { allNotEmpty } from '../utils/stringValidation'
 import IServerService from './interfaces/IServerService'
 import { requireOrThrow } from './utils/requireOrThrow'
 
@@ -34,15 +34,16 @@ class ServerService implements IServerService {
             'User does not exist.'
         )
         const user = await this.users.getUserByUUID(input.userId)
-        const servers = await this.servers.getUserServers(user!.internal_id)
+        const servers = await this.servers.getUserServers(user!.id)
 
         // Populate users for each server
         const serversWithUsers = await Promise.all(
             servers.map(async (server) => {
-                const userIds = await this.servers.getUserIdsByServerId(
+                const userPublicIds = await this.servers.getUserIdsByServerId(
                     server.id
                 )
-                const users = await this.users.getUsersByIds(userIds)
+                const users =
+                    await this.users.getUsersByPublicIds(userPublicIds)
                 const userSummaries: UserSummary[] = users.map((user) => ({
                     id: user.id,
                     username: user.username,
@@ -83,6 +84,7 @@ class ServerService implements IServerService {
         const server = await this.servers.createServer(
             serverNameTrimmed,
             user.internalId,
+            user.publicId,
             serverDescriptionTrimmed,
             input.icon
         )
@@ -91,17 +93,12 @@ class ServerService implements IServerService {
     }
     createChannel = async (
         user: AuthenticatedUser,
-        input: { serverId: string; name: string; description?: string }
+        input: ChannelCreateInput
     ): Promise<Channel> => {
         const serverExists = await this.servers.serverExists(input.serverId)
         const nameTrimmed = input.name.trim()
         const trimmedDescription = input.description?.trim() || ''
         requireOrThrow(BadRequestError, serverExists, "Server doesn't exist.")
-        requireOrThrow(
-            BadRequestError,
-            allNotEmpty(nameTrimmed, trimmedDescription),
-            "Channel name/description can't be an empty string."
-        )
         return await this.servers.createChannel(
             input.serverId,
             nameTrimmed,
@@ -119,10 +116,14 @@ class ServerService implements IServerService {
         )
         requireOrThrow(
             BadRequestError,
-            !(await this.servers.containsUser(input.serverId, user.internalId)),
+            !(await this.servers.containsUser(input.serverId, user.publicId)),
             'User is already a member of the server.'
         )
-        await this.servers.addUserToServer(input.serverId, user.internalId)
+        await this.servers.addUserToServer(
+            input.serverId,
+            user.publicId,
+            user.internalId
+        )
         return await this.getServerDetails(input.serverId)
     }
     leaveServer = async (
@@ -134,7 +135,11 @@ class ServerService implements IServerService {
             await this.servers.serverExists(input.serverId),
             "Server doesn't exist."
         )
-        return await this.servers.leaveServer(input.serverId, user.internalId)
+        return await this.servers.leaveServer(
+            input.serverId,
+            user.publicId,
+            user.internalId
+        )
     }
     deleteServer = async (
         user: AuthenticatedUser,
@@ -147,7 +152,7 @@ class ServerService implements IServerService {
         )
         requireOrThrow(
             BadRequestError,
-            await this.servers.isServerOwner(input.serverId, user.internalId),
+            await this.servers.isServerOwner(input.serverId, user.publicId),
             'Only the server owner can delete the server.'
         )
         return await this.servers.deleteServer(input.serverId, user.internalId)
@@ -164,7 +169,7 @@ class ServerService implements IServerService {
         )
         requireOrThrow(
             BadRequestError,
-            await this.servers.isServerOwner(serverId, user.internalId),
+            await this.servers.isServerOwner(serverId, user.publicId),
             'Only the server owner can delete channels.'
         )
         requireOrThrow(
@@ -191,7 +196,7 @@ class ServerService implements IServerService {
         }))
 
         const userIds = await this.servers.getUserIdsByServerId(serverId)
-        const users = await this.users.getUsersByIds(userIds)
+        const users = await this.users.getUsersByPublicIds(userIds)
         const userSummaries: UserSummary[] = users.map((user) => ({
             id: user.id,
             username: user.username,
@@ -221,7 +226,7 @@ class ServerService implements IServerService {
         )
         requireOrThrow(
             BadRequestError,
-            await this.servers.containsUser(serverId, user.internalId),
+            await this.servers.containsUser(serverId, user.publicId),
             'User is not a member of the server.'
         )
         return await this.servers.getPagedChannels(serverId, limit, offset)
@@ -238,11 +243,11 @@ class ServerService implements IServerService {
         )
         requireOrThrow(
             BadRequestError,
-            await this.servers.containsUser(serverId, user.internalId),
+            await this.servers.containsUser(serverId, user.publicId),
             'User is not a member of the server.'
         )
-        const userIds = await this.servers.getUserIdsByServerId(serverId)
-        const users = await this.users.getUsersByIds(userIds)
+        const userPublicIds = await this.servers.getUserIdsByServerId(serverId)
+        const users = await this.users.getUsersByPublicIds(userPublicIds)
         return users.map((user) => ({
             id: user.id,
             username: user.username,

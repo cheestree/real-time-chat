@@ -36,8 +36,8 @@
     display: flex;
     align-items: center;
     justify-content: center;
-    background-color: var(--primary-color);
-    color: white;
+    background-color: var(--color-primary);
+    color: var(--text-inverse);
     font-weight: 600;
     font-size: 1rem;
 }
@@ -46,4 +46,31 @@
     margin: 0;
     font-size: 1.1rem;
     font-weight: 600;
+}
+
+.name h3 {
+    margin: 0;
+    font-size: 1.1rem;
+    font-weight: 600;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+.description h4 {
+    margin: 0;
+    font-size: 0.8rem;
+    font-weight: 400;
+    color: var(--color-text-secondary);
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+.headercontainer {
+    display: flex;
+    align-items: center;
+    gap: var(--gap-sm);
+    margin-left: var(--margin-sm);
+    margin-right: var(--margin-sm);
 }

@@ -1,6 +1,5 @@
 'use client'
 
-import Description from '@/components/description/Description'
 import UserBar from '@/components/user/UserBar'
 import { useAuthStore } from '@/stores/useAuthStore'
 import { useSocketStore } from '@/stores/useSocketStore'
@@ -74,10 +73,12 @@ export default function TaskBar() {
 
             {viewMode === ViewMode.SERVERS && currentServer && (
                 <>
-                    <Description
-                        name={currentServer.name}
-                        description={currentServer.description}
-                    />
+                    <div className={styles.dmHeader}>
+                        <h3>{currentServer.name}</h3>
+                        <p className={styles.dmHint}>
+                            {currentServer.description}
+                        </p>
+                    </div>
                     <Channels
                         currentServer={currentServer}
                         onChangeChannel={changeChannel}

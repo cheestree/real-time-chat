@@ -20,9 +20,6 @@ export default function DirectMessages({
 
     return (
         <div className={styles.container}>
-            <div className={styles.header}>
-                <h3>Direct Messages</h3>
-            </div>
             <div className={styles.conversations}>
                 {conversations &&
                     conversations.map((conversation: Conversation) => (

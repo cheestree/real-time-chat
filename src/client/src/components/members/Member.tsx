@@ -1,6 +1,5 @@
 'use client'
 
-import Image from 'next/image'
 import { memo } from 'react'
 import styles from './member.module.css'
 
@@ -18,12 +17,17 @@ function Member({ id, name, icon, onClickMember }: MemberProps) {
             className={styles.member}
             key={id}
             onClick={() => onClickMember?.(id, name)}
-            style={{ cursor: onClickMember ? 'pointer' : 'default' }}
         >
-            <div className={styles.memberIcon}>
-                {icon ? <Image alt="" src={icon} /> : name[0]}
+            <div className={styles.avatar}>
+                {icon ? (
+                    <img src={icon} alt="" />
+                ) : (
+                    <div className={styles.defaultAvatar}>
+                        {name.charAt(0).toUpperCase()}
+                    </div>
+                )}
             </div>
-            <div className={styles.memberName}>{name}</div>
+            <div className={styles.username}>{name}</div>
         </div>
     )
 }

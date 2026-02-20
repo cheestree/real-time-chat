@@ -137,6 +137,7 @@ class ServerService {
                     `/${data.serverId}/${data.channelId}`,
                 {
                     method: 'DELETE',
+                    credentials: 'include',
                     headers: {
                         'Content-Type': 'application/json',
                     },

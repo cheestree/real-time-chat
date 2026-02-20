@@ -14,7 +14,7 @@ export type ServerDetail = {
   name: string;
   description: string;
   icon: string;
-  ownerIds: number[];
+  ownerIds: string[];
   channels: ChannelDetail[];
   users: UserSummary[];
 };

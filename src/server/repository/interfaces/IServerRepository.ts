@@ -4,12 +4,13 @@ import { Channel, ChannelType } from '../../domain/channel/Channel'
 import { Server } from '../../domain/server/Server'
 
 export interface IServerRepository {
-    getUserServers(userId: number): Promise<ServerDetail[]>
+    getUserServers(userPublicId: string): Promise<ServerDetail[]>
     userExists(userId: UUID): Promise<boolean>
     getServerById(serverId: string): Promise<Server | undefined>
     createServer(
         name: string,
         userId: number,
+        userPublicId: string,
         description?: string,
         icon?: string
     ): Promise<Server>
@@ -22,14 +23,22 @@ export interface IServerRepository {
     getServerByName(serverName: string): Promise<Server | undefined>
     serverExists(serverId: string): Promise<boolean>
     channelExists(serverId: string, channelId: string): Promise<boolean>
-    addUserToServer(serverId: string, userId: number): Promise<Server>
-    leaveServer(serverId: string, userId: number): Promise<boolean>
+    addUserToServer(
+        serverId: string,
+        userPublicId: string,
+        userInternalId: number
+    ): Promise<Server>
+    leaveServer(
+        serverId: string,
+        userPublicId: string,
+        userInternalId: number
+    ): Promise<boolean>
     deleteServer(serverId: string, userId: number): Promise<boolean>
     deleteChannel(serverId: string, channelId: string): Promise<boolean>
-    isServerOwner(serverId: string, userId: number): Promise<boolean>
-    containsUser(serverId: string, userId: number): Promise<boolean>
+    isServerOwner(serverId: string, userPublicId: string): Promise<boolean>
+    containsUser(serverId: string, userPublicId: string): Promise<boolean>
     getChannelIdsByServerId(serverId: string): Promise<string[]>
-    getUserIdsByServerId(serverId: string): Promise<number[]>
+    getUserIdsByServerId(serverId: string): Promise<string[]>
     getPagedChannels(
         serverId: string,
         limit: number,

@@ -9,7 +9,6 @@ import { Dispatch, SetStateAction, useCallback, useEffect } from 'react'
 interface UseSocketHandlersProps {
     setServers: Dispatch<SetStateAction<ServerDetail[]>>
     setCurrentServerId: Dispatch<SetStateAction<string | null>>
-    setCurrentChannelId: Dispatch<SetStateAction<string | null>>
     addMessageToConversation: (
         otherUserId: string,
         otherUsername: string,
@@ -20,7 +19,6 @@ interface UseSocketHandlersProps {
 export function useSocketHandlers({
     setServers,
     setCurrentServerId,
-    setCurrentChannelId,
     addMessageToConversation,
 }: UseSocketHandlersProps) {
     const onCreateServerSuccess = useCallback(
@@ -47,7 +45,6 @@ export function useSocketHandlers({
                         (ch) => ch.id === channel.id
                     )
                     if (!channelExists) {
-                        setCurrentChannelId(channel.id)
                         return {
                             ...server,
                             channels: [...server.channels, channel],
@@ -57,7 +54,7 @@ export function useSocketHandlers({
                 })
             })
         },
-        [setServers, setCurrentChannelId]
+        [setServers]
     )
 
     const onChannelDeleted = useCallback(

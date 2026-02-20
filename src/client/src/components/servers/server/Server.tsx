@@ -29,23 +29,32 @@ export default function Server({
 }: ServerProps) {
     const handleContextMenu = (e: MouseEvent<HTMLDivElement>) => {
         const isMember = server.users.some((u) => u.id === user.publicId)
-        const isOwner = server.ownerIds.length > 0
+        const isOwner = server.ownerIds.some((id) => id === user.publicId)
 
-        const options = isOwner
-            ? [
-                  {
-                      label: 'Delete server',
-                      action: () => deleteServer(server.id),
-                  },
-              ]
-            : isMember
-              ? [
-                    {
-                        label: 'Leave server',
-                        action: () => leaveServer(server.id),
-                    },
-                ]
-              : []
+        const copyServerId = () => {
+            navigator.clipboard.writeText(server.id)
+        }
+
+        const options: ContextMenuOption[] = [
+            {
+                label: 'Copy Server ID',
+                action: copyServerId,
+            },
+        ]
+
+        if (isOwner) {
+            options.push({
+                label: 'Delete Server',
+                action: () => deleteServer(server.id),
+                danger: true,
+            })
+        } else if (isMember) {
+            options.push({
+                label: 'Leave Server',
+                action: () => leaveServer(server.id),
+            })
+        }
+
         openContextMenu(e, options)
     }
 

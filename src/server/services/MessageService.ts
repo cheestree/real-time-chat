@@ -46,10 +46,7 @@ class MessageService implements IMessageService {
             )
             requireOrThrow(
                 BadRequestError,
-                await this.servers.containsUser(
-                    input.serverId,
-                    user.internalId
-                ),
+                await this.servers.containsUser(input.serverId, user.publicId),
                 'User is not a member of the server.'
             )
             requireOrThrow(
@@ -86,7 +83,7 @@ class MessageService implements IMessageService {
             )
             requireOrThrow(
                 BadRequestError,
-                await this.servers.containsUser(serverId, user.internalId),
+                await this.servers.containsUser(serverId, user.publicId),
                 'User is not a member of the server.'
             )
             requireOrThrow(

@@ -11,4 +11,5 @@ export interface ContextMenuContextType {
 export type ContextMenuOption = {
     label: string
     action: (...args: Component[]) => void
+    danger?: boolean
 }
