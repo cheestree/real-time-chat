@@ -8,6 +8,8 @@ import { useEffect, useState } from 'react'
 import { useForm } from 'react-hook-form'
 import { z } from 'zod'
 
+import styles from './page.module.css'
+
 const registerSchema = z.object({
     username: z.string().min(3, 'Username must be at least 3 characters'),
     email: z.string().email('Invalid email address'),
@@ -69,7 +71,7 @@ function RegisterPage() {
                         {...register('username')}
                     />
                     {errors.username && (
-                        <div style={{ color: 'red', fontSize: '0.875rem' }}>
+                        <div className={styles.errorText}>
                             {errors.username.message}
                         </div>
                     )}
@@ -82,7 +84,7 @@ function RegisterPage() {
                         {...register('email')}
                     />
                     {errors.email && (
-                        <div style={{ color: 'red', fontSize: '0.875rem' }}>
+                        <div className={styles.errorText}>
                             {errors.email.message}
                         </div>
                     )}
@@ -95,26 +97,35 @@ function RegisterPage() {
                         {...register('password')}
                     />
                     {errors.password && (
-                        <div style={{ color: 'red', fontSize: '0.875rem' }}>
+                        <div className={styles.errorText}>
                             {errors.password.message}
                         </div>
                     )}
                 </div>
 
                 {errors.root && (
-                    <div style={{ color: 'red', marginBottom: 8 }}>
+                    <div className={styles.rootError}>
                         {errors.root.message}
                     </div>
                 )}
 
                 {success && (
-                    <div style={{ color: 'green', marginBottom: 8 }}>
+                    <div className={styles.successMessage}>
                         Registration successful! Redirecting...
                     </div>
                 )}
 
                 <button type="submit">Submit</button>
             </form>
+
+            <div>
+                <p>
+                    Already have an account?{' '}
+                    <a href="/login" className={styles.link}>
+                        Login here
+                    </a>
+                </p>
+            </div>
         </section>
     )
 }

@@ -1,0 +1,13 @@
+.errorText {
+    color: var(--color-error);
+    font-size: 0.875rem;
+}
+
+.rootError {
+    color: var(--color-error);
+    margin-bottom: var(--margin-xs);
+}
+
+.link {
+    color: var(--color-text-secondary);
+}

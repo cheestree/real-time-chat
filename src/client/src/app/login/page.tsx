@@ -8,6 +8,8 @@ import { useEffect } from 'react'
 import { useForm } from 'react-hook-form'
 import { z } from 'zod'
 
+import styles from './page.module.css'
+
 const loginSchema = z.object({
     username: z.string().min(1, 'Username is required'),
     password: z.string().min(1, 'Password is required'),
@@ -61,7 +63,7 @@ function LoginPage() {
                         {...register('username')}
                     />
                     {errors.username && (
-                        <div style={{ color: 'red', fontSize: '0.875rem' }}>
+                        <div className={styles.errorText}>
                             {errors.username.message}
                         </div>
                     )}
@@ -74,20 +76,28 @@ function LoginPage() {
                         {...register('password')}
                     />
                     {errors.password && (
-                        <div style={{ color: 'red', fontSize: '0.875rem' }}>
+                        <div className={styles.errorText}>
                             {errors.password.message}
                         </div>
                     )}
                 </div>
 
                 {errors.root && (
-                    <div style={{ color: 'red', marginBottom: 8 }}>
+                    <div className={styles.rootError}>
                         {errors.root.message}
                     </div>
                 )}
 
                 <button type="submit">Login</button>
             </form>
+            <div>
+                <p>
+                    Don't have an account?{' '}
+                    <a href="/register" className={styles.link}>
+                        Register here
+                    </a>
+                </p>
+            </div>
         </section>
     )
 }
