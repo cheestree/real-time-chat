@@ -1,5 +1,7 @@
 # :speech_balloon: Real-Time Chat
 
+![Server chat between users](./assets/server-chat.png)
+
 A web application for real-time messaging in servers and channels. Users can join servers, create channels, send messages, and interact live with others. Built for scalability and responsiveness.
 
 ## 🚀 Quick Start (Demo)
