@@ -1,216 +1,107 @@
-# :speech_balloon: Real-Time Chat
+# 💬 Real-Time Chat
+
+A web application for real-time messaging in servers and channels. Users can join servers, create channels, and send messages live. Built with a clean architecture backend and a feature-based React frontend.
 
 ![Server chat between users](./assets/server-chat.png)
 
-A web application for real-time messaging in servers and channels. Users can join servers, create channels, send messages, and interact live with others. Built for scalability and responsiveness.
+## Technologies
 
-## 🚀 Quick Start (Demo)
+| Layer | Stack |
+|---|---|
+| Frontend | Next.js (React + TypeScript) |
+| Backend | Node.js (Express + TypeScript) |
+| Databases | PostgreSQL, MongoDB, Cassandra |
+| Caching | Redis |
+| Real-time | Socket.IO |
+| Infrastructure | Docker & Docker Compose |
 
-Want to try it immediately? Run with Docker:
+## Repository Structure
 
-```bash
-docker-compose --env-file .env.docker.demo up --build
-```
-
-Then visit <http://localhost:3000>
-
-## ✨ Features
-
-- User authentication and profiles
-- Create/join servers and channels
-- Real-time messaging with WebSockets
-- Message history stored in PostgreSQL and MongoDB
-- Caching with Redis for performance
-- Scalable architecture with Cassandra for distributed data
-
-## :computer: Stack
-
-- **Frontend**: Next.js (React, TypeScript)
-- **Backend**: Node.js (Express, TypeScript)
-- **Database**: PostgreSQL, MongoDB, Cassandra
-- **Containerization**: Docker & Docker Compose.
-- **Caching**: Redis JSON with TTL
-- **WebSockets**: Socket.IO
-
-## :triangular_rule: Repository layout
-
-This project uses an **npm workspace** monorepo structure:
-
-```
+```text
 packages/
-  shared/              # Shared TypeScript types and interfaces
+  shared/              # Shared TypeScript types used by both client and server
 src/
-  server/              # Node.js backend (Express, Socket.IO)
+  server/              # Express + Socket.IO backend
     controller/        # HTTP & WebSocket handlers
-    services/          # Business logic layer
-    repository/        # Data access layer
-    domain/            # Business entities & errors
+    services/          # Business logic
+    repository/        # Data access
+    domain/            # Entities & error types
     routes/            # API route definitions
-  client/              # Next.js app (React)
+  client/              # Next.js frontend
     src/
       components/
         features/      # Feature-based components (servers, channels, messages, DMs)
-        layout/        # Layout components (TaskBar, UserBar)
+        layout/        # TaskBar, UserBar
         shared/        # Reusable UI components
       hooks/           # Custom React hooks
-      stores/          # Zustand state management (sliced architecture)
+      stores/          # Zustand slices (server, channel, message, directMessage)
       services/        # API clients
-sql/                   # SQL and CQL bootstrapping
+sql/                   # PostgreSQL and Cassandra bootstrap scripts
 ```
 
-The `@rtchat/shared` package contains all common type definitions used by both client and server, ensuring type consistency across the full stack.
+The `@rtchat/shared` package contains all common type definitions, ensuring consistency across the stack.
 
-### Architecture Highlights
+### Architecture
 
-**Backend (Server):**
+**Backend** — clean layered architecture: Controllers → Services → Repositories. Interface-based design throughout for dependency injection.
 
-- Clean architecture with clear separation: Controllers → Services → Repositories
-- Interface-based design for dependency injection
-- Domain-driven error handling
+**Frontend** — feature-based component organization, custom hooks for business logic (`useServerActions`, `useChannelNavigation`, etc.), Zustand store split into focused slices.
 
-**Frontend (Client):**
+## Prerequisites
 
-- Feature-based component organization (not UI-type based)
-- Custom hooks for business logic (`useServerActions`, `useChannelNavigation`, etc.)
-- Zustand store split into focused slices (server, channel, message, directMessage)
-- Socket event handlers extracted to dedicated hooks
+- [Node.js](https://nodejs.org/) 18+
+- [Docker](https://docs.docker.com/get-docker/) and Docker Compose — required for the recommended setup; optional if running all services locally
+- PostgreSQL, MongoDB, Cassandra, Redis — only needed for local development without Docker
 
-## :jigsaw: Prerequisites
+## ⚙️ Configuration
 
-- Node.js 18+ (recommended), npm or pnpm
-- PostgreSQL
-- MongoDB
-- Cassandra
-- Redis
+Three environment setups are available depending on your use case:
 
-## :gear: Configuration
+| File | Purpose |
+|---|---|
+| `.env.docker.demo` (root) | Docker Compose demo — no manual DB setup needed |
+| `src/server/.env.demo` | Local dev demo — services on localhost |
+| `src/server/.env.example` | Local dev template — copy and customise |
+| `.env.example` (root) | Docker template — copy and customise |
 
-### Three Ways to Run
+Key variables for a production setup:
 
-**1. Docker (Demo) - Easiest:**
+- `JWT_SECRET` — minimum 32 characters
+- `DEMO_MODE` — set to `false`
+- `SERVER_PROFILE` and `NODE_ENV` — set to `production`
+- `CORS_ORIGIN` — your frontend URL
+- Database credentials for PostgreSQL, MongoDB, Cassandra, and Redis
 
-- Uses `.env.docker.demo` at project root
-- All services in containers with Docker networking
-- No manual database setup required
+See [src/server/env.ts](src/server/env.ts) for the full variable reference.
 
-**2. Local Development (Demo) - No Config Needed:**
+## 🚀 Running
 
-- Uses `src/server/.env.demo` and `src/client/.env.demo`
-- Requires local PostgreSQL, MongoDB, Cassandra, Redis
-- Services on localhost
-
-**3. Production or Custom Setup:**
-
-- Copy `.env.example` files and customize
-- See [src/server/env.ts](src/server/env.ts) for all variables
-
-### Environment File Guide
-
-| File                      | Purpose             | Service Names                     |
-| ------------------------- | ------------------- | --------------------------------- |
-| `.env.docker.demo` (root) | Docker Compose demo | postgres, mongo, redis, cassandra |
-| `src/server/.env.demo`    | Local dev demo      | localhost                         |
-| `src/server/.env.example` | Local dev template  | localhost                         |
-| `.env.example` (root)     | Docker template     | Empty (fill in)                   |
-
-**Important variables for production:**
-
-- `JWT_SECRET` - Strong random secret for authentication (min 32 chars)
-- `DEMO_MODE` - Set to `false` for production
-- Database credentials (PostgreSQL, MongoDB, Cassandra, Redis)
-- `CORS_ORIGIN` - Your frontend URL
-- `SERVER_PROFILE` - Set to `production` for production use
-- `NODE_ENV` - Set to `production` for production use
-
-## :bank: Database setup
-
-- PostgreSQL:
-  - Create schema/tables from [sql/pg/createTable.cql](sql/pg/createTable.sql).
-- Cassandra:
-  - Create keyspace/tables from [sql/cassandra/createTable.cql](sql/cassandra/createTable.cql).
-
-## :minidisc: Running the Application
-
-### Option 1: Docker Compose (Recommended for Testing)
-
-**Quick demo:**
+### Option 1: Docker (recommended)
 
 ```bash
 docker-compose --env-file .env.docker.demo up --build
 ```
 
-Visit <http://localhost:3000>
+Visit `http://localhost:3000`. No database setup required.
 
-### Option 2: Local Development (Without Docker)
-
-**Quick demo mode** (no .env file needed):
+### Option 2: Local development
 
 ```bash
-# First: Install all workspace dependencies (from project root)
-npm install
-
-# Build the shared package
-npm run build:shared
-
-# Terminal 1 - Backend with demo config
-cd src/server
-npm run dev:demo
-
-# Terminal 2 - Frontend with demo config
-cd src/client
-npm run dev:demo
-```
-
-**With your own config:**
-
-```bash
-# First time: Install workspace dependencies and build shared package
+# Install workspace dependencies and build shared types
 npm install
 npm run build:shared
 
-# Create your .env files
-cd src/server
-cp .env.example .env
-# Edit .env with your values
+# Terminal 1 — backend
+cd src/server && npm run dev:demo
 
-cd ../client
-cp .env.example .env.local
-# Edit .env.local with your values
-
-# Then run normally
-cd src/server && npm run dev
-cd src/client && npm run dev
+# Terminal 2 — frontend
+cd src/client && npm run dev:demo
 ```
 
-### Available Scripts
+For a custom config, copy the `.env.example` files in each module and fill in your values before running `npm run dev` instead of `npm run dev:demo`.
 
-**Workspace (from project root):**
+Database bootstrap scripts are in `sql/` — run `sql/pg/createTable.sql` for PostgreSQL and `sql/cassandra/createTable.cql` for Cassandra before starting the backend.
 
-- `npm run build:shared` - Build the shared types package
-- `npm run dev:shared` - Watch mode for shared package development
-- `npm run dev:client` - Run client dev server
-- `npm run dev:server` - Run server dev server
+## License
 
-**Server:**
-
-- `npm run dev` - Run with `.env` file (required)
-- `npm run dev:demo` - Run with `.env.demo` (no setup needed)
-- `npm start` - Production start
-- `npm run lint` - Lint code
-- `npm run format` - Format code
-
-**Client:**
-
-- `npm run dev` - Run with `.env.local` file (required)
-- `npm run dev:demo` - Run with `.env.demo` (no setup needed)
-- `npm run build` - Build for production
-- `npm run lint` - Lint code
-- `npm run format` - Format code
-
-Docker Compose:
-
-- See [docker-compose.yml](docker-compose.yml) for multi-service setup.
-
-## :pencil: License
-
-This project is licensed under the GPL-3.0 license. See [LICENSE](LICENSE).
+[GPL-3.0](LICENSE)
